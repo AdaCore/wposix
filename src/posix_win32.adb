@@ -78,8 +78,6 @@ package body POSIX_Win32 is
 
 
 
-   BinaryType : aliased Win32.DWORD;
-
    -------------------
    -- Is_Executable --
    -------------------
@@ -87,6 +85,7 @@ package body POSIX_Win32 is
    function Is_Executable (Pathname : in POSIX.POSIX_String)
                            return Boolean
    is
+      BinaryType : aliased Win32.DWORD;
    begin
       if Pathname'Length > 4 then
          declare
@@ -104,7 +103,7 @@ package body POSIX_Win32 is
                begin
                   return Win32.Winbase.GetBinaryType
                     (Win32.Addr (L_Pathname),
-                     BinaryType'Access)        = Win32.True;
+                     BinaryType'Unchecked_Access)        = Win32.True;
                end;
             elsif Ext =".bat" then
                return True;
