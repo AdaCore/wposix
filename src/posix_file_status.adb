@@ -28,8 +28,10 @@ package body POSIX_File_Status is
                              return Status
    is
       use type Win32.DWORD;
+
       L_Pathname      : constant String
         := POSIX.To_String (Pathname) & ASCII.Nul;
+
       File_Attributes : Win32.DWORD;
       File            : POSIX_IO.File_Descriptor;
       Handle          : Win32.Winnt.Handle;
@@ -46,7 +48,7 @@ package body POSIX_File_Status is
               (Win32.Addr (L_Pathname),
                Find_Data'Access);
             File_Status.Is_Executable  := POSIX_Win32.Is_Executable (Pathname);
-            File_Status.File_Attributes  := Find_Data.dwFileAttributes;
+            File_Status.File_Attributes  := File_Attributes;
             File_Status.Creation_Time    := Find_Data.ftCreationTime;
             File_Status.Last_Access_Time := Find_Data.ftLastAccessTime;
             File_Status.Last_Write_Time  := Find_Data.ftLastWriteTime;
