@@ -10,8 +10,6 @@ with POSIX_Win32.File_Handle;
 
 package body POSIX_IO is
 
-   use type Win32.INT;
-
    Result  : Win32.BOOL;
 
 
@@ -89,7 +87,7 @@ package body POSIX_IO is
          Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
          POSIX_Win32.Null_Handle);
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
-         POSIX_Win32.Check_Retcode (-1, "Open");
+         POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error, "Open");
       end if;
       return POSIX_Win32.File_Handle.Open (Handle);
    end Open;
@@ -128,7 +126,8 @@ package body POSIX_IO is
          Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
          POSIX_Win32.Null_Handle);
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
-         POSIX_Win32.Check_Retcode (-1, "Open_Or_Create");
+         POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
+                                    "Open_Or_Create");
       end if;
       return POSIX_Win32.File_Handle.Open (Handle);
    end Open_Or_Create;
@@ -353,7 +352,7 @@ package body POSIX_IO is
          To_Origin (Starting_Point));
 
       if Low_Position = 16#FFFF_FFFF# then
-         POSIX_Win32.Check_Retcode (-1, "Seek");
+         POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error, "Seek");
       else
          Result := IO_Offset (Low_Position);
       end if;
@@ -374,7 +373,7 @@ package body POSIX_IO is
          File_Size_High'Access);
 
       if File_Size_Low = 16#FFFF_FFFF# then
-         POSIX_Win32.Check_Retcode (-1, "File_Size");
+         POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error, "File_Size");
       end if;
 
       return POSIX.IO_Count (File_Size_Low);
@@ -395,7 +394,8 @@ package body POSIX_IO is
          Win32.Winbase.FILE_CURRENT);
 
       if Low_Position = 16#FFFF_FFFF# then
-         POSIX_Win32.Check_Retcode (-1, "File_Position");
+         POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
+                                    "File_Position");
       end if;
       return POSIX.IO_Count (Low_Position);
    end File_Position;
