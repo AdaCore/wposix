@@ -116,6 +116,19 @@ package body POSIX_IO is
          end if;
       end Truncated;
 
+      function Permission_Set_To_Attributes
+        (Permissions : in POSIX_Permissions.Permission_Set)
+         return Win32.DWORD
+      is
+         use POSIX_Permissions;
+      begin
+         if Permissions (Owner_Read) or else Permissions (Owner_Write) then
+            return Win32.Winnt.FILE_ATTRIBUTE_NORMAL;
+         else
+            return Win32.Winnt.FILE_ATTRIBUTE_READONLY;
+         end if;
+      end Permission_Set_To_Attributes;
+
    begin
       Handle := Win32.Winbase.CreateFile
         (Win32.Addr (L_Name),
@@ -123,7 +136,7 @@ package body POSIX_IO is
          Shared (Options),
          null, --  Security Attributes
          Truncated (Options),
-         Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
+         Permission_Set_To_Attributes (Permissions),
          POSIX_Win32.Null_Handle);
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
          POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
