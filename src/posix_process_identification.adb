@@ -3,6 +3,7 @@
 
 
 with System;
+with Ada.Strings.Fixed;
 
 with POSIX_Win32;
 with POSIX;
@@ -38,9 +39,12 @@ package body POSIX_Process_Identification is
                 -----------------------------------
 
    function Image (ID : Process_ID)
-                   return Standard.String is
+                   return Standard.String
+   is
+      use Ada;
    begin
-      return Win32.DWORD'Image (ID.DwProcessId);
+      return Strings.Fixed.Trim (Win32.DWORD'Image (ID.DwProcessId),
+                                 Strings.Left);
    end Image;
 
                 -----------------------------------
@@ -90,9 +94,12 @@ package body POSIX_Process_Identification is
                 -----------------------------------
 
    function Image (ID : Process_Group_ID)
-                   return Standard.String is
+                   return Standard.String
+   is
+      use Ada;
    begin
-      return Process_Group_ID'Image (ID);
+      return Strings.Fixed.Trim (Process_Group_ID'Image (ID),
+                                 Strings.Left);
    end Image;
 
                 -----------------------------------
@@ -145,9 +152,12 @@ package body POSIX_Process_Identification is
                 -----------------------------------
 
    function Image (ID : User_ID)
-                   return Standard.String is
+                   return Standard.String
+   is
+      use Ada;
    begin
-      return User_ID'Image (ID);
+      return Strings.Fixed.Trim (User_ID'Image (ID),
+                                 Strings.Left);
    end Image;
 
                 -----------------------------------
@@ -194,9 +204,12 @@ package body POSIX_Process_Identification is
                 -----------------------------------
 
    function Image (ID : Group_ID)
-                   return Standard.String is
+                   return Standard.String
+   is
+      use Ada;
    begin
-      return Group_ID'Image (ID);
+      return Strings.Fixed.Trim (Group_ID'Image (ID),
+                                 Strings.Left);
    end Image;
 
                 -----------------------------------
