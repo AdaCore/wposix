@@ -5,7 +5,6 @@
 
 with System;
 with Win32;
-with Win32.Winbase;
 with Win32.Winnt;
 
 with POSIX;
