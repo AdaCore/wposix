@@ -15,7 +15,6 @@ with POSIX_File_Status;
 package body POSIX_Files is
 
    --  Operations to create files in the File System
-   Retcode : Win32.INT;
    Result  : Win32.BOOL;
 
    procedure Create_Directory
@@ -40,7 +39,6 @@ package body POSIX_Files is
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Create_FIFO");
-      POSIX_Win32.Check_Retcode (Retcode, "Create_Fifo");
    end Create_FIFO;
 
 
@@ -208,6 +206,12 @@ package body POSIX_Files is
       Quit       : Boolean := False;
 
    begin
+
+      if not Is_File_Present (Pathname) then
+         POSIX_Win32.Raise_Error ("For_Every_Directory_Entry",
+                                  POSIX.No_Such_File_Or_Directory);
+      end if;
+
       Handle := Win32.Winbase.FindFirstFile (Win32.Addr (L_Pathname),
                                              Data'Access);
 
@@ -217,13 +221,10 @@ package body POSIX_Files is
             --  no file to be scanned
             return;
          else
-            Retcode := -1;
+            POSIX_Win32.Raise_Error ("For_Every_Directory_Entry",
+                                     POSIX.Not_A_Directory);
          end if;
-      else
-         Retcode := 0;
       end if;
-
-      POSIX_Win32.Check_Retcode (Retcode, "For_Every_Directory_Entry");
 
       loop
          Action  (Directory_Entry (Data), Quit);
