@@ -99,7 +99,7 @@ package body POSIX_Process_Identification is
      (Process       : in     Process_ID;
       Process_Group :    out Process_Group_ID) is
    begin
-      null;
+      Process_Group := Default_GID;
    end Create_Process_Group;
 
 
@@ -109,7 +109,7 @@ package body POSIX_Process_Identification is
 
    procedure Create_Session (Session_Leader : out Process_Group_ID) is
    begin
-      null;
+      Session_Leader := Default_GID;
    end Create_Session;
 
 
@@ -177,6 +177,7 @@ package body POSIX_Process_Identification is
      return POSIX.POSIX_String
    is
       Buffer : String (1 .. 500);
+      pragma Warnings (Off, Buffer);
       Size   : aliased Win32.DWORD := 500;
       Result : Win32.BOOL;
    begin
