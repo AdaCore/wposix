@@ -3,7 +3,7 @@
 
 .SILENT:
 
-GFLAGS		=	-O2 -gnaty3abcehiklmptrf
+GFLAGS		=	-O2
 INSTALL_DIR	=	/usr/Ada.Libraries/POSIX
 
 all:	src
@@ -24,6 +24,9 @@ src:	force
 	gnatmake -c $(GFLAGS) posix_win32.adb
 
 force:
+
+clean:
+	rm *.ali *.o
 
 install:
 	cp *.ad[sb] $(INSTALL_DIR)
