@@ -13,7 +13,6 @@ package body POSIX_Process_Times is
    is
       use type Win32.ULONG;
       Hundred_Nano_To_Tick : constant := 1E7 / Ticks_Per_Second;
-      Total_Tick : Long_Long_Integer;
 
       function Shift_Left (Value  : Win32.DWORD;
                            Amount : Natural)
@@ -21,10 +20,9 @@ package body POSIX_Process_Times is
       pragma Import (Intrinsic, Shift_Left);
 
    begin
-      Total_Tick := Long_Long_Integer
-        (Shift_Left (Filetime.DwHighDateTime, 32) +
-         Filetime.DwLowDateTime);
-      return Tick_Count (Total_Tick / Hundred_Nano_To_Tick);
+      return Tick_Count
+        ( (Shift_Left (Filetime.DwHighDateTime, 32) / Hundred_Nano_To_Tick) +
+          (Filetime.DwLowDateTime / Hundred_Nano_To_Tick) );
    end Filetime_To_Tick;
 
    function Elapsed_Real_Time
