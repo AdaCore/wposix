@@ -1,0 +1,13 @@
+gnatmake -c posix
+gnatmake -c posix_calendar
+gnatmake -c posix_files
+gnatmake -c posix_file_status
+gnatmake -c posix_io
+gnatmake -c posix_permissions
+gnatmake -c posix_process_environment
+gnatmake -c posix_process_identification
+gnatmake -c posix_process_primitives
+gnatmake -c posix_process_times
+gnatmake -c posix_signals
+gnatmake -c posix_win32-file_handle
+gnatmake -c posix_win32
