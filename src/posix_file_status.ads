@@ -81,16 +81,17 @@ private
 
    type Status is
       record
-         Is_Executable    : Boolean               := False;
-         File_Attributes  : Win32.DWORD           := 0;
+         Is_Executable    : Boolean     := False;
+         File_Attributes  : Win32.DWORD := 0;
          Creation_Time    : Win32.Winbase.FILETIME;
          Last_Access_Time : Win32.Winbase.FILETIME;
          Last_Write_Time  : Win32.Winbase.FILETIME;
-         File_Size_Low    : Win32.DWORD           := 0;
-         File_Size_High   : Win32.DWORD           := 0;
-         File_Index_Low   : Win32.DWORD           := 0;
-         File_Index_High  : Win32.DWORD           := 0;
-         File_Links       : Win32.DWORD           := 0;
+         File_Size_Low    : Win32.DWORD := 0;
+         File_Size_High   : Win32.DWORD := 0;
+         File_Index_Low   : Win32.DWORD := 0;
+         File_Index_High  : Win32.DWORD := 0;
+         File_Links       : Win32.DWORD := 0;
+         File_Type        : Win32.DWORD := Win32.Winbase.FILE_TYPE_UNKNOWN;
       end record;
 
    type File_ID is
