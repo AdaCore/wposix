@@ -3,8 +3,6 @@
 --  Author : Pascal Obry
 --  p.obry@wanadoo.fr
 
-with System;
-
 with Win32.Winbase;
 
 package body POSIX_Win32.File_Handle is
