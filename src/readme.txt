@@ -11,6 +11,9 @@ Version 1.5 beta
 changes since 1.4b
 ------------------
 
+POSIX
+	change release and version strings.
+
 POSIX_File_Status
 	fix bug in Is_Regular_File
 	A file is regular under Windows if the attributes normal or archive is
