@@ -120,6 +120,6 @@ package POSIX_Files is
 
 private
 
-   type Directory_Entry is new Win32.Winbase.WIN32_FIND_DATAA;
+   type Directory_Entry is new Win32.Winbase.WIN32_FIND_DATA;
 
 end POSIX_Files;
