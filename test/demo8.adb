@@ -1,4 +1,6 @@
 
+--  $Id$
+
 with POSIX;
 with POSIX_IO;
 with POSIX_Process_Primitives;
@@ -29,9 +31,8 @@ begin
                                 POSIX_IO.Write_Only);
 
    POSIX.Append (GMAKE_Args, "-i");
+   POSIX.Append (GMAKE_Args, "-I../src");
    POSIX.Append (GMAKE_Args, "demo1");
-   POSIX.Append (GMAKE_Args, "-largs");
-   POSIX.Append (GMAKE_Args, "-ladvapi32");
 
    PPP.Start_Process
      (Child    => GMAKE_Id,
