@@ -290,7 +290,6 @@ package body POSIX_Process_Primitives is
       Null_Filename : constant String := "nul";
 
       P             : File_Request_Access;
-      Junk1         : POSIX_Signals.Signal_Set;
 
       -------------------------
       -- Mode_To_File_Access --

@@ -43,13 +43,10 @@ package body POSIX_Files is
 
    procedure Create_FIFO
      (Pathname   : in POSIX.Pathname;
-      Permission : in POSIX_Permissions.Permission_Set)
-   is
-      L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
+      Permission : in POSIX_Permissions.Permission_Set) is
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Create_FIFO");
    end Create_FIFO;
-
 
 
 
