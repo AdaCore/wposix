@@ -11,6 +11,7 @@ with Win32;
 package body POSIX_Process_Primitives is
 
    use POSIX;
+   use type Win32.ULONG;
 
    function Process_ID_To_PROCESS_INFORMATION is
       new Ada.Unchecked_Conversion (POSIX_Process_Identification.Process_ID,
@@ -19,6 +20,11 @@ package body POSIX_Process_Primitives is
    function PROCESS_INFORMATION_To_Process_ID is
       new Ada.Unchecked_Conversion (Win32.Winbase.PROCESS_INFORMATION,
                                     POSIX_Process_Identification.Process_ID);
+
+   Security_Handles_Inherited : aliased Win32.Winbase.SECURITY_ATTRIBUTES
+     := (Win32.Winbase.SECURITY_ATTRIBUTES'Size / 8,
+         System.Null_Address,
+         Win32.TRUE);
 
    --  Process Template
 
@@ -263,8 +269,8 @@ package body POSIX_Process_Primitives is
          H := Win32.Winbase.CreateFile
            (Win32.Addr (L_Name),
             Mode_To_File_Access (Mode),
-            0,
-            null,
+            Win32.Winnt.FILE_SHARE_READ,
+            Security_Handles_Inherited'Access,
             Win32.Winbase.OPEN_EXISTING,
             Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
             System.Null_Address);
@@ -287,8 +293,8 @@ package body POSIX_Process_Primitives is
          H := Win32.Winbase.CreateFile
            (Win32.Addr (L_Name),
             Mode_To_File_Access (Mode),
-            0,
-            null,
+            Win32.Winnt.FILE_SHARE_WRITE,
+            Security_Handles_Inherited'Access,
             Win32.Winbase.CREATE_ALWAYS,
             Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
             System.Null_Address);
@@ -425,7 +431,7 @@ package body POSIX_Process_Primitives is
          Result := CreateProcess
            (LpApplicationName    => Win32.Addr (L_Pathname),
             LpCommandLine        => Win32.Addr (L_Arguments),
-            LpProcessAttributes  => null,
+            LpProcessAttributes  => Security_Handles_Inherited'Access,
             LpThreadAttributes   => null,
             BInheritHandles      => Win32.TRUE,
             DwCreationFlags      => NORMAL_PRIORITY_CLASS,
