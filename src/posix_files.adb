@@ -219,7 +219,7 @@ package body POSIX_Files is
       use type Win32.Winnt.HANDLE;
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
       Handle     : Win32.Winnt.HANDLE;
-      Quit       : Boolean;
+      Quit       : Boolean := False;
    begin
       Handle := Win32.Winbase.FindFirstFile (Win32.Addr (L_Pathname),
                                              Data'Access);
