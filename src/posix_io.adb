@@ -7,6 +7,7 @@ with Win32.Winbase;
 with Win32.Winnt;
 
 with POSIX_Signals;
+with POSIX_File_Status;
 with POSIX_Win32;
 with POSIX_Win32.File_Handle;
 
@@ -485,7 +486,8 @@ package body POSIX_IO is
    function Is_A_Terminal (File : File_Descriptor)
                            return Boolean is
    begin
-      return False;
+      return POSIX_File_Status.Is_Character_Special_File
+        (POSIX_File_Status.Get_File_Status (File));
    end Is_A_Terminal;
 
 
