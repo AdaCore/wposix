@@ -39,5 +39,5 @@ clean:
 	rm *.ali *.o
 
 install:
-	cp *.ad[sb] $(INSTALL_DIR)
-	cp *.{o,ali} $(INSTALL_DIR)
+	cp -p *.ad[sb] $(INSTALL_DIR)
+	cp -p *.?(o|ali) $(INSTALL_DIR)
