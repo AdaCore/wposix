@@ -12,7 +12,7 @@ procedure Demo7 is
 
    procedure Display_Time (Date_Time : in POSIX_Calendar.POSIX_Time) is
       use POSIX_Calendar;
-      Secs : Duration;
+      Secs : Natural;
       H    : Natural range 0 .. 23;
       M    : Natural range 0 .. 59;
       S    : Natural range 0 .. 59;
@@ -21,12 +21,12 @@ procedure Demo7 is
       Text_IO.Put (Month_Number'Image (Month (Date_Time)));
       Text_IO.Put (Year_Number'Image (Year (Date_Time)));
 
-      Secs := Seconds (Date_Time);
+      Secs := Natural (Seconds (Date_Time));
 
-      H := Natural (Duration'(Secs / 3_600.0) - 0.5);
-      Secs := Secs - Duration (H * 3_600);
-      M := Natural (Duration'(Secs / 60.0) - 0.5);
-      S := Natural (Secs - Duration (M * 60));
+      H := Secs / 3_600;
+      Secs := Secs - (H * 3_600);
+      M := Secs / 60;
+      S := Secs - (M * 60);
 
       Text_IO.Put ("  -  ");
 
