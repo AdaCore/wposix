@@ -5,13 +5,24 @@ POSIX Ada Binding for Windows 95/98 and Windows NT
 ==================================================
 
 This is a partial implementation of POSIX using the Win32 API.
-Version 1.8 beta
+Version 1.9 beta
 
-Thanks to Sune Falck for the help provided from version 1.4. It has been
-reported that this binding compile fine with GNAT 3.10 and ObjectAda 7.1.2.
+Thanks to Sune Falck for the help provided for version 1.4. It has been
+reported that this binding compile fine with GNAT 3.11 and ObjectAda 7.1.2.
 
-It has also been tested with GNAT 3.11.
+Thanks to Wilhelm Spickermann for a bug report.
 
+It has also been tested with GNAT 3.12.
+
+
+changes since 1.8b
+------------------
+
+POSIX_Process_Primitives
+	Fix bug in executable extension handling.
+
+POSIX_Process_Identification
+	Fix bug in Get_Login_Name
 
 changes since 1.7b
 ------------------
