@@ -435,12 +435,18 @@ package body POSIX_Process_Primitives is
 
       Result : Win32.BOOL;
 
-      Arguments : Unbounded_String;
+      Arguments      : Unbounded_String;
+      Argument_Count : Natural := 0;
 
       procedure Concat (Item : in POSIX_String;
                         Quit : in out Boolean) is
       begin
-         Arguments := Arguments & POSIX.To_String (Item) & ' ';
+         --  the first argument is by convention the program name and we don't
+         --  want to add it to the command line.
+         if Argument_Count /= 0 then
+            Arguments := Arguments & POSIX.To_String (Item) & ' ';
+         end if;
+         Argument_Count := Argument_Count + 1;
          Quit := False;
       end Concat;
 
@@ -478,7 +484,8 @@ package body POSIX_Process_Primitives is
          use type Win32.ULONG;
          use Win32.Winbase;
          L_Command : constant String :=
-           POSIX.To_String (Pathname) & ' ' & To_String (Arguments) &
+           POSIX.To_String (Pathname) & ' ' &
+           To_String (Arguments) &
            ASCII.Nul;
       begin
          Result := CreateProcess
