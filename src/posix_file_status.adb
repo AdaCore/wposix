@@ -310,9 +310,11 @@ package body POSIX_File_Status is
                              return Boolean
    is
       use type Win32.DWORD;
+      Regular_File_Mask : constant Win32.DWORD :=
+        Win32.Winnt.FILE_ATTRIBUTE_NORMAL or
+        Win32.Winnt.FILE_ATTRIBUTE_ARCHIVE;
    begin
-      return (File_Status.File_Attributes and
-              Win32.Winnt.FILE_ATTRIBUTE_NORMAL) /= 0;
+      return (File_Status.File_Attributes and Regular_File_Mask) /= 0;
    end Is_Regular_File;
 
 
