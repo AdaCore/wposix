@@ -6,6 +6,7 @@ with Interfaces.C;
 with Ada.Unchecked_Conversion;
 with Win32.Winnt;
 with Win32.Winbase;
+with Win32.Winerror;
 
 with POSIX_Win32;
 with POSIX_Calendar;
@@ -189,7 +190,9 @@ package body POSIX_Files is
    function Filename_Of (D_Entry : Directory_Entry)
                          return POSIX.Filename
    is
-      Name : String (1 .. 200);
+      Max_Len : constant := 260;
+
+      Name : String (1 .. Max_Len);
       I    : Natural := 0;
       C    : Character;
    begin
@@ -198,7 +201,7 @@ package body POSIX_Files is
          exit when C = ASCII.Nul;
          I := I + 1;
          Name (I) := C;
-         exit when I = 200;
+         exit when I = Max_Len;
       end loop;
       return POSIX.To_POSIX_String (Name (1 .. I));
    end Filename_Of;
@@ -211,6 +214,7 @@ package body POSIX_Files is
      (Pathname : in POSIX.Pathname)
    is
       use type Win32.INT;
+      use type Win32.DWORD;
       use type Win32.BOOL;
       use type Win32.Winnt.HANDLE;
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
@@ -220,7 +224,13 @@ package body POSIX_Files is
       Handle := Win32.Winbase.FindFirstFile (Win32.Addr (L_Pathname),
                                              Data'Access);
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
-         Retcode := -1;
+         if Win32.Winbase.GetLastError =
+           Win32.Winerror.ERROR_FILE_NOT_FOUND then
+            --  no file to be scanned
+            return;
+         else
+            Retcode := -1;
+         end if;
       else
          Retcode := 0;
       end if;
