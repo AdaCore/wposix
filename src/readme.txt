@@ -5,7 +5,21 @@ POSIX Ada Binding for Windows 95/98 and Windows NT
 ==================================================
 
 This is a partial implementation of POSIX using the Win32 API.
-Version 1.5 beta
+Version 1.6 beta
+
+
+changes since 1.5b
+------------------
+
+POSIX_File_Status
+	fix bug in Get_File_Status this fix directory pathname style name 
+	like "c:", "c:\" and "c:\."
+
+POSIX_IO
+	implementation of Is_A_Terminal
+
+POSIX_Process_Times
+	fix Filetime_To_Tick
 
 
 changes since 1.4b
