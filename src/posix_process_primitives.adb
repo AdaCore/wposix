@@ -558,6 +558,7 @@ package body POSIX_Process_Primitives is
       Null_Environment : POSIX_Process_Environment.Environment;
       Max_Len    : constant := 500;
       Pathname   : String (1 .. Max_Len);
+      pragma Warnings (Off, Pathname);
       L_Filename : constant String := POSIX.To_String (Filename) & ASCII.Nul;
       Env_Var    : constant String := "PATH" & ASCII.Nul;
       Result     : Win32.DWORD;
@@ -596,6 +597,7 @@ package body POSIX_Process_Primitives is
    is
       Max_Len    : constant := 500;
       Pathname   : String (1 .. Max_Len);
+      pragma Warnings (Off, Pathname);
       L_Filename : constant String := POSIX.To_String (Filename) & ASCII.Nul;
       Env_Var    : constant String := "PATH" & ASCII.Nul;
       Result     : Win32.DWORD;
