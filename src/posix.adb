@@ -14,11 +14,15 @@ package body POSIX is
    Node_Name_Constant   :  constant POSIX_String := "undefined";
    Release_Constant     :  constant POSIX_String := "1.0";
    Version_Constant     :  constant POSIX_String := "1.0";
-   Machine_Constant     :  constant POSIX_String := "i386";
+   Machine_Constant     :  constant POSIX_String := "i586";
 
    Errno : Error_Code;
 
    --  Characters and String
+
+   ------------------------
+   -- To_POSIX_Character --
+   ------------------------
 
    function To_POSIX_Character (Char : Character)
                                 return POSIX_Character is
@@ -29,7 +33,9 @@ package body POSIX is
          return ' ';
    end To_POSIX_Character;
 
-                    -----------------------------------
+   ------------------
+   -- To_Character --
+   ------------------
 
    function To_Character (Char : POSIX_Character)
                           return Character is
@@ -40,7 +46,10 @@ package body POSIX is
          return ' ';
    end To_Character;
 
-                    -----------------------------------
+
+   ---------------------
+   -- To_POSIX_String --
+   ---------------------
 
    function To_POSIX_String (Str : String)
                              return POSIX_String is
@@ -52,7 +61,10 @@ package body POSIX is
       return Posix_Str;
    end To_POSIX_String;
 
-                    -----------------------------------
+
+   ---------------
+   -- To_String --
+   ---------------
 
    function To_String (Str : POSIX_String)
                        return String is
@@ -65,7 +77,10 @@ package body POSIX is
    end To_String;
 
 
-                    -----------------------------------
+
+   -----------------
+   -- Is_Filename --
+   -----------------
 
    --  A valid Filename is everything except the null string,
    --  the strings "." and ".."
@@ -79,7 +94,10 @@ package body POSIX is
       end if;
    end Is_Filename;
 
-                    -----------------------------------
+
+   -----------------
+   -- Is_Pathname --
+   -----------------
 
    --  A valid Pathname is everything except the null string
    function Is_Pathname (Str : POSIX_String)
@@ -92,7 +110,10 @@ package body POSIX is
       end if;
    end Is_Pathname;
 
-                    -----------------------------------
+
+   --------------------------
+   -- Is_Portable_Filename --
+   --------------------------
 
    function Is_Portable_Filename (Str : POSIX_String)
                                   return Boolean is
@@ -101,7 +122,10 @@ package body POSIX is
         Str'Length <= POSIX.Portable_Filename_Limit_Maximum;
    end Is_Portable_Filename;
 
-                    -----------------------------------
+
+   --------------------------
+   -- Is_Portable_Pathname --
+   --------------------------
 
    function Is_Portable_Pathname (Str : POSIX_String)
                                   return Boolean is
@@ -112,10 +136,18 @@ package body POSIX is
 
 
 
-     --  String Lists
+   --  String Lists
+
+   ----------
+   -- Free --
+   ----------
 
    procedure Free is new Unchecked_Deallocation
      (String_Ptr_Array, String_Ptr_Array_Ptr);
+
+   ----------------
+   -- Make_Empty --
+   ----------------
 
    procedure Make_Empty (List : in out POSIX_String_List) is
 
@@ -134,7 +166,10 @@ package body POSIX is
       List.Strings := null;
    end Make_Empty;
 
-                    -----------------------------------
+
+   ------------
+   -- Append --
+   ------------
 
    procedure Append  (List : in out POSIX_String_List;
                       Str  : in     POSIX_String)
@@ -162,7 +197,10 @@ package body POSIX is
       List.Strings (List.Last) := new POSIX_String'(Str);
    end Append;
 
-                    -----------------------------------
+
+   --------------------
+   -- For_Every_Item --
+   --------------------
 
    procedure For_Every_Item (List : in POSIX_String_List) is
       Quit : Boolean := False;
@@ -177,7 +215,10 @@ package body POSIX is
       end loop;
    end For_Every_Item;
 
-                    -----------------------------------
+
+   ------------
+   -- Length --
+   ------------
 
    function Length (List : POSIX_String_List)
                     return Natural is
@@ -185,7 +226,10 @@ package body POSIX is
       return List.Last;
    end Length;
 
-                    -----------------------------------
+
+   -----------
+   -- Value --
+   -----------
 
    function Value (List  : POSIX_String_List;
                    Index : Positive)
@@ -195,8 +239,9 @@ package body POSIX is
    end Value;
 
 
-
-   --  Option Sets
+   ---------------
+   -- Empty_Set --
+   ---------------
 
    function Empty_Set
      return Option_Set is
@@ -204,7 +249,10 @@ package body POSIX is
       return Option_Set'(0);
    end Empty_Set;
 
-                    -----------------------------------
+
+   ---------
+   -- "+" --
+   ---------
 
    function "+" (L, R : Option_Set)
                  return Option_Set is
@@ -213,7 +261,10 @@ package body POSIX is
       return Option_Set (L or R);
    end "+";
 
-                    -----------------------------------
+
+   ---------
+   -- "-" --
+   ---------
 
    function "-" (L, R : Option_Set)
                  return Option_Set
@@ -227,20 +278,30 @@ package body POSIX is
 
    --  Exceptions and error codes
 
+   --------------------
+   -- Get_Error_Code --
+   --------------------
+
    function Get_Error_Code
      return Error_Code is
    begin
       return Errno;
    end Get_Error_Code;
 
-                    -----------------------------------
+
+   --------------------
+   -- Set_Error_Code --
+   --------------------
 
    procedure Set_Error_Code (Error : in Error_Code) is
    begin
       Errno := Error;
    end Set_Error_Code;
 
-                    -----------------------------------
+
+   --------------------
+   -- Is_POSIX_Error --
+   --------------------
 
    function Is_POSIX_Error (Error : Error_Code)
                             return Boolean is
@@ -320,7 +381,10 @@ package body POSIX is
       end if;
    end Is_POSIX_Error;
 
-                    -----------------------------------
+
+   -----------
+   -- Image --
+   -----------
 
    function Image (Error : Error_Code)
                    return String is
@@ -403,13 +467,20 @@ package body POSIX is
 
    --  System Identification
 
+   -----------------
+   -- System_Name --
+   -----------------
+
    function System_Name
      return POSIX_String is
    begin
       return System_Name_Constant;
    end System_Name;
 
-                    -----------------------------------
+
+   ---------------
+   -- Node_Name --
+   ---------------
 
    function Node_Name
      return POSIX_String is
@@ -417,7 +488,10 @@ package body POSIX is
       return Node_Name_Constant;
    end Node_Name;
 
-                    -----------------------------------
+
+   -------------
+   -- Release --
+   -------------
 
    function Release
      return POSIX_String is
@@ -425,7 +499,10 @@ package body POSIX is
       return Release_Constant;
    end Release;
 
-                    -----------------------------------
+
+   -------------
+   -- Version --
+   -------------
 
    function Version
      return POSIX_String is
@@ -433,7 +510,10 @@ package body POSIX is
       return Version_Constant;
    end Version;
 
-                    -----------------------------------
+
+   -------------
+   -- Machine --
+   -------------
 
    function Machine
      return POSIX_String is
