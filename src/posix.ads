@@ -33,8 +33,8 @@ package POSIX is
 
    --  I/O Count
 
-   type IO_Count is new Natural range 0 .. Natural'last;
-   subtype IO_count_Maximum is IO_Count range 32767 .. IO_Count'last;
+   type IO_Count is new Natural range 0 .. Natural'Last;
+   subtype IO_count_Maximum is IO_Count range 32767 .. IO_Count'Last;
 
 
 
@@ -293,7 +293,7 @@ package POSIX is
 
 
 
-     --  System Identification
+   --  System Identification
 
    function System_Name
      return POSIX_String;
@@ -318,13 +318,13 @@ private
 
    type POSIX_String_List is
       record
-         last    : natural := 0;
-         length  : natural := 0;
-         strings : String_Ptr_Array_Ptr := NULL;
+         Last    : Natural := 0;
+         Length  : Natural := 0;
+         Strings : String_Ptr_Array_Ptr := null;
       end record;
 
    Empty_String_List : constant POSIX_String_List
-     := POSIX_String_List'(0, 0, NULL);
+     := POSIX_String_List'(0, 0, null);
 
    type Option_Set is new Win32.UINT;
 

@@ -19,7 +19,7 @@ package POSIX_Signals is
                    return Signal;
 
 
-  --  Standard Signals (required)
+   --  Standard Signals (required)
 
    Signal_Null, SIGNULL                           : constant Signal
      := 0;
@@ -43,7 +43,7 @@ package POSIX_Signals is
      := 15;
 
 
-  --  Signal Handler References
+   --  Signal Handler References
 
 --   Signal_Abort_Ref                    : constant System.Address
 --       := System.Address'Ref (C_Signal_Values.Signal_Abort);
@@ -184,9 +184,9 @@ package POSIX_Signals is
 
 private
 
-  type Signal_Set is
-    record
-      Values : Integer := 0;
-    end record;
+   type Signal_Set is
+      record
+         Values : Integer := 0;
+      end record;
 
 end POSIX_Signals;

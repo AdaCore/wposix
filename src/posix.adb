@@ -54,9 +54,9 @@ package body POSIX is
 
    function To_POSIX_String (Str : String)
                              return POSIX_String is
-      Posix_Str : POSIX_String (Str'range);
+      Posix_Str : POSIX_String (Str'Range);
    begin
-      for I in Posix_Str'range loop
+      for I in Posix_Str'Range loop
          Posix_Str (I) := To_POSIX_Character (Str (I));
       end loop;
       return Posix_Str;
@@ -69,9 +69,9 @@ package body POSIX is
 
    function To_String (Str : POSIX_String)
                        return String is
-      Sstr : String (Str'range);
+      Sstr : String (Str'Range);
    begin
-      for I in Sstr'range loop
+      for I in Sstr'Range loop
          Sstr (I) := To_Character (Str (I));
       end loop;
       return Sstr;
@@ -88,7 +88,7 @@ package body POSIX is
    function Is_Filename (Str : POSIX_String)
                          return Boolean is
    begin
-      if Str = (Str'range => ' ') or else Str = "." or else Str = ".." then
+      if Str = (Str'Range => ' ') or else Str = "." or else Str = ".." then
          return False;
       else
          return True;
@@ -104,7 +104,7 @@ package body POSIX is
    function Is_Pathname (Str : POSIX_String)
                          return Boolean is
    begin
-      if Str = (Str'range => ' ') then
+      if Str = (Str'Range => ' ') then
          return False;
       else
          return True;
@@ -188,7 +188,7 @@ package body POSIX is
          --  we don't have to copy the content if empty
          --  i.e. if we insert the first item
          if List.Last > 1 then
-            Strings (1 .. List.Last-1) := List.Strings (1 .. List.Last-1);
+            Strings (1 .. List.Last - 1) := List.Strings (1 .. List.Last - 1);
             Free (List.Strings);
          end if;
 

@@ -275,7 +275,7 @@ package body POSIX_Files is
 
       loop
          Action  (Directory_Entry (Data), Quit);
-         exit when quit;
+         exit when Quit;
 
          Result := Win32.Winbase.FindNextFile (Handle,
                                                Data'Unchecked_Access);
@@ -320,8 +320,8 @@ package body POSIX_Files is
    begin
       Attributes := Win32.Winbase.GetFileAttributes (Win32.Addr (L_Pathname));
       if Attributes = 16#FFFF_FFFF# then
-        POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
-                                   "Change_Permissions");
+         POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
+                                    "Change_Permissions");
       end if;
 
       if Permission (Owner_Read) or else Permission (Owner_Write) then
@@ -383,9 +383,9 @@ package body POSIX_Files is
 
       Result := Win32.Winbase.GetFileTime
         (Handle,
-         Current_Creation_Filetime'Unchecked_Access,
-         Current_Access_Filetime'Unchecked_Access,
-         Current_Modification_Filetime'Unchecked_Access);
+         Current_Creation_FileTime'Unchecked_Access,
+         Current_Access_FileTime'Unchecked_Access,
+         Current_Modification_FileTime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
 
       Result := Win32.Winbase.SystemTimeToFileTime
@@ -393,8 +393,8 @@ package body POSIX_Files is
          Current_Access_FileTime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
       Result := Win32.Winbase.LocalFileTimeToFileTime
-        (Current_Access_Filetime'Unchecked_Access,
-         UTC_Access_Filetime'Unchecked_Access);
+        (Current_Access_FileTime'Unchecked_Access,
+         UTC_Access_FileTime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
 
       Result := Win32.Winbase.SystemTimeToFileTime
@@ -402,8 +402,8 @@ package body POSIX_Files is
          Current_Modification_FileTime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
       Result := Win32.Winbase.LocalFileTimeToFileTime
-        (Current_Modification_Filetime'Unchecked_Access,
-         UTC_Modification_Filetime'Unchecked_Access);
+        (Current_Modification_FileTime'Unchecked_Access,
+         UTC_Modification_FileTime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
 
       Result := Win32.Winbase.SetFileTime
@@ -501,9 +501,7 @@ package body POSIX_Files is
    ---------------
 
    function Existence (Pathname : in POSIX.Pathname)
-                       return POSIX.Error_Code
-   is
-      Result : Boolean;
+                       return POSIX.Error_Code is
    begin
       if Is_File_Present (Pathname) then
          return POSIX.No_Error;

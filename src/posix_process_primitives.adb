@@ -42,7 +42,7 @@ package body POSIX_Process_Primitives is
    -- Open_Template --
    -------------------
 
-   procedure Open_Template (Template: in out Process_Template) is
+   procedure Open_Template (Template : in out Process_Template) is
    begin
       if Template.Is_Open then
          Close_Template (Template);
@@ -93,7 +93,7 @@ package body POSIX_Process_Primitives is
    -- Close_Template --
    --------------------
 
-   procedure Close_Template (Template: in out Process_Template) is
+   procedure Close_Template (Template : in out Process_Template) is
 
       P      : File_Request_Access;
       Result : Win32.BOOL;
@@ -148,10 +148,10 @@ package body POSIX_Process_Primitives is
 
       --  close the handle of the Process and Primary Thread.
       Result := Win32.Winbase.CloseHandle
-        (Template.Process_Informations.HProcess);
+        (Template.Process_Informations.hProcess);
 
       Result := Win32.Winbase.CloseHandle
-        (Template.Process_Informations.HThread);
+        (Template.Process_Informations.hThread);
 
       Free (Template.Process_Informations);
    end Close_Template;
@@ -161,7 +161,7 @@ package body POSIX_Process_Primitives is
    -- Set_Keep_Effective_IDs --
    ----------------------------
 
-   procedure Set_Keep_Effective_IDs (Template: in out Process_Template) is
+   procedure Set_Keep_Effective_IDs (Template : in out Process_Template) is
    begin
       Check_Open (Template, "Set_Keep_Effective_IDs");
       Template.Keep_Effective_IDs := True;
@@ -369,17 +369,17 @@ package body POSIX_Process_Primitives is
             when Open =>
                case P.File is
                   when POSIX_IO.Standard_Input =>
-                     SI.HStdInput := Open_File (To_String (P.Name),
+                     SI.hStdInput := Open_File (To_String (P.Name),
                                                 P.Mode);
-                     P.OHandle := SI.HStdInput;
+                     P.OHandle := SI.hStdInput;
                   when POSIX_IO.Standard_Output =>
-                     SI.HStdOutput := Create_File (To_String (P.Name),
+                     SI.hStdOutput := Create_File (To_String (P.Name),
                                                    P.Mode);
-                     P.OHandle := SI.HStdOutput;
+                     P.OHandle := SI.hStdOutput;
                   when POSIX_IO.Standard_Error =>
-                     SI.HStdError := Create_File (To_String (P.Name),
+                     SI.hStdError := Create_File (To_String (P.Name),
                                                   P.Mode);
-                     P.OHandle := SI.HStdError;
+                     P.OHandle := SI.hStdError;
                   when others =>
                      POSIX_Win32.Raise_Not_Yet_Implemented
                        ("Execute Template Open for non Std file");
@@ -388,17 +388,17 @@ package body POSIX_Process_Primitives is
             when Close =>
                case P.File is
                   when POSIX_IO.Standard_Input =>
-                     SI.HStdInput := Open_File (Null_Filename,
+                     SI.hStdInput := Open_File (Null_Filename,
                                                 POSIX_IO.Read_Only);
-                     P.CHandle := SI.HStdInput;
+                     P.CHandle := SI.hStdInput;
                   when POSIX_IO.Standard_Output =>
-                     SI.HStdOutput := Create_File (Null_Filename,
+                     SI.hStdOutput := Create_File (Null_Filename,
                                                    POSIX_IO.Write_Only);
-                     P.CHandle := SI.HStdOutput;
+                     P.CHandle := SI.hStdOutput;
                   when POSIX_IO.Standard_Error =>
-                     SI.HStdError := Create_File (Null_Filename,
+                     SI.hStdError := Create_File (Null_Filename,
                                                   POSIX_IO.Write_Only);
-                     P.CHandle := SI.HStdError;
+                     P.CHandle := SI.hStdError;
                   when others =>
                      POSIX_Win32.Raise_Not_Yet_Implemented
                        ("Execute Template Close for non Std file");
@@ -455,13 +455,13 @@ package body POSIX_Process_Primitives is
    begin
       Check_Open (Template, "Start_Process");
 
-      Startup_Informations.Cb          := Win32.Winbase.STARTUPINFO'Size / 8;
-      Startup_Informations.LpReserved  := null;
-      Startup_Informations.LpDesktop   := null;
-      Startup_Informations.LpTitle     := null;
-      Startup_Informations.DwFlags     := Win32.Winbase.STARTF_USESTDHANDLES;
-      Startup_Informations.CbReserved2 := 0;
-      Startup_Informations.LpReserved2 := null;
+      Startup_Informations.cb          := Win32.Winbase.STARTUPINFO'Size / 8;
+      Startup_Informations.lpReserved  := null;
+      Startup_Informations.lpDesktop   := null;
+      Startup_Informations.lpTitle     := null;
+      Startup_Informations.dwFlags     := Win32.Winbase.STARTF_USESTDHANDLES;
+      Startup_Informations.cbReserved2 := 0;
+      Startup_Informations.lpReserved2 := null;
 
       Execute_Template (Template, Startup_Informations);
 
@@ -570,7 +570,7 @@ package body POSIX_Process_Primitives is
                                           null,
                                           Win32.DWORD (Pathname'Length),
                                           Win32.Addr (Pathname),
-                                          LpFilePart'Access);
+                                          lpFilePart'Access);
 
       if Pathname (1) = ASCII.Nul then
          Start_Process (Child, Filename,
@@ -604,7 +604,7 @@ package body POSIX_Process_Primitives is
    begin
       Check_Open (Template, "Start_Process_Search");
 
-      Search_Filename_In_Env:
+      Search_Filename_In_Env :
       declare
          Old_Environment : POSIX_Process_Environment.Environment;
       begin
@@ -619,7 +619,7 @@ package body POSIX_Process_Primitives is
                                              null,
                                              Win32.DWORD (Pathname'Length),
                                              Win32.Addr (Pathname),
-                                             LpFilePart'Access);
+                                             lpFilePart'Access);
 
          POSIX_Process_Environment.Copy_To_Current_Environment
            (Old_Environment);
@@ -708,7 +708,7 @@ package body POSIX_Process_Primitives is
    -- Termination_Signal_Of --
    ---------------------------
 
-   function Termination_Signal_Of (Status: Termination_Status)
+   function Termination_Signal_Of (Status : Termination_Status)
                                    return POSIX_Signals.Signal is
    begin
       if not Status_Available (Status)
@@ -724,7 +724,7 @@ package body POSIX_Process_Primitives is
    -- Stopping_Signal_Of --
    ------------------------
 
-   function Stopping_Signal_Of (Status: Termination_Status)
+   function Stopping_Signal_Of (Status : Termination_Status)
                                 return POSIX_Signals.Signal is
    begin
       if not Status_Available (Status)
@@ -763,17 +763,17 @@ package body POSIX_Process_Primitives is
       if Child = Null_Process_ID then
          Set_Error_Code (No_Child_Process);
          raise POSIX_Error;
-      elsif Process_Informations.DwProcessId = -1 then
+      elsif Process_Informations.dwProcessId = -1 then
          Status.Exit_Status := Exit_Stat (Failed_Creation_Exit);
          return;
       end if;
 
       if Block then
          Retcode := Win32.Winbase.WaitForSingleObject
-           (Process_Informations.Hprocess, Win32.Winbase.INFINITE);
+           (Process_Informations.hProcess, Win32.Winbase.INFINITE);
       else
          Retcode := Win32.Winbase.WaitForSingleObject
-           (Process_Informations.Hprocess, 0);
+           (Process_Informations.hProcess, 0);
          if Retcode = Win32.Winbase.WAIT_TIMEOUT then
             Status := Termination_Status'(Null_Process_ID, 0);
             return;
@@ -783,7 +783,7 @@ package body POSIX_Process_Primitives is
       Status.Pid := Child;
 
       Result := Win32.Winbase.GetExitCodeProcess
-        (Process_Informations.Hprocess,
+        (Process_Informations.hProcess,
          Process_Status'Access);
       Status.Exit_Status := Exit_Stat (Process_Status);
 

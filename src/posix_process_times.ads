@@ -38,7 +38,7 @@ private
 
    type Process_Times is
       record
-         Creation_Time        : Win32.Winbase.Filetime;
+         Creation_Time        : Win32.Winbase.FILETIME;
          User_Time            : Tick_Count;
          System_Time          : Tick_Count;
          Children_User_Time   : Tick_Count;

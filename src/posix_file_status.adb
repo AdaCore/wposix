@@ -31,7 +31,7 @@ package body POSIX_File_Status is
 
       File_Attributes : Win32.DWORD;
       File            : POSIX_IO.File_Descriptor;
-      Handle          : Win32.Winnt.Handle;
+      Handle          : Win32.Winnt.HANDLE;
       File_Status     : Status;
       Find_Data       : aliased Win32.Winbase.WIN32_FIND_DATA;
 
@@ -53,7 +53,7 @@ package body POSIX_File_Status is
             File_Status.Last_Write_Time  := Find_Data.ftLastWriteTime;
             File_Status.File_Size_Low    := Find_Data.nFileSizeLow;
             File_Status.File_Size_High   := Find_Data.nFileSizeHigh;
-            Result := Win32.Winbase.Findclose (Handle);
+            Result := Win32.Winbase.FindClose (Handle);
          else
             File := POSIX_IO.Open (Pathname, POSIX_IO.Read_Only);
             File_Status := Get_File_Status (File);

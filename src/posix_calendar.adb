@@ -171,7 +171,7 @@ package body POSIX_Calendar is
       Local_Time.wMonth  := Win32.WORD (Month);
       Local_Time.wDay    := Win32.WORD (Day);
 
-      Local_Time.wHour   := Win32.WORD (LSec / 3600);
+      Local_Time.wHour   := Win32.WORD (Lsec / 3600);
       Lsec := Lsec rem 3600;
       Local_Time.wMinute := Win32.WORD (Lsec / 60);
       Local_Time.wSecond := Win32.WORD (Lsec rem 60);

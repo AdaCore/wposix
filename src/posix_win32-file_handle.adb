@@ -56,7 +56,7 @@ package body POSIX_Win32.File_Handle is
                return I;
             end if;
          end loop;
-         -- return POSIX_IO.File_Descriptor (-1);
+         --  return POSIX_IO.File_Descriptor (-1);
          raise POSIX.POSIX_Error;
       end Get_New;
 

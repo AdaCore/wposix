@@ -162,7 +162,7 @@ private
    type File_Request;
    type File_Request_Access is access File_Request;
 
-   type File_Request (Action: File_Action) is
+   type File_Request (Action : File_Action) is
       record
          Next : File_Request_Access;
          File : POSIX_IO.File_Descriptor;

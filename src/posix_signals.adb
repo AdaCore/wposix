@@ -49,7 +49,7 @@ package body POSIX_Signals is
       elsif Sig = Signal_Floating_Point_Error then
          return "SIGNAL_FLOATING_POINT_ERROR";
       elsif Sig = Signal_Illegal_Instruction then
-      return "SIGNAL_ILLEGAL_INSTRUCTION";
+         return "SIGNAL_ILLEGAL_INSTRUCTION";
       elsif Sig = Signal_Interrupt then
          return "SIGNAL_INTERRUPT";
       elsif Sig = Signal_Segmentation_Violation then
@@ -165,7 +165,7 @@ package body POSIX_Signals is
         Ada.Unchecked_Conversion (POSIX_Process_Identification.Process_ID,
                                   Win32.Winbase.PROCESS_INFORMATION);
    begin
-      return To_Process_Information (Process).HProcess;
+      return To_Process_Information (Process).hProcess;
    end Get_Process_Handle;
 
    -----------------

@@ -12,7 +12,7 @@ package body POSIX_Process_Times is
    -- Filetime_To_Tick --
    ----------------------
 
-   function Filetime_To_Tick (Filetime : in Win32.Winbase.Filetime)
+   function Filetime_To_Tick (Filetime : in Win32.Winbase.FILETIME)
                               return Tick_Count
    is
       use type Win32.ULONG;
@@ -20,7 +20,7 @@ package body POSIX_Process_Times is
 
       --  ??? change the code to handle DwHighDateTime (see code in v1.4)
    begin
-      return Tick_Count (Filetime.DwLowDateTime / Hundred_Nano_To_Tick);
+      return Tick_Count (Filetime.dwLowDateTime / Hundred_Nano_To_Tick);
    end Filetime_To_Tick;
 
    -----------------------
@@ -42,8 +42,8 @@ package body POSIX_Process_Times is
      return Process_Times
    is
       Result                   : Win32.BOOL;
-      Creation_Time, Exit_Time : aliased Win32.Winbase.Filetime;
-      Kernel_Time, User_Time   : aliased Win32.Winbase.Filetime;
+      Creation_Time, Exit_Time : aliased Win32.Winbase.FILETIME;
+      Kernel_Time, User_Time   : aliased Win32.Winbase.FILETIME;
       PT                       : Process_Times;
    begin
       Result := Win32.Winbase.GetProcessTimes
@@ -73,8 +73,8 @@ package body POSIX_Process_Times is
       use type Win32.DWORD;
       Ok      : Win32.BOOL;
       Ctimes  : aliased Win32.Winbase.SYSTEMTIME;
-      Now     : aliased Win32.Winbase.Filetime;
-      Elapsed : Win32.Winbase.Filetime;
+      Now     : aliased Win32.Winbase.FILETIME;
+      Elapsed : Win32.Winbase.FILETIME;
    begin
       Win32.Winbase.GetSystemTime (Ctimes'Unchecked_Access);
       Ok := Win32.Winbase.SystemTimeToFileTime (Ctimes'Unchecked_Access,

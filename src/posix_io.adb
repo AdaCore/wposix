@@ -13,6 +13,48 @@ with POSIX_Win32.File_Handle;
 
 package body POSIX_IO is
 
+   type IO_Data is
+      record
+         Mode          : File_Mode;
+         Options       : Open_Option_Set;
+         Close_On_Exec : Boolean;
+      end record;
+
+   type Files_Data_Set is array (File_Descriptor'Range) of IO_Data;
+
+   protected IO_Info is
+      function  Get (FD : in File_Descriptor) return IO_Data;
+      procedure Set (FD : in File_Descriptor; IOD     : in IO_Data);
+      procedure Set (FD : in File_Descriptor; Options : in Open_Option_Set);
+      procedure Set (FD : in File_Descriptor; COE     : in Boolean);
+   private
+      Files_Data : Files_Data_Set;
+   end IO_Info;
+
+   protected body IO_Info is
+
+      function  Get (FD : in File_Descriptor) return IO_Data is
+      begin
+         return Files_Data (FD);
+      end Get;
+
+      procedure Set (FD : in File_Descriptor; IOD : in IO_Data) is
+      begin
+         Files_Data (FD) := IOD;
+      end Set;
+
+      procedure Set (FD : in File_Descriptor; Options : in Open_Option_Set) is
+      begin
+         Files_Data (FD).Options := Options;
+      end Set;
+
+      procedure Set (FD : in File_Descriptor; COE     : in Boolean) is
+      begin
+         Files_Data (FD).Close_On_Exec := COE;
+      end Set;
+
+   end IO_Info;
+
 
    --  Operations to open or close file descriptors
 
@@ -104,7 +146,13 @@ package body POSIX_IO is
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
          POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error, "Open");
       end if;
-      return POSIX_Win32.File_Handle.Open (Handle);
+
+      declare
+         FD : File_Descriptor := POSIX_Win32.File_Handle.Open (Handle);
+      begin
+         IO_Info.Set (FD, (Mode, Options, False));
+         return FD;
+      end;
    end Open;
 
 
@@ -160,7 +208,13 @@ package body POSIX_IO is
          POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
                                     "Open_Or_Create");
       end if;
-      return POSIX_Win32.File_Handle.Open (Handle);
+
+      declare
+         FD : File_Descriptor := POSIX_Win32.File_Handle.Open (Handle);
+      begin
+         IO_Info.Set (FD, (Mode, Options, False));
+         return FD;
+      end;
    end Open_Or_Create;
 
 
@@ -520,8 +574,10 @@ package body POSIX_IO is
       Mode       :    out File_Mode;
       Options    :    out Open_Option_Set)
    is
+      IOD : IO_Data := IO_Info.Get (File);
    begin
-      null;
+      Mode    := IOD.Mode;
+      Options := IOD.Options;
    end Get_File_Control;
 
 
@@ -533,7 +589,7 @@ package body POSIX_IO is
      (File    : in     File_Descriptor;
       Options : in     Open_Option_Set) is
    begin
-      null;
+      IO_Info.Set (File, Options);
    end Set_File_Control;
 
 
@@ -542,9 +598,11 @@ package body POSIX_IO is
    -----------------------
 
    function Get_Close_On_Exec (File : File_Descriptor)
-                               return Boolean is
+                               return Boolean
+   is
+      IOD : IO_Data := IO_Info.Get (File);
    begin
-      return False;
+      return IOD.Close_On_Exec;
    end Get_Close_On_Exec;
 
 
@@ -556,7 +614,7 @@ package body POSIX_IO is
      (File : in     File_Descriptor;
       To   : in     Boolean := True) is
    begin
-      null;
+      IO_Info.Set (File, COE => To);
    end Set_Close_On_Exec;
 
 end POSIX_IO;

@@ -27,7 +27,7 @@ package body POSIX_Process_Identification is
    begin
       return Process_ID'(System.Null_Address,
                          System.Null_Address,
-                         Win32.Winbase.GetCurrentProcessID,
+                         Win32.Winbase.GetCurrentProcessId,
                          0);
    end Get_Process_ID;
 
@@ -52,7 +52,7 @@ package body POSIX_Process_Identification is
    is
       use Ada;
    begin
-      return Strings.Fixed.Trim (Win32.DWORD'Image (ID.DwProcessId),
+      return Strings.Fixed.Trim (Win32.DWORD'Image (ID.dwProcessId),
                                  Strings.Left);
    end Image;
 

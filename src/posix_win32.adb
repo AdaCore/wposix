@@ -36,7 +36,7 @@ package body POSIX_Win32 is
       use type Win32.INT;
    begin
       if RETCODE = Retcode_Error then
-         POSIX.Set_Error_Code (POSIX.Error_Code (Win32.Winbase.getLastError));
+         POSIX.Set_Error_Code (POSIX.Error_Code (Win32.Winbase.GetLastError));
          Ada.Exceptions.Raise_Exception
            (POSIX.POSIX_Error'Identity,
             Message => Fct &
@@ -53,7 +53,7 @@ package body POSIX_Win32 is
    is
       use type Win32.BOOL;
    begin
-      if RETCODE = Win32.False then
+      if RETCODE = Win32.FALSE then
          POSIX.Set_Error_Code (POSIX.Error_Code (Win32.Winbase.GetLastError));
          Ada.Exceptions.Raise_Exception
            (POSIX.POSIX_Error'Identity,
@@ -103,9 +103,9 @@ package body POSIX_Win32 is
                begin
                   return Win32.Winbase.GetBinaryType
                     (Win32.Addr (L_Pathname),
-                     BinaryType'Unchecked_Access)        = Win32.True;
+                     BinaryType'Unchecked_Access)        = Win32.TRUE;
                end;
-            elsif Ext =".bat" then
+            elsif Ext = ".bat" then
                return True;
             else
                return False;
@@ -223,7 +223,7 @@ package body POSIX_Win32 is
       function Get_Process_ID (H : Win32.Winnt.HANDLE)
                                return PPI.Process_ID
       is
-         use type Win32.Winnt.Handle;
+         use type Win32.Winnt.HANDLE;
          PLa, PLa_Prev : P_List_Access;
       begin
          PLa := Process;

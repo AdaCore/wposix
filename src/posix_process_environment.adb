@@ -31,7 +31,7 @@ package body POSIX_Process_Environment is
    package Chars_Ptr is new Interfaces.C.Pointers
      (Index              => Natural,
       Element            => Win32.CHAR,
-      Element_Array      => Win32.Char_Array,
+      Element_Array      => Win32.CHAR_Array,
       Default_Terminator => Win32.Nul);
 
    use type Win32.CHAR;
@@ -75,7 +75,7 @@ package body POSIX_Process_Environment is
    end Check_Name;
 
 
-   type Char_Array_Access is access Win32.Char_Array;
+   type Char_Array_Access is access Win32.CHAR_Array;
 
    ---------------------
    -- New_Environment --
@@ -84,7 +84,7 @@ package body POSIX_Process_Environment is
    function New_Environment (Size : in Positive := 2)
                              return Environment
    is
-      Char_Array : Char_Array_Access := new Win32.Char_Array (1 .. Size);
+      Char_Array : Char_Array_Access := new Win32.CHAR_Array (1 .. Size);
    begin
       Char_Array.all := (others => Win32.Nul);
       return Char_Array (1)'Access;
@@ -389,7 +389,7 @@ package body POSIX_Process_Environment is
       Check_Name (Name, "Delete_Environment_Variable");
       Result := Win32.Winbase.SetEnvironmentVariable (Win32.Addr (L_Name),
                                                       null);
-      if Result = Win32.False and
+      if Result = Win32.FALSE and
         Win32.Winbase.GetLastError /=
         Win32.Winerror.ERROR_ENVVAR_NOT_FOUND then
          POSIX_Win32.Check_Result (Result, "Delete_Environment_Variable");
@@ -445,16 +445,16 @@ package body POSIX_Process_Environment is
    is
 
       use type Chars_Ptr.Pointer;
-      use type Win32.Char_Array;
-      use type Interfaces.C.Ptrdiff_T;
+      use type Win32.CHAR_Array;
+      use type Interfaces.C.ptrdiff_t;
 
       Pointer : Chars_Ptr.Pointer := Chars_Ptr.Pointer (Env);
       Start   : Chars_Ptr.Pointer;
 
-      function To_POSIX_String (CA : in Win32.Char_Array)
+      function To_POSIX_String (CA : in Win32.CHAR_Array)
                                 return POSIX_String is
       begin
-         return POSIX.To_Posix_String
+         return POSIX.To_POSIX_String
            (Interfaces.C.To_Ada (Win32.To_C (CA & Win32.Nul)));
       end To_POSIX_String;
 
@@ -479,7 +479,7 @@ package body POSIX_Process_Environment is
          end loop Search_Name_End;
 
          declare
-            Name : constant POSIX.POSIX_String := To_Posix_String
+            Name : constant POSIX.POSIX_String := To_POSIX_String
               (Chars_Ptr.Value (Start, Pointer - Start));
          begin
             Chars_Ptr.Increment (Pointer);
@@ -492,7 +492,7 @@ package body POSIX_Process_Environment is
             end loop Search_Value_End;
 
             declare
-               Value : constant POSIX.POSIX_String := To_Posix_String
+               Value : constant POSIX.POSIX_String := To_POSIX_String
                  (Chars_Ptr.Value (Start, Pointer - Start));
                Quit : Boolean;
             begin
