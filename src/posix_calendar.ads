@@ -1,5 +1,7 @@
 
 --  $Id$
+--  Author : Pascal Obry
+--  pascal_obry@csi.com
 
 with Calendar;
 with Win32.Winbase;

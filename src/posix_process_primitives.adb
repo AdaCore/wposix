@@ -1,5 +1,7 @@
 
 --  $Id$
+--  Author : Pascal Obry
+--  pascal_obry@csi.com
 
 with Ada.Unchecked_Deallocation;
 with Ada.Unchecked_Conversion;
