@@ -13,8 +13,8 @@ package body POSIX is
 
    System_Name_Constant :  constant POSIX_String := "Windows-NT";
    Node_Name_Constant   :  constant POSIX_String := "undefined";
-   Release_Constant     :  constant POSIX_String := "1.0";
-   Version_Constant     :  constant POSIX_String := "1.0";
+   Release_Constant     :  constant POSIX_String := "1.5";
+   Version_Constant     :  constant POSIX_String := "1.5";
    Machine_Constant     :  constant POSIX_String := "i586";
 
    Errno : Error_Code;
