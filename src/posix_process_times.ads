@@ -3,6 +3,8 @@
 --  Author : Pascal Obry
 --  pascal_obry@csi.com
 
+with Win32.Winbase;
+
 package POSIX_Process_Times is
 
    Ticks_Per_Second : constant := 1000;
@@ -34,12 +36,13 @@ package POSIX_Process_Times is
 
 private
 
-  type Process_Times is
-    record
-      User_Time            : Tick_Count;
-      System_Time          : Tick_Count;
-      Children_User_Time   : Tick_Count;
-      Children_System_Time : Tick_Count;
-    end record;
+   type Process_Times is
+      record
+         Creation_Time        : Win32.Winbase.Filetime;
+         User_Time            : Tick_Count;
+         System_Time          : Tick_Count;
+         Children_User_Time   : Tick_Count;
+         Children_System_Time : Tick_Count;
+      end record;
 
 end POSIX_Process_Times;
