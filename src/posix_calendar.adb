@@ -1,6 +1,6 @@
 
 --  $Id$
-
+--  Author : Pascal Obry
 with Interfaces.C;
 with System;
 

@@ -1,6 +1,6 @@
 
 --  $Id$
-
+--  Author : Pascal Obry
 with Win32;
 
 with POSIX;
