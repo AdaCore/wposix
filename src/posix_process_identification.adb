@@ -72,6 +72,10 @@ package body POSIX_Process_Identification is
 
    --  Process Group Identification
 
+   --------------------------
+   -- Get_Process_Group_ID --
+   --------------------------
+
    function Get_Process_Group_ID
      return Process_Group_ID is
    begin
@@ -184,7 +188,7 @@ package body POSIX_Process_Identification is
       Result := Win32.Winbase.GetUserName (Win32.Addr (Buffer),
                                            Size'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Get_Login_Name");
-      return POSIX.To_POSIX_String (Buffer (1 .. Positive (Size)));
+      return POSIX.To_POSIX_String (Buffer (1 .. Positive (Size) - 1));
    end Get_Login_Name;
 
 
