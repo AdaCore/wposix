@@ -3,7 +3,6 @@
 --  Author : Pascal Obry
 --  pascal_obry@csi.com
 
-with POSIX;
 with POSIX_Process_Identification;
 
 package POSIX_Signals is

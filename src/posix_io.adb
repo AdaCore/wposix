@@ -6,7 +6,6 @@
 with Win32.Winbase;
 with Win32.Winnt;
 
-with POSIX_Signals;
 with POSIX_File_Status;
 with POSIX_Win32;
 with POSIX_Win32.File_Handle;

@@ -3,8 +3,6 @@
 --  Author : Pascal Obry
 --  pascal_obry@csi.com
 
-with System;
-
 package body POSIX_Permissions is
 
    Dummy_Process_Permission_Set : Permission_Set := Owner_Permission_Set;

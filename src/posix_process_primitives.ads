@@ -7,7 +7,6 @@ with Ada.Strings.Unbounded;
 
 with POSIX;
 with POSIX_IO;
-with POSIX_Permissions;
 with POSIX_Process_Environment;
 with POSIX_Process_Identification;
 with POSIX_Signals;

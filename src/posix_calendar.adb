@@ -3,9 +3,6 @@
 --  Author : Pascal Obry
 --  pascal_obry@csi.com
 
-with Interfaces.C;
-with System;
-
 package body POSIX_Calendar is
 
    --  Time information
