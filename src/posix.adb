@@ -496,16 +496,16 @@ package body POSIX is
    begin
       Get_Version_Info (VersionInformation);
 
-      case VersionInformation.DwPlatformId is
+      case VersionInformation.dwPlatformId is
 
          when Win32.Winbase.VER_PLATFORM_WIN32S   =>
-            return To_Posix_String ("Win32s on Windows 3.1");
+            return To_POSIX_String ("Win32s on Windows 3.1");
          when 1 =>
-            return To_Posix_String ("Win32 on Windows 95");
+            return To_POSIX_String ("Win32 on Windows 95");
          when Win32.Winbase.VER_PLATFORM_WIN32_NT =>
-            return To_Posix_String ("Windows NT");
+            return To_POSIX_String ("Windows NT");
          when others =>
-            return To_Posix_String ("UNKNOWN !!!");
+            return To_POSIX_String ("UNKNOWN !!!");
 
       end case;
 
@@ -562,7 +562,7 @@ package body POSIX is
       Get_Version_Info (VersionInformation);
 
       return Remove_First
-        (Win32.DWORD'Image (VersionInformation.DwMinorVersion));
+        (Win32.DWORD'Image (VersionInformation.dwMinorVersion));
 
    exception
       when others =>
@@ -579,7 +579,7 @@ package body POSIX is
       Get_Version_Info (VersionInformation);
 
       return Remove_First
-        (Win32.DWORD'Image (VersionInformation.DwMajorVersion));
+        (Win32.DWORD'Image (VersionInformation.dwMajorVersion));
 
    exception
       when others =>
@@ -596,7 +596,7 @@ package body POSIX is
       Win32.Winbase.GetSystemInfo (SystemInfo'Unchecked_Access);
 
       return Remove_First
-        (Win32.DWORD'Image (SystemInfo.DwProcessorType));
+        (Win32.DWORD'Image (SystemInfo.dwProcessorType));
    end Machine;
 
 end POSIX;
