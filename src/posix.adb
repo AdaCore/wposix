@@ -3,19 +3,16 @@
 --  Author : Pascal Obry
 --  pascal_obry@csi.com
 
+with Interfaces.C;
 with Unchecked_Deallocation;
 with System;
+
+with Win32.Winbase;
 
 package body POSIX is
 
 
    --  constants
-
-   System_Name_Constant :  constant POSIX_String := "Windows-NT";
-   Node_Name_Constant   :  constant POSIX_String := "undefined";
-   Release_Constant     :  constant POSIX_String := "R8";
-   Version_Constant     :  constant POSIX_String := "1.8";
-   Machine_Constant     :  constant POSIX_String := "i586";
 
    Errno : Error_Code;
 
@@ -468,14 +465,53 @@ package body POSIX is
 
    --  System Identification
 
+   procedure Get_Version_Info
+     (Version_Information : out Win32.Winbase.OSVERSIONINFOA)
+   is
+      use type Win32.BOOL;
+      VersionInformation : aliased Win32.Winbase.OSVERSIONINFOA;
+      Status             : Win32.BOOL;
+   begin
+      VersionInformation.dwOSVersionInfoSize :=
+        Win32.DWORD (VersionInformation'Size / System.Storage_Unit);
+
+      Status := Win32.Winbase.GetVersionEx
+        (VersionInformation'Unchecked_Access);
+
+      Version_Information := VersionInformation;
+
+      if Status = 0 then
+         raise POSIX_Error;
+      end if;
+   end Get_Version_Info;
+
    -----------------
    -- System_Name --
    -----------------
 
-   function System_Name
-     return POSIX_String is
+   function System_Name return POSIX_String is
+
+      VersionInformation : Win32.Winbase.OSVERSIONINFOA;
+
    begin
-      return System_Name_Constant;
+      Get_Version_Info (VersionInformation);
+
+      case VersionInformation.DwPlatformId is
+
+         when Win32.Winbase.VER_PLATFORM_WIN32S   =>
+            return To_Posix_String ("Win32s on Windows 3.1");
+         when 1 =>
+            return To_Posix_String ("Win32 on Windows 95");
+         when Win32.Winbase.VER_PLATFORM_WIN32_NT =>
+            return To_Posix_String ("Windows NT");
+         when others =>
+            return To_Posix_String ("UNKNOWN !!!");
+
+      end case;
+
+   exception
+      when others =>
+         return To_POSIX_String ("unknown");
    end System_Name;
 
 
@@ -483,43 +519,84 @@ package body POSIX is
    -- Node_Name --
    ---------------
 
-   function Node_Name
-     return POSIX_String is
+   function Node_Name return POSIX_String is
+
+      use type Interfaces.C.size_t;
+      use type Interfaces.C.unsigned_long;
+      use type Win32.BOOL;
+
+      Status : Win32.BOOL;
+      Buffer : aliased Interfaces.C.char_array
+        (1 .. Win32.Winbase.MAX_COMPUTERNAME_LENGTH + 1);
+      Size   : aliased Win32.DWORD := Buffer'Length;
+
    begin
-      return Node_Name_Constant;
+      Status := Win32.Winbase.GetComputerName
+        (LpBuffer => Buffer (1)'Unchecked_Access,
+         NSize    => Size'Unchecked_Access);
+
+      if Status = 0 then
+         return To_POSIX_String ("unknown");
+      end if;
+
+      return To_POSIX_String
+        (Interfaces.C.To_Ada (Buffer (1 .. Interfaces.C.size_t (Size + 1))));
    end Node_Name;
 
+   ------------------
+   -- Remove_First --
+   ------------------
+
+   function Remove_First (S : in String) return POSIX_String is
+   begin
+      return To_POSIX_String (S (2 .. S'Last));
+   end Remove_First;
 
    -------------
    -- Release --
    -------------
 
-   function Release
-     return POSIX_String is
+   function Release return POSIX_String is
+      VersionInformation : Win32.Winbase.OSVERSIONINFOA;
    begin
-      return Release_Constant;
-   end Release;
+      Get_Version_Info (VersionInformation);
 
+      return Remove_First
+        (Win32.DWORD'Image (VersionInformation.DwMinorVersion));
+
+   exception
+      when others =>
+         return To_POSIX_String ("unknown");
+   end Release;
 
    -------------
    -- Version --
    -------------
 
-   function Version
-     return POSIX_String is
+   function Version return POSIX_String is
+      VersionInformation : Win32.Winbase.OSVERSIONINFOA;
    begin
-      return Version_Constant;
-   end Version;
+      Get_Version_Info (VersionInformation);
 
+      return Remove_First
+        (Win32.DWORD'Image (VersionInformation.DwMajorVersion));
+
+   exception
+      when others =>
+         return To_POSIX_String ("unknown");
+   end Version;
 
    -------------
    -- Machine --
    -------------
 
-   function Machine
-     return POSIX_String is
+   function Machine return POSIX_String is
+      SystemInfo : aliased Win32.Winbase.SYSTEM_INFO;
    begin
-      return Machine_Constant;
+      Win32.Winbase.GetSystemInfo (SystemInfo'Unchecked_Access);
+
+      return Remove_First
+        (Win32.DWORD'Image (SystemInfo.DwProcessorType));
    end Machine;
 
 end POSIX;
