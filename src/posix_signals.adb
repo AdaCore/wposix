@@ -1,7 +1,11 @@
 
 --  $Id$
 
+with Ada.Unchecked_Conversion;
+
 with Win32;
+with Win32.Winbase;
+with Win32.Winnt;
 with POSIX_Win32;
 
 package body POSIX_Signals is
@@ -119,11 +123,30 @@ package body POSIX_Signals is
 
    --  Sending a Signal
 
+   function Get_Process_Handle
+     (Process : in POSIX_Process_Identification.Process_ID)
+      return Win32.Winnt.HANDLE
+   is
+      function To_Process_Information is new
+        Ada.Unchecked_Conversion (POSIX_Process_Identification.Process_ID,
+                                  Win32.Winbase.PROCESS_INFORMATION);
+   begin
+      return To_Process_Information (Process).HProcess;
+   end Get_Process_Handle;
+
    procedure Send_Signal
      (Process : in POSIX_Process_Identification.Process_ID;
-      Sig     : in Signal) is
+      Sig     : in Signal)
+   is
+      Result : Win32.BOOL;
    begin
-      POSIX_Win32.Raise_Not_Yet_Implemented ("Send_Signal");
+      if Sig = Signal_Terminate then
+         Result := Win32.Winbase.TerminateProcess
+           (Get_Process_Handle (Process),
+            Win32.UINT (Signal_Terminate));
+      else
+         POSIX_Win32.Raise_Not_Yet_Implemented ("Send_Signal " & Image (Sig));
+      end if;
    end Send_Signal;
 
                 -----------------------------------
@@ -132,15 +155,23 @@ package body POSIX_Signals is
      (Process : in POSIX_Process_Identification.Process_Group_ID;
       Sig     : in Signal) is
    begin
-      POSIX_Win32.Raise_Not_Yet_Implemented ("Send_Signal");
+      POSIX_Win32.Raise_Not_Yet_Implemented ("Send_Signal " & Image (Sig));
    end Send_Signal;
 
                 -----------------------------------
 
    procedure Send_Signal
-     (Sig     : in Signal) is
+     (Sig     : in Signal)
+   is
+      Result : Win32.BOOL;
    begin
-      POSIX_Win32.Raise_Not_Yet_Implemented ("Send_Signal");
+      if Sig = Signal_Terminate then
+         Result := Win32.Winbase.TerminateProcess
+           (Get_Process_Handle (POSIX_Process_Identification.Get_Process_ID),
+            Win32.UINT (Signal_Terminate));
+      else
+         POSIX_Win32.Raise_Not_Yet_Implemented ("Send_Signal " & Image (Sig));
+      end if;
    end Send_Signal;
 
 
