@@ -10,6 +10,27 @@ package body POSIX_Win32.File_Handle is
    type Handle_Table_Type is array (POSIX_IO.File_Descriptor)
      of Win32.Winnt.HANDLE;
 
+   protected Lock is
+      entry Get;
+      entry Release;
+   private
+      L : Boolean := False;
+   end Lock;
+
+   protected body Lock is
+
+      entry Get when L = False is
+      begin
+         L := True;
+      end Get;
+
+      entry Release when L = True is
+      begin
+         L := False;
+      end Release;
+
+   end Lock;
+
    Handle_Table : Handle_Table_Type := (others => Null_Handle);
 
    Number_File_Open : POSIX_IO.File_Descriptor := 3;
@@ -42,6 +63,7 @@ package body POSIX_Win32.File_Handle is
       Result : POSIX_IO.File_Descriptor;
 
    begin -- Open
+      Lock.Get;
       if Handle_Table (F) = Null_Handle then
          Result := F;
       else
@@ -49,6 +71,7 @@ package body POSIX_Win32.File_Handle is
       end if;
       Handle_Table (Result) := H;
       Number_File_Open := Number_File_Open + 1;
+      Lock.Release;
       return Result;
    end Open;
 
@@ -61,8 +84,10 @@ package body POSIX_Win32.File_Handle is
    is
       use type POSIX_IO.File_Descriptor;
    begin -- Close
+      Lock.Get;
       Handle_Table (F) := Null_Handle;
       Number_File_Open := Number_File_Open - 1;
+      Lock.Release;
    end Close;
 
 
