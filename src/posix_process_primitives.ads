@@ -10,6 +10,9 @@ with POSIX_Process_Environment;
 with POSIX_Process_Identification;
 with POSIX_Signals;
 
+with Win32.Winbase;
+with Win32.Winnt;
+
 package POSIX_Process_Primitives is
 
    --  Process Template
@@ -155,19 +158,20 @@ private
    type File_Action is (Open, Close, Duplicate);
 
    type File_Request;
-   type File_Request_Ptr is access File_Request;
+   type File_Request_Access is access File_Request;
 
    type File_Request (Action: File_Action) is
       record
-         Next : File_Request_Ptr;
+         Next : File_Request_Access;
          File : POSIX_IO.File_Descriptor;
          case Action is
             when Open =>
                Name    : Unbounded_String;
                Mode    : POSIX_IO.File_Mode;
                Options : POSIX_IO.Open_Option_Set;
+               OHandle : Win32.Winnt.HANDLE;
             when Close =>
-               null;
+               CHandle : Win32.Winnt.HANDLE;
             when Duplicate =>
                From_File : POSIX_IO.File_Descriptor;
          end case;
@@ -179,7 +183,9 @@ private
          Keep_Effective_IDs      : Boolean;
          Signal_Mask             : POSIX_Signals.Signal_Set;
          Signal_Creation_Masking : POSIX.Signal_Masking;
-         File_Request_List       : File_Request_Ptr;
+         File_Request_List       : File_Request_Access;
+         Last_File_Request       : File_Request_Access;
+         Process_Informations    : Win32.Winbase.LPPROCESS_INFORMATION;
       end record;
 
    type Exit_Stat is mod 2 ** Integer'Size;

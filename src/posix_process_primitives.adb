@@ -7,8 +7,6 @@ with System;
 with POSIX_Win32;
 
 with Win32;
-with Win32.Winbase;
-with Win32.Winnt;
 
 package body POSIX_Process_Primitives is
 
@@ -30,8 +28,12 @@ package body POSIX_Process_Primitives is
          Close_Template (Template);
       end if;
       Template.Keep_Effective_IDs := False;
-      POSIX_Signals.Delete_All_Signals (Template.Signal_Mask);
+      --  POSIX_Signals.Delete_All_Signals (Template.Signal_Mask);
       Template.Is_Open := True;
+      Template.Process_Informations := new
+        Win32.Winbase.PROCESS_INFORMATION;
+      Template.File_Request_List := null;
+      Template.Last_File_Request := null;
    end Open_Template;
 
                       ------------------------------
@@ -62,18 +64,67 @@ package body POSIX_Process_Primitives is
 
                       ------------------------------
 
-   procedure Close_Template (Template: in out Process_Template) is
-      P : File_Request_Ptr;
+   procedure Close_Template (Template: in out Process_Template)
+   is
+      P      : File_Request_Access;
+      Result : Win32.BOOL;
+
       procedure Free is
-        new Ada.Unchecked_Deallocation (File_Request, File_Request_Ptr);
+        new Ada.Unchecked_Deallocation (File_Request, File_Request_Access);
+
+      procedure Free is
+        new Ada.Unchecked_Deallocation (Win32.Winbase.PROCESS_INFORMATION,
+                                        Win32.Winbase.LPPROCESS_INFORMATION);
+
+
    begin
       Check_Open (Template, "Close_Template");
+
       while Template.File_Request_List /= null loop
          P := Template.File_Request_List;
+
+         case P.Action is
+
+            when Open =>
+               case P.File is
+                  when
+                    POSIX_IO.Standard_Input |
+                    POSIX_IO.Standard_Output |
+                    POSIX_IO.Standard_Error =>
+                     Result := Win32.Winbase.CloseHandle (P.OHandle);
+                  when others =>
+                     null; -- not handled
+               end case;
+
+            when Close =>
+               case P.File is
+                  when
+                    POSIX_IO.Standard_Input |
+                    POSIX_IO.Standard_Output |
+                    POSIX_IO.Standard_Error =>
+                     Result := Win32.Winbase.CloseHandle (P.CHandle);
+                  when others =>
+                     null; -- not handled
+               end case;
+
+            when Duplicate =>
+               null;
+         end case;
+
          Template.File_Request_List := P.Next;
          Free (P);
       end loop;
+
       Template.Is_Open := False;
+
+      --  close the handle of the Process and Primary Thread.
+      Result := Win32.Winbase.CloseHandle
+        (Template.Process_Informations.HProcess);
+
+      Result := Win32.Winbase.CloseHandle
+        (Template.Process_Informations.HThread);
+
+      Free (Template.Process_Informations);
    end Close_Template;
 
                       ------------------------------
@@ -106,36 +157,56 @@ package body POSIX_Process_Primitives is
 
                       ------------------------------
 
+   procedure Insert (Request_Access : in     File_Request_Access;
+                     Into           : in out Process_Template)
+   is
+   begin
+      if Into.File_Request_List = null then
+         Into.File_Request_List := Request_Access;
+         Into.Last_File_Request := Request_Access;
+      else
+         Into.Last_File_Request.Next := Request_Access;
+         Into.Last_File_Request      := Request_Access;
+      end if;
+   end Insert;
+
    procedure Set_File_Action_To_Open
      (Template : in out Process_Template;
       File     : in     POSIX_IO.File_Descriptor;
       Name     : in     POSIX.Pathname;
       Mode     : in     POSIX_IO.File_Mode       := POSIX_IO.Read_Only;
-      Options  : in     POSIX_IO.Open_Option_Set := POSIX_IO.Empty_Set) is
+      Options  : in     POSIX_IO.Open_Option_Set := POSIX_IO.Empty_Set)
+   is
+      New_Action : File_Request_Access;
    begin
       Check_Open (Template, "Set_File_Action_To_Open");
       Check_File (File);
-      Template.File_Request_List :=
-       new File_Request'(Next    => Template.File_Request_List,
+      New_Action :=
+       new File_Request'(Next    => null,
                          File    => File,
                          Action  => Open,
-                         Name    =>
-                           To_Unbounded_String (POSIX.To_String (Name)),
+                         Name    => To_Unbounded_String
+                                     (POSIX.To_String (Name)),
                          Mode    => Mode,
-                         Options => Options);
+                         Options => Options,
+                         OHandle => POSIX_Win32.Null_Handle);
+      Insert (New_Action, Into => Template);
    end Set_File_Action_To_Open;
 
                       ------------------------------
 
    procedure Set_File_Action_To_Close
      (Template : in out Process_Template;
-      File     : in     POSIX_IO.File_Descriptor) is
+      File     : in     POSIX_IO.File_Descriptor)
+   is
+      New_Action : File_Request_Access;
    begin
       Check_Open (Template, "Set_File_Action_To_Close");
-      Template.File_Request_List :=
-       new File_Request'(Next   => Template.File_Request_List,
-                         File   => File,
-                         Action => Close);
+      New_Action := new File_Request'(Next    => null,
+                                      File    => File,
+                                      Action  => Close,
+                                      CHandle => POSIX_Win32.Null_Handle);
+      Insert (New_Action, Into => Template);
    end Set_File_Action_To_Close;
 
                       ------------------------------
@@ -143,14 +214,17 @@ package body POSIX_Process_Primitives is
    procedure Set_File_Action_To_Duplicate
      (Template  : in out Process_Template;
       File      : in     POSIX_IO.File_Descriptor;
-      From_File : in     POSIX_IO.File_Descriptor) is
+      From_File : in     POSIX_IO.File_Descriptor)
+   is
+      New_Action : File_Request_Access;
    begin
       Check_Open (Template, "Set_File_Action_To_Duplicate");
-      Template.File_Request_List :=
-       new File_Request'(Next      => Template.File_Request_List,
+      New_Action :=
+       new File_Request'(Next      => null,
                          File      => File,
                          Action    => Duplicate,
                          From_File => From_File);
+      Insert (New_Action, Into => Template);
    end Set_File_Action_To_Duplicate;
 
                       ------------------------------
@@ -161,9 +235,7 @@ package body POSIX_Process_Primitives is
 
       Null_Filename : constant String := "nul";
 
-      P             : File_Request_Ptr;
-      Reverse_List  : File_Request_Ptr;
-      Forward_List  : File_Request_Ptr;
+      P             : File_Request_Access;
       Junk1         : POSIX_Signals.Signal_Set;
 
       function Mode_To_File_Access (Mode : in POSIX_IO.File_Mode)
@@ -197,7 +269,8 @@ package body POSIX_Process_Primitives is
             Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
             System.Null_Address);
          if H = Win32.Winbase.INVALID_HANDLE_VALUE then
-            POSIX_Win32.Check_Retcode (-1, "Template : Open_File ");
+            POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
+                                       "Template : Open_File " & Name);
          end if;
          return H;
       end Open_File;
@@ -220,7 +293,8 @@ package body POSIX_Process_Primitives is
             Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
             System.Null_Address);
          if H = Win32.Winbase.INVALID_HANDLE_VALUE then
-            POSIX_Win32.Check_Retcode (-1, "Template : Create_File ");
+            POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
+                                       "Template : Create_File " & Name);
          end if;
          return H;
       end Create_File;
@@ -230,18 +304,9 @@ package body POSIX_Process_Primitives is
          Set_User_ID (Get_Real_User_ID);
          Set_Group_ID (Get_Real_Group_ID);
       end if;
-      POSIX_Signals.Set_Blocked_Signals (Template.Signal_Mask, Junk1);
+      --  POSIX_Signals.Set_Blocked_Signals (Template.Signal_Mask, Junk1);
 
-      --  The list of file actions is in reverse order.
-      Reverse_List := Template.File_Request_List;
-      while Reverse_List /= null loop
-         P := Reverse_List;
-         Reverse_List := P.Next;
-         P.Next := Forward_List;
-         Forward_List := P;
-      end loop;
-
-      P := Forward_List;
+      P := Template.File_Request_List;
 
       while P /= null loop
 
@@ -252,14 +317,18 @@ package body POSIX_Process_Primitives is
                   when POSIX_IO.Standard_Input =>
                      SI.HStdInput := Open_File (To_String (P.Name),
                                                 P.Mode);
+                     P.OHandle := SI.HStdInput;
                   when POSIX_IO.Standard_Output =>
                      SI.HStdOutput := Create_File (To_String (P.Name),
                                                    P.Mode);
+                     P.OHandle := SI.HStdOutput;
                   when POSIX_IO.Standard_Error =>
                      SI.HStdError := Create_File (To_String (P.Name),
                                                   P.Mode);
+                     P.OHandle := SI.HStdError;
                   when others =>
-                     null; -- not handled
+                     POSIX_Win32.Raise_Not_Yet_Implemented
+                       ("Execute Template Open for non Std file");
                end case;
 
             when Close =>
@@ -267,18 +336,23 @@ package body POSIX_Process_Primitives is
                   when POSIX_IO.Standard_Input =>
                      SI.HStdInput := Open_File (Null_Filename,
                                                 POSIX_IO.Read_Only);
+                     P.CHandle := SI.HStdInput;
                   when POSIX_IO.Standard_Output =>
                      SI.HStdOutput := Create_File (Null_Filename,
                                                    POSIX_IO.Write_Only);
+                     P.CHandle := SI.HStdOutput;
                   when POSIX_IO.Standard_Error =>
                      SI.HStdError := Create_File (Null_Filename,
                                                   POSIX_IO.Write_Only);
+                     P.CHandle := SI.HStdError;
                   when others =>
-                     null; -- not handled
+                     POSIX_Win32.Raise_Not_Yet_Implemented
+                       ("Execute Template Close for non Std file");
                end case;
 
             when Duplicate =>
-               null;
+               POSIX_Win32.Raise_Not_Yet_Implemented
+                 ("Execute Template Duplicate for non Std file");
          end case;
          P := P.Next;
       end loop;
@@ -354,7 +428,7 @@ package body POSIX_Process_Primitives is
             LpProcessAttributes  => null,
             LpThreadAttributes   => null,
             BInheritHandles      => Win32.TRUE,
-            DwCreationFlags      => DETACHED_PROCESS + NORMAL_PRIORITY_CLASS,
+            DwCreationFlags      => NORMAL_PRIORITY_CLASS,
             LpEnvironment        => Env_Pointer,
             LpCurrentDirectory   => null,
             LpStartupInfo        => Startup_Informations'Access,
@@ -366,6 +440,7 @@ package body POSIX_Process_Primitives is
          POSIX_Win32.Raise_Error ("Create_Process", POSIX.Not_Enough_Space);
       end if;
 
+      Template.Process_Informations.all := Process_Informations;
       Child := PROCESS_INFORMATION_To_Process_ID (Process_Informations);
    end Start_Process;
 
