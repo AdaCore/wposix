@@ -11,6 +11,9 @@ all:
 	echo "  distrib : build a new distribution"
 	echo ""
 
+build:
+	make -C src src
+
 distrib:
 	-rm win32posix.tar.gz
 	tar cf win32posix.tar src/compile.bat src/*.ad[sb] \
