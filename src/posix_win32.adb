@@ -7,13 +7,12 @@ with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Interfaces.C;
-with Interfaces.C.Strings;
+
+with Win32.Winbase;
 
 with POSIX;
 
 package body POSIX_Win32 is
-
-   package CS renames Interfaces.C.Strings;
 
    -------------------------------
    -- Raise_Not_Yet_Implemented --
