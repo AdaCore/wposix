@@ -8,8 +8,6 @@ with POSIX_Win32;
 
 package body POSIX_Process_Times is
 
-   Result : Win32.BOOL;
-
    ----------------------
    -- Filetime_To_Tick --
    ----------------------
@@ -43,9 +41,10 @@ package body POSIX_Process_Times is
    function Get_Process_Times
      return Process_Times
    is
+      Result                   : Win32.BOOL;
       Creation_Time, Exit_Time : aliased Win32.Winbase.Filetime;
       Kernel_Time, User_Time   : aliased Win32.Winbase.Filetime;
-      PT : Process_Times;
+      PT                       : Process_Times;
    begin
       Result := Win32.Winbase.GetProcessTimes
         (Win32.Winbase.GetCurrentProcess,
