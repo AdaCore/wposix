@@ -20,6 +20,8 @@ POSIX_IO
 
 POSIX_Process_Times
 	fix Filetime_To_Tick
+	fix Elapsed_Real_Time_Of the time returned was user+kernel and not the
+	wall-clock time.
 
 
 changes since 1.4b
