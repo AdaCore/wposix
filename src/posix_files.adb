@@ -17,7 +17,6 @@ with POSIX_File_Status;
 package body POSIX_Files is
 
    --  Operations to create files in the File System
-   Result  : Win32.BOOL;
 
    ----------------------
    -- Create_Directory --
@@ -28,6 +27,7 @@ package body POSIX_Files is
       Permission : in POSIX_Permissions.Permission_Set)
    is
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
+      Result     : Win32.BOOL;
    begin
       Result := Win32.Winbase.CreateDirectory
         (Win32.Addr (L_Pathname),
@@ -63,6 +63,7 @@ package body POSIX_Files is
 
    procedure Unlink (Pathname : in POSIX.Pathname) is
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
+      Result     : Win32.BOOL;
    begin
       Result := Win32.Winbase.DeleteFile (Win32.Addr (L_Pathname));
       POSIX_Win32.Check_Result (Result, "Unlink");
@@ -75,6 +76,7 @@ package body POSIX_Files is
 
    procedure Remove_Directory (Pathname : in POSIX.Pathname) is
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
+      Result     : Win32.BOOL;
    begin
       Result := Win32.Winbase.RemoveDirectory (Win32.Addr (L_Pathname));
       POSIX_Win32.Check_Result (Result, "Remove_Directory");
@@ -179,6 +181,7 @@ package body POSIX_Files is
      (Old_Pathname : in POSIX.Pathname;
       New_Pathname : in POSIX.Pathname)
    is
+      Result         : Win32.BOOL;
       L_Old_Pathname : constant String :=
         POSIX.To_String (Old_Pathname) & ASCII.Nul;
       L_New_Pathname : constant String :=
@@ -199,6 +202,7 @@ package body POSIX_Files is
      (Old_Pathname : in POSIX.Pathname;
       New_Pathname : in POSIX.Pathname)
    is
+      Result         : Win32.BOOL;
       L_Old_Pathname : constant String :=
         POSIX.To_String (Old_Pathname) & ASCII.Nul;
       L_New_Pathname : constant String :=
@@ -229,8 +233,6 @@ package body POSIX_Files is
    end Filename_Of;
 
 
-   Data : aliased Win32.Winbase.WIN32_FIND_DATA;
-
    -------------------------------
    -- For_Every_Directory_Entry --
    -------------------------------
@@ -243,6 +245,8 @@ package body POSIX_Files is
       use type Win32.BOOL;
       use type Win32.Winnt.HANDLE;
 
+      Result     : Win32.BOOL;
+      Data       : aliased Win32.Winbase.WIN32_FIND_DATA;
       L_Pathname : constant String :=
         POSIX.To_String (Pathname) & "/*" & ASCII.Nul;
       Handle     : Win32.Winnt.HANDLE;
@@ -256,7 +260,7 @@ package body POSIX_Files is
       end if;
 
       Handle := Win32.Winbase.FindFirstFile (Win32.Addr (L_Pathname),
-                                             Data'Access);
+                                             Data'Unchecked_Access);
 
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
          if Win32.Winbase.GetLastError =
@@ -274,7 +278,7 @@ package body POSIX_Files is
          exit when quit;
 
          Result := Win32.Winbase.FindNextFile (Handle,
-                                               Data'Access);
+                                               Data'Unchecked_Access);
          exit when Result = Win32.FALSE;
       end loop;
 
@@ -310,6 +314,7 @@ package body POSIX_Files is
    is
       use type Win32.DWORD;
       use POSIX_Permissions;
+      Result     : Win32.BOOL;
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
       Attributes : Win32.DWORD;
    begin
@@ -340,14 +345,6 @@ package body POSIX_Files is
      (POSIX_Calendar.POSIX_Time,
       Win32.Winbase.SYSTEMTIME);
 
-   Access_System_Time            : aliased Win32.Winbase.SYSTEMTIME;
-   Modification_System_Time      : aliased Win32.Winbase.SYSTEMTIME;
-   Current_Access_FileTime       : aliased Win32.Winbase.FILETIME;
-   Current_Modification_FileTime : aliased Win32.Winbase.FILETIME;
-   Current_Creation_FileTime     : aliased Win32.Winbase.FILETIME;
-   UTC_Access_FileTime           : aliased Win32.Winbase.FILETIME;
-   UTC_Modification_FileTime     : aliased Win32.Winbase.FILETIME;
-
    --------------------
    -- Set_File_Times --
    --------------------
@@ -359,6 +356,16 @@ package body POSIX_Files is
    is
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
       Handle : Win32.Winnt.HANDLE;
+
+      Result                        : Win32.BOOL;
+      Access_System_Time            : aliased Win32.Winbase.SYSTEMTIME;
+      Modification_System_Time      : aliased Win32.Winbase.SYSTEMTIME;
+      Current_Access_FileTime       : aliased Win32.Winbase.FILETIME;
+      Current_Modification_FileTime : aliased Win32.Winbase.FILETIME;
+      Current_Creation_FileTime     : aliased Win32.Winbase.FILETIME;
+      UTC_Access_FileTime           : aliased Win32.Winbase.FILETIME;
+      UTC_Modification_FileTime     : aliased Win32.Winbase.FILETIME;
+
 
    begin
 
@@ -376,33 +383,34 @@ package body POSIX_Files is
 
       Result := Win32.Winbase.GetFileTime
         (Handle,
-         Current_Creation_Filetime'Access,
-         Current_Access_Filetime'Access,
-         Current_Modification_Filetime'Access);
+         Current_Creation_Filetime'Unchecked_Access,
+         Current_Access_Filetime'Unchecked_Access,
+         Current_Modification_Filetime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
 
       Result := Win32.Winbase.SystemTimeToFileTime
-        (Access_System_Time'Access,
-         Current_Access_FileTime'Access);
+        (Access_System_Time'Unchecked_Access,
+         Current_Access_FileTime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
       Result := Win32.Winbase.LocalFileTimeToFileTime
-        (Current_Access_Filetime'Access, UTC_Access_Filetime'Access);
+        (Current_Access_Filetime'Unchecked_Access,
+         UTC_Access_Filetime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
 
       Result := Win32.Winbase.SystemTimeToFileTime
-        (Modification_System_Time'Access,
-         Current_Modification_FileTime'Access);
+        (Modification_System_Time'Unchecked_Access,
+         Current_Modification_FileTime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
       Result := Win32.Winbase.LocalFileTimeToFileTime
-        (Current_Modification_Filetime'Access,
-         UTC_Modification_Filetime'Access);
+        (Current_Modification_Filetime'Unchecked_Access,
+         UTC_Modification_Filetime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
 
       Result := Win32.Winbase.SetFileTime
         (Handle,
-         Current_Creation_FileTime'Access,
-         UTC_Access_FileTime'Access,
-         UTC_Modification_FileTime'Access);
+         Current_Creation_FileTime'Unchecked_Access,
+         UTC_Access_FileTime'Unchecked_Access,
+         UTC_Modification_FileTime'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
 
       Result := Win32.Winbase.CloseHandle (Handle);
@@ -483,6 +491,7 @@ package body POSIX_Files is
       Retcode    : Win32.DWORD;
    begin
       Retcode := Win32.Winbase.GetFileAttributes (Win32.Addr (L_Pathname));
+
       return Retcode /= 16#FFFF_FFFF#;
    end Is_File_Present;
 
@@ -496,8 +505,12 @@ package body POSIX_Files is
    is
       Result : Boolean;
    begin
-      Result := Is_File_Present (Pathname);
-      return POSIX.Get_Error_Code;
+      if Is_File_Present (Pathname) then
+         return POSIX.No_Error;
+      else
+         POSIX.Set_Error_Code (POSIX.Error_Code (Win32.Winbase.GetLastError));
+         return POSIX.Get_Error_Code;
+      end if;
    end Existence;
 
 end POSIX_Files;
