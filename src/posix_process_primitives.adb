@@ -6,8 +6,8 @@
 with Ada.Unchecked_Deallocation;
 with Ada.Unchecked_Conversion;
 with System;
-with POSIX_Win32;
 
+with POSIX_Win32;
 with Win32;
 
 package body POSIX_Process_Primitives is
@@ -292,6 +292,10 @@ package body POSIX_Process_Primitives is
       P             : File_Request_Access;
       Junk1         : POSIX_Signals.Signal_Set;
 
+      -------------------------
+      -- Mode_To_File_Access --
+      -------------------------
+
       function Mode_To_File_Access (Mode : in POSIX_IO.File_Mode)
                                     return Win32.DWORD
       is
@@ -304,6 +308,10 @@ package body POSIX_Process_Primitives is
                return Win32.Winnt.GENERIC_READ + Win32.Winnt.GENERIC_WRITE;
          end case;
       end Mode_To_File_Access;
+
+      ---------------
+      -- Open_File --
+      ---------------
 
       function Open_File (Name : in String;
                           Mode : in POSIX_IO.File_Mode)
@@ -328,6 +336,10 @@ package body POSIX_Process_Primitives is
          end if;
          return H;
       end Open_File;
+
+      -----------------
+      -- Create_File --
+      -----------------
 
       function Create_File (Name : in String;
                             Mode : in POSIX_IO.File_Mode)
@@ -428,15 +440,32 @@ package body POSIX_Process_Primitives is
       use type Win32.BOOL;
       use type Win32.ULONG;
 
+      --  add .exe suffix if it is not set
+      function Add_Exe (S : in String) return String is
+      begin
+         if S'Length > 4 and then
+           S (S'Last - 4 .. S'Last) /= ".exe"
+         then
+            return S & ".exe";
+         else
+            return S;
+         end if;
+      end Add_Exe;
+
       Startup_Informations : aliased Win32.Winbase.STARTUPINFO;
       Process_Informations : aliased Win32.Winbase.PROCESS_INFORMATION;
 
-      L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
+      L_Pathname : constant String
+        := Add_Exe (POSIX.To_String (Pathname)) & ASCII.Nul;
 
       Result : Win32.BOOL;
 
       Arguments      : Unbounded_String;
       Argument_Count : Natural := 0;
+
+      ------------
+      -- Concat --
+      ------------
 
       procedure Concat (Item : in POSIX_String;
                         Quit : in out Boolean) is
@@ -450,7 +479,15 @@ package body POSIX_Process_Primitives is
          Quit := False;
       end Concat;
 
+      --------------------------
+      -- Concat_All_Arguments --
+      --------------------------
+
       procedure Concat_All_Arguments is new POSIX.For_Every_Item (Concat);
+
+      ---------------
+      -- To_LPVOID --
+      ---------------
 
       function To_LPVOID is
         new Ada.Unchecked_Conversion (POSIX_Process_Environment.Environment,
@@ -564,29 +601,32 @@ package body POSIX_Process_Primitives is
    is
       Null_Environment : POSIX_Process_Environment.Environment;
       Max_Len    : constant := 500;
-      Pathname   : String (1 .. Max_Len);
+      Pathname   : String (1 .. Max_Len) := (others => '.');
       pragma Warnings (Off, Pathname);
       L_Filename : constant String := POSIX.To_String (Filename) & ASCII.Nul;
-      Env_Var    : constant String := "PATH" & ASCII.Nul;
+      Ext_Var    : constant String := ".exe" & ASCII.Nul;
+
       Result     : Win32.DWORD;
    begin
       Check_Open (Template, "Start_Process_Search");
 
-      Result := Win32.Winbase.SearchPath (Win32.Addr (Env_Var),
+      Result := Win32.Winbase.SearchPath (null,
                                           Win32.Addr (L_Filename),
-                                          null,
+                                          Win32.Addr (Ext_Var),
                                           Win32.DWORD (Pathname'Length),
                                           Win32.Addr (Pathname),
                                           lpFilePart'Access);
 
-      if Pathname (1) = ASCII.Nul then
+      if Result = 0 then
          Start_Process (Child, Filename,
                         Template, Null_Environment, Arg_List,
                         Environment => False);
       else
-         Start_Process (Child, POSIX.To_POSIX_String (Pathname),
-                        Template, Null_Environment, Arg_List,
-                        Environment => False);
+         Start_Process
+           (Child,
+            POSIX.To_POSIX_String (Pathname (1 .. Positive (Result))),
+            Template, Null_Environment, Arg_List,
+            Environment => False);
       end if;
    end Start_Process_Search;
 
@@ -606,7 +646,7 @@ package body POSIX_Process_Primitives is
       Pathname   : String (1 .. Max_Len);
       pragma Warnings (Off, Pathname);
       L_Filename : constant String := POSIX.To_String (Filename) & ASCII.Nul;
-      Env_Var    : constant String := "PATH" & ASCII.Nul;
+      Ext_Var    : constant String := ".exe" & ASCII.Nul;
       Result     : Win32.DWORD;
    begin
       Check_Open (Template, "Start_Process_Search");
@@ -621,9 +661,9 @@ package body POSIX_Process_Primitives is
          POSIX_Process_Environment.Copy_To_Current_Environment
            (Env_List);
 
-         Result := Win32.Winbase.SearchPath (Win32.Addr (Env_Var),
+         Result := Win32.Winbase.SearchPath (null,
                                              Win32.Addr (L_Filename),
-                                             null,
+                                             Win32.Addr (Ext_Var),
                                              Win32.DWORD (Pathname'Length),
                                              Win32.Addr (Pathname),
                                              lpFilePart'Access);
@@ -632,14 +672,16 @@ package body POSIX_Process_Primitives is
            (Old_Environment);
       end Search_Filename_In_Env;
 
-      if Pathname (1) = ASCII.Nul then
+      if Result = 0 then
          Start_Process (Child, Filename,
                         Template, Env_List, Arg_List,
                         Environment => True);
       else
-         Start_Process (Child, POSIX.To_POSIX_String (Pathname),
-                        Template, Env_List, Arg_List,
-                        Environment => True);
+         Start_Process
+           (Child,
+            POSIX.To_POSIX_String (Pathname (1 .. Positive (Result))),
+            Template, Env_List, Arg_List,
+            Environment => True);
       end if;
    end Start_Process_Search;
 
