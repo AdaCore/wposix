@@ -13,12 +13,20 @@ package body POSIX_Win32 is
 
    package CS renames Interfaces.C.Strings;
 
+   -------------------------------
+   -- Raise_Not_Yet_Implemented --
+   -------------------------------
+
    procedure Raise_Not_Yet_Implemented (Message : in String) is
    begin
       Ada.Exceptions.Raise_Exception
         (POSIX_Not_Yet_Implemented'Identity,
          Message => Message);
    end Raise_Not_Yet_Implemented;
+
+   -------------------
+   -- Check_Retcode --
+   -------------------
 
    procedure Check_Retcode (RETCODE : in Win32.INT;
                             Fct     : in String)
@@ -34,6 +42,10 @@ package body POSIX_Win32 is
       end if;
    end Check_Retcode;
 
+   ------------------
+   -- Check_Result --
+   ------------------
+
    procedure Check_Result (RETCODE : in Win32.BOOL;
                            Fct     : in String)
    is
@@ -48,6 +60,10 @@ package body POSIX_Win32 is
       end if;
    end Check_Result;
 
+   -----------------
+   -- Raise_Error --
+   -----------------
+
    procedure Raise_Error (Message    : in String;
                           Error_Code : in POSIX.Error_Code) is
    begin
@@ -61,6 +77,10 @@ package body POSIX_Win32 is
 
 
    BinaryType : aliased Win32.DWORD;
+
+   -------------------
+   -- Is_Executable --
+   -------------------
 
    function Is_Executable (Pathname : in POSIX.POSIX_String)
                            return Boolean
@@ -97,6 +117,10 @@ package body POSIX_Win32 is
 
    --  process list
 
+   ---------------------------------------
+   -- Process_ID_To_PROCESS_INFORMATION --
+   ---------------------------------------
+
    function Process_ID_To_PROCESS_INFORMATION is
      new Ada.Unchecked_Conversion  (POSIX_Process_Identification.Process_ID,
                                     Win32.Winbase.PROCESS_INFORMATION);
@@ -110,10 +134,18 @@ package body POSIX_Win32 is
          Next    : P_List_Access;
       end record;
 
+   ----------
+   -- Free --
+   ----------
+
    procedure Free is new Ada.Unchecked_Deallocation (P_List, P_List_Access);
 
+   ------------------
+   -- Process_List --
+   ------------------
 
    protected Process_List is
+
       procedure Add    (Child  : in     PPI.Process_ID);
       procedure Remove (Child  : in     PPI.Process_ID);
       function  Exist  (Child  : in     PPI.Process_ID) return Boolean;
@@ -126,11 +158,19 @@ package body POSIX_Win32 is
 
    protected body Process_List is
 
+      ---------
+      -- Add --
+      ---------
+
       procedure Add    (Child  : in     PPI.Process_ID) is
       begin
          Process := new P_List'(Child, Next => Process);
          N_Process := N_Process + 1;
       end Add;
+
+      ------------
+      -- Remove --
+      ------------
 
       procedure Remove (Child  : in     PPI.Process_ID) is
          use type PPI.Process_ID;
@@ -156,6 +196,10 @@ package body POSIX_Win32 is
          N_Process := N_Process - 1;
       end Remove;
 
+      -----------
+      -- Exist --
+      -----------
+
       function  Exist  (Child  : in     PPI.Process_ID) return Boolean is
          use type PPI.Process_ID;
          PLa : P_List_Access := Process;
@@ -170,6 +214,10 @@ package body POSIX_Win32 is
          end loop Check_Child;
          return False;
       end Exist;
+
+      --------------------
+      -- Get_Process_ID --
+      --------------------
 
       function Get_Process_ID (H : Win32.Winnt.HANDLE)
                                return PPI.Process_ID
@@ -190,6 +238,10 @@ package body POSIX_Win32 is
          end loop;
          return PPI.Null_Process_ID;
       end Get_Process_ID;
+
+      ----------
+      -- Wait --
+      ----------
 
       procedure Wait   (Status :    out PPP.Termination_Status;
                         Block  : in     Boolean)
@@ -266,20 +318,36 @@ package body POSIX_Win32 is
 
    end Process_List;
 
+   ---------------
+   -- Add_Child --
+   ---------------
+
    procedure Add_Child    (Child  : in     PPI.Process_ID) is
    begin
       Process_List.Add (Child);
    end Add_Child;
+
+   ------------------
+   -- Remove_Child --
+   ------------------
 
    procedure Remove_Child (Child  : in     PPI.Process_ID) is
    begin
       Process_List.Remove (Child);
    end Remove_Child;
 
+   -----------
+   -- Exist --
+   -----------
+
    function  Exist  (Child  : in     PPI.Process_ID) return Boolean is
    begin
       return Process_List.Exist (Child);
    end Exist;
+
+   ----------
+   -- Wait --
+   ----------
 
    procedure Wait         (Status :    out PPP.Termination_Status;
                            Block  : in     Boolean) is

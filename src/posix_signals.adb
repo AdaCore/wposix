@@ -10,6 +10,10 @@ with POSIX_Win32;
 
 package body POSIX_Signals is
 
+   ---------------------------------------------
+   -- Is_Valid_Signal_For_This_Implementation --
+   ---------------------------------------------
+
    function Is_Valid_Signal_For_This_Implementation (Sig : Signal)
                                                      return Boolean is
    begin
@@ -30,7 +34,10 @@ package body POSIX_Signals is
       end if;
    end Is_Valid_Signal_For_This_Implementation;
 
-                -----------------------------------
+
+   -----------
+   -- Image --
+   -----------
 
    function Image (Sig : Signal)
                    return String is
@@ -52,7 +59,10 @@ package body POSIX_Signals is
       end if;
    end Image;
 
-                -----------------------------------
+
+   -----------
+   -- Value --
+   -----------
 
    function Value (Str : String)
                    return Signal is
@@ -77,6 +87,10 @@ package body POSIX_Signals is
 
    --  type Signal Sets
 
+   ----------------
+   -- Add_Signal --
+   ----------------
+
    procedure Add_Signal
      (Set : in out Signal_Set;
       Sig : in    Signal) is
@@ -85,7 +99,10 @@ package body POSIX_Signals is
    end Add_Signal;
 
 
-                -----------------------------------
+
+   ---------------------
+   -- Add_All_Signals --
+   ---------------------
 
    procedure Add_All_Signals (Set : in out Signal_Set) is
    begin
@@ -93,7 +110,10 @@ package body POSIX_Signals is
    end Add_All_Signals;
 
 
-                -----------------------------------
+
+   -------------------
+   -- Delete_Signal --
+   -------------------
 
    procedure Delete_Signal
      (Set : in out Signal_Set;
@@ -102,14 +122,20 @@ package body POSIX_Signals is
       POSIX_Win32.Raise_Not_Yet_Implemented ("Delete_Signal");
    end Delete_Signal;
 
-                -----------------------------------
+
+   ------------------------
+   -- Delete_All_Signals --
+   ------------------------
 
    procedure Delete_All_Signals (Set : in out Signal_Set) is
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Delete_All_Signals");
    end Delete_All_Signals;
 
-                -----------------------------------
+
+   ---------------
+   -- Is_Member --
+   ---------------
 
    function Is_Member
      (Set : Signal_Set;
@@ -123,6 +149,10 @@ package body POSIX_Signals is
 
    --  Sending a Signal
 
+   ------------------------
+   -- Get_Process_Handle --
+   ------------------------
+
    function Get_Process_Handle
      (Process : in POSIX_Process_Identification.Process_ID)
       return Win32.Winnt.HANDLE
@@ -133,6 +163,10 @@ package body POSIX_Signals is
    begin
       return To_Process_Information (Process).HProcess;
    end Get_Process_Handle;
+
+   -----------------
+   -- Send_Signal --
+   -----------------
 
    procedure Send_Signal
      (Process : in POSIX_Process_Identification.Process_ID;
@@ -149,7 +183,10 @@ package body POSIX_Signals is
       end if;
    end Send_Signal;
 
-                -----------------------------------
+
+   -----------------
+   -- Send_Signal --
+   -----------------
 
    procedure Send_Signal
      (Process : in POSIX_Process_Identification.Process_Group_ID;
@@ -158,7 +195,10 @@ package body POSIX_Signals is
       POSIX_Win32.Raise_Not_Yet_Implemented ("Send_Signal " & Image (Sig));
    end Send_Signal;
 
-                -----------------------------------
+
+   -----------------
+   -- Send_Signal --
+   -----------------
 
    procedure Send_Signal
      (Sig     : in Signal)
@@ -179,6 +219,10 @@ package body POSIX_Signals is
 
    --  Blocking and Unblocking Signals
 
+   -------------------------
+   -- Set_Blocked_Signals --
+   -------------------------
+
    procedure Set_Blocked_Signals
      (New_Mask : in     Signal_Set;
       Old_Mask :    out Signal_Set) is
@@ -186,7 +230,10 @@ package body POSIX_Signals is
       POSIX_Win32.Raise_Not_Yet_Implemented ("Set_Blocked_Signals");
    end Set_Blocked_Signals;
 
-                -----------------------------------
+
+   -------------------
+   -- Block_Signals --
+   -------------------
 
    procedure Block_Signals
      (Mask_To_Add : in     Signal_Set;
@@ -195,7 +242,10 @@ package body POSIX_Signals is
       POSIX_Win32.Raise_Not_Yet_Implemented ("Block_Signals");
    end Block_Signals;
 
-                -----------------------------------
+
+   ---------------------
+   -- Unblock_Signals --
+   ---------------------
 
    procedure Unblock_Signals
      (Mask_To_Substract : in     Signal_Set;
@@ -204,7 +254,10 @@ package body POSIX_Signals is
       POSIX_Win32.Raise_Not_Yet_Implemented ("Unblock_Signals");
    end Unblock_Signals;
 
-                -----------------------------------
+
+   ---------------------
+   -- Blocked_Signals --
+   ---------------------
 
    function Blocked_Signals
      return Signal_Set
@@ -221,19 +274,29 @@ package body POSIX_Signals is
 
    --  Ignoring Signals
 
+   -------------------
+   -- Ignore_Signal --
+   -------------------
+
    procedure Ignore_Signal (Sig : in Signal) is
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Ignore_Signal");
    end Ignore_Signal;
 
-                -----------------------------------
+
+   ---------------------
+   -- Unignore_Signal --
+   ---------------------
 
    procedure Unignore_Signal (Sig : in Signal) is
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Unignore_Signal");
    end Unignore_Signal;
 
-                -----------------------------------
+
+   ----------------
+   -- Is_Ignored --
+   ----------------
 
    function Is_Ignored (Sig : Signal)
                         return Boolean is
@@ -246,13 +309,20 @@ package body POSIX_Signals is
 
    --  Controling Delivery of Signal_Child Signal
 
+   ------------------------------
+   -- Set_Stopped_Child_Signal --
+   ------------------------------
+
    procedure Set_Stopped_Child_Signal
      (Enable : in Boolean := True) is
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Set_Stopped_Child_Signal");
    end Set_Stopped_Child_Signal;
 
-                -----------------------------------
+
+   ----------------------------------
+   -- Stopped_Child_Signal_Enabled --
+   ----------------------------------
 
    function Stopped_Child_Signal_Enabled
      return Boolean is
@@ -264,6 +334,10 @@ package body POSIX_Signals is
 
 
    --  Examining Pending Signals
+
+   ---------------------
+   -- Pending_Signals --
+   ---------------------
 
    function Pending_Signals
      return Signal_Set

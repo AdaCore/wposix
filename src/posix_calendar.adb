@@ -10,6 +10,10 @@ package body POSIX_Calendar is
 
    System_Time : aliased Win32.Winbase.SYSTEMTIME;
 
+   -----------
+   -- Clock --
+   -----------
+
    function Clock
      return POSIX_Time is
    begin
@@ -17,7 +21,10 @@ package body POSIX_Calendar is
       return POSIX_Time (System_Time);
    end Clock;
 
-                -----------------------------------
+
+   -------------
+   -- To_Time --
+   -------------
 
    function To_Time (Date : POSIX_Time)
                      return Calendar.Time
@@ -34,7 +41,10 @@ package body POSIX_Calendar is
                                Calendar.Day_Duration (Seconds));
    end To_Time;
 
-                -----------------------------------
+
+   -------------------
+   -- To_POSIX_Time --
+   -------------------
 
    function To_POSIX_Time (Date : Calendar.Time)
                            return POSIX_Time
@@ -52,6 +62,10 @@ package body POSIX_Calendar is
 
    --  Operations on POSIX_Time
 
+   ----------
+   -- Year --
+   ----------
+
    function Year (Date : POSIX_Time)
                   return Year_Number
    is
@@ -64,7 +78,10 @@ package body POSIX_Calendar is
       return Year;
    end Year;
 
-                -----------------------------------
+
+   -----------
+   -- Month --
+   -----------
 
    function Month (Date : POSIX_Time)
                    return Month_Number
@@ -78,7 +95,10 @@ package body POSIX_Calendar is
       return Month;
    end Month;
 
-                -----------------------------------
+
+   ---------
+   -- Day --
+   ---------
 
    function Day (Date : POSIX_Time)
                  return Day_Number
@@ -92,7 +112,10 @@ package body POSIX_Calendar is
       return Day;
    end Day;
 
-                -----------------------------------
+
+   -------------
+   -- Seconds --
+   -------------
 
    function Seconds (Date : POSIX_Time)
                      return Day_Duration
@@ -106,7 +129,10 @@ package body POSIX_Calendar is
       return Seconds;
    end Seconds;
 
-                -----------------------------------
+
+   -----------
+   -- Split --
+   -----------
 
    procedure Split
      (Date    : in     POSIX_Time;
@@ -124,6 +150,10 @@ package body POSIX_Calendar is
                                Date.wMinute * 60 +
                                Date.wHour * 3600);
    end Split;
+
+   -------------
+   -- Time_Of --
+   -------------
 
    function Time_Of
      (Year    : Year_Number;
@@ -149,7 +179,10 @@ package body POSIX_Calendar is
       return POSIX_Time (Local_Time);
    end Time_Of;
 
-                -----------------------------------
+
+   ---------
+   -- "+" --
+   ---------
 
    function "+" (L : POSIX_Time; R : Duration)
                  return POSIX_Time
@@ -162,7 +195,10 @@ package body POSIX_Calendar is
          raise Time_Error;
    end "+";
 
-                -----------------------------------
+
+   ---------
+   -- "+" --
+   ---------
 
    function "+" (L : Duration; R : POSIX_Time)
                  return POSIX_Time
@@ -175,7 +211,10 @@ package body POSIX_Calendar is
          raise Time_Error;
    end "+";
 
-                -----------------------------------
+
+   ---------
+   -- "-" --
+   ---------
 
    function "-" (L : POSIX_Time; R : Duration)
                  return POSIX_Time
@@ -188,7 +227,10 @@ package body POSIX_Calendar is
          raise Time_Error;
    end "-";
 
-                -----------------------------------
+
+   ---------
+   -- "-" --
+   ---------
 
    function "-" (L : POSIX_Time; R : POSIX_Time)
                  return Duration
@@ -201,7 +243,10 @@ package body POSIX_Calendar is
          raise Time_Error;
    end "-";
 
-                -----------------------------------
+
+   ---------
+   -- "<" --
+   ---------
 
    function "<" (L, R : POSIX_Time)
                  return Boolean
@@ -211,7 +256,10 @@ package body POSIX_Calendar is
       return To_Time (L) < To_Time (R);
    end "<";
 
-                -----------------------------------
+
+   ----------
+   -- "<=" --
+   ----------
 
    function "<=" (L, R : POSIX_Time)
                   return Boolean
@@ -221,7 +269,10 @@ package body POSIX_Calendar is
       return To_Time (L) <= To_Time (R);
    end "<=";
 
-                -----------------------------------
+
+   ---------
+   -- ">" --
+   ---------
 
    function ">" (L, R : POSIX_Time)
                  return Boolean
@@ -231,7 +282,10 @@ package body POSIX_Calendar is
       return To_Time (L) > To_Time (R);
    end ">";
 
-                -----------------------------------
+
+   ----------
+   -- ">=" --
+   ----------
 
    function ">=" (L, R : POSIX_Time)
                   return Boolean

@@ -12,6 +12,10 @@ package body POSIX_Win32.File_Handle is
 
    Number_File_Open : POSIX_IO.File_Descriptor := 3;
 
+   ----------
+   -- Open --
+   ----------
+
    function Open (H : in Win32.Winnt.HANDLE;
                   F : in POSIX_IO.File_Descriptor := 0)
                   return POSIX_IO.File_Descriptor
@@ -47,6 +51,10 @@ package body POSIX_Win32.File_Handle is
    end Open;
 
 
+   -----------
+   -- Close --
+   -----------
+
    procedure Close (F : in POSIX_IO.File_Descriptor)
    is
       use type POSIX_IO.File_Descriptor;
@@ -55,6 +63,10 @@ package body POSIX_Win32.File_Handle is
       Number_File_Open := Number_File_Open - 1;
    end Close;
 
+
+   ---------
+   -- Get --
+   ---------
 
    function Get (F : in POSIX_IO.File_Descriptor)
                  return Win32.Winnt.HANDLE

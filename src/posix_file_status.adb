@@ -18,6 +18,10 @@ package body POSIX_File_Status is
 
    Find_Data : aliased Win32.Winbase.WIN32_FIND_DATA;
 
+   ---------------------
+   -- Get_File_Status --
+   ---------------------
+
    function Get_File_Status (Pathname : POSIX.Pathname)
                              return Status
    is
@@ -59,9 +63,11 @@ package body POSIX_File_Status is
    end Get_File_Status;
 
 
-                    -----------------------------------
-
    File_Information : aliased Win32.Winbase.BY_HANDLE_FILE_INFORMATION;
+
+   ---------------------
+   -- Get_File_Status --
+   ---------------------
 
    function Get_File_Status (File     : POSIX_IO.File_Descriptor)
                              return Status
@@ -93,6 +99,10 @@ package body POSIX_File_Status is
 
    --  Operations to get information from Status
 
+   -----------------------
+   -- Permission_Set_Of --
+   -----------------------
+
    function Permission_Set_Of (File_Status : Status)
                                return POSIX_Permissions.Permission_Set
    is
@@ -119,7 +129,10 @@ package body POSIX_File_Status is
       return PS;
    end Permission_Set_Of;
 
-                    -----------------------------------
+
+   ----------------
+   -- File_ID_Of --
+   ----------------
 
    function File_ID_Of (File_Status : Status)
                         return File_ID
@@ -129,7 +142,10 @@ package body POSIX_File_Status is
                       High => File_Status.File_Index_High);
    end File_ID_Of;
 
-                    -----------------------------------
+
+   ------------------
+   -- Device_ID_Of --
+   ------------------
 
    function Device_ID_Of (File_Status : Status)
                           return Device_ID
@@ -139,7 +155,10 @@ package body POSIX_File_Status is
       return DID;
    end Device_ID_Of;
 
-                    -----------------------------------
+
+   -------------------
+   -- Link_Count_Of --
+   -------------------
 
    function Link_Count_Of (File_Status : Status)
                            return Links is
@@ -147,7 +166,10 @@ package body POSIX_File_Status is
       return Links (File_Status.File_Links);
    end Link_Count_Of;
 
-                    -----------------------------------
+
+   --------------
+   -- Owner_Of --
+   --------------
 
    function Owner_Of (File_Status : Status)
                       return POSIX_Process_Identification.User_ID
@@ -157,7 +179,10 @@ package body POSIX_File_Status is
       return Owner;
    end Owner_Of;
 
-                    -----------------------------------
+
+   --------------
+   -- Group_Of --
+   --------------
 
    function Group_Of (File_Status : Status)
                       return POSIX_Process_Identification.Group_ID
@@ -167,7 +192,10 @@ package body POSIX_File_Status is
       return Group;
    end Group_Of;
 
-                    -----------------------------------
+
+   -------------
+   -- Size_Of --
+   -------------
 
    function Size_Of (File_Status : Status)
                      return POSIX.IO_Count is
@@ -175,7 +203,11 @@ package body POSIX_File_Status is
       return POSIX.IO_Count
         (File_Status.File_Size_Low);
    end Size_Of;
-                    -----------------------------------
+
+
+   -------------------
+   -- To_POSIX_Time --
+   -------------------
 
    function To_POSIX_Time is new Ada.Unchecked_Conversion
      (Win32.Winbase.SYSTEMTIME, POSIX_Calendar.POSIX_Time);
@@ -184,6 +216,10 @@ package body POSIX_File_Status is
    Last_Access_Time : aliased Win32.Winbase.FILETIME;
    Last_Write_Time  : aliased Win32.Winbase.FILETIME;
    Local_Time       : aliased Win32.Winbase.FILETIME;
+
+   -------------------------
+   -- Last_Access_Time_Of --
+   -------------------------
 
    function Last_Access_Time_Of (File_Status : Status)
                                  return POSIX_Calendar.POSIX_Time
@@ -197,7 +233,10 @@ package body POSIX_File_Status is
       return To_POSIX_Time (System_Time);
    end Last_Access_Time_Of;
 
-                    -----------------------------------
+
+   -------------------------------
+   -- Last_Modification_Time_Of --
+   -------------------------------
 
    function Last_Modification_Time_Of (File_Status : Status)
                                        return POSIX_Calendar.POSIX_Time
@@ -211,7 +250,10 @@ package body POSIX_File_Status is
       return To_POSIX_Time (System_Time);
    end Last_Modification_Time_Of;
 
-                    -----------------------------------
+
+   --------------------------------
+   -- Last_Status_Change_Time_Of --
+   --------------------------------
 
    function Last_Status_Change_Time_Of (File_Status : Status)
                                         return POSIX_Calendar.POSIX_Time is
@@ -219,7 +261,10 @@ package body POSIX_File_Status is
       return Last_Modification_Time_Of (File_Status);
    end Last_Status_Change_Time_Of;
 
-                    -----------------------------------
+
+   ------------------
+   -- Is_Directory --
+   ------------------
 
    function Is_Directory (File_Status : Status)
                           return Boolean
@@ -230,7 +275,10 @@ package body POSIX_File_Status is
               Win32.Winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0;
    end Is_Directory;
 
-                    -----------------------------------
+
+   -------------------------------
+   -- Is_Character_Special_File --
+   -------------------------------
 
    function Is_Character_Special_File (File_Status : Status)
                                        return Boolean
@@ -240,7 +288,10 @@ package body POSIX_File_Status is
       return File_Status.File_Type = Win32.Winbase.FILE_TYPE_CHAR;
    end Is_Character_Special_File;
 
-                    -----------------------------------
+
+   ---------------------------
+   -- Is_Block_Special_File --
+   ---------------------------
 
    function Is_Block_Special_File (File_Status : Status)
                                    return Boolean is
@@ -248,7 +299,10 @@ package body POSIX_File_Status is
       return False;
    end Is_Block_Special_File;
 
-                    -----------------------------------
+
+   ---------------------
+   -- Is_Regular_File --
+   ---------------------
 
    function Is_Regular_File (File_Status : Status)
                              return Boolean
@@ -259,7 +313,10 @@ package body POSIX_File_Status is
               Win32.Winnt.FILE_ATTRIBUTE_NORMAL) /= 0;
    end Is_Regular_File;
 
-                    -----------------------------------
+
+   -------------
+   -- Is_FIFO --
+   -------------
 
    function Is_FIFO (File_Status : Status)
                      return Boolean is

@@ -22,6 +22,10 @@ package body POSIX_Process_Environment is
 
    use Ada;
 
+   ---------------
+   -- Chars_Ptr --
+   ---------------
+
    package Chars_Ptr is new Interfaces.C.Pointers
      (Index              => Natural,
       Element            => Win32.CHAR,
@@ -33,6 +37,10 @@ package body POSIX_Process_Environment is
    Result : Win32.BOOL;
 
    --  Process Parameters
+
+   -------------------
+   -- Argument_List --
+   -------------------
 
    function Argument_List
      return POSIX.POSIX_String_List
@@ -49,7 +57,10 @@ package body POSIX_Process_Environment is
 
    --  Environment Variables
 
-                -----------------------------------
+
+   ----------------
+   -- Check_Name --
+   ----------------
 
    procedure Check_Name (Name    : in POSIX.POSIX_String;
                          Message : in String)
@@ -63,9 +74,12 @@ package body POSIX_Process_Environment is
       end if;
    end Check_Name;
 
-                -----------------------------------
 
    type Char_Array_Access is access Win32.Char_Array;
+
+   ---------------------
+   -- New_Environment --
+   ---------------------
 
    function New_Environment (Size : in Positive := 2)
                              return Environment
@@ -81,7 +95,10 @@ package body POSIX_Process_Environment is
       Result := Win32.Winbase.FreeEnvironmentStrings (Win32.PCHAR (Env));
    end Free_Environment;
 
-                -----------------------------------
+
+   -----------------------------------
+   -- Copy_From_Current_Environment --
+   -----------------------------------
 
    procedure Copy_From_Current_Environment
      (Env : in out Environment)
@@ -93,7 +110,10 @@ package body POSIX_Process_Environment is
       Free_Environment (Local_Env);
    end Copy_From_Current_Environment;
 
-                -----------------------------------
+
+   ---------------------------------
+   -- Copy_To_Current_Environment --
+   ---------------------------------
 
    procedure Copy_To_Current_Environment
      (Env : in Environment)
@@ -114,7 +134,10 @@ package body POSIX_Process_Environment is
       Set_Current_Environment (Env);
    end Copy_To_Current_Environment;
 
-                -----------------------------------
+
+   ----------------------
+   -- Copy_Environment --
+   ----------------------
 
    procedure Copy_Environment
      (Source : in     Environment;
@@ -138,7 +161,10 @@ package body POSIX_Process_Environment is
       end loop;
    end Copy_Environment;
 
-                -----------------------------------
+
+   --------------------------
+   -- Environment_Value_Of --
+   --------------------------
 
    function Environment_Value_Of
      (Name       : POSIX.POSIX_String;
@@ -179,6 +205,10 @@ package body POSIX_Process_Environment is
    end Environment_Value_Of;
 
 
+   --------------------------
+   -- Environment_Value_Of --
+   --------------------------
+
    function Environment_Value_Of
      (Name      : POSIX.POSIX_String;
       Undefined : POSIX.POSIX_String := "")
@@ -196,7 +226,10 @@ package body POSIX_Process_Environment is
       end;
    end Environment_Value_Of;
 
-                -----------------------------------
+
+   -----------------------------
+   -- Is_Environment_Variable --
+   -----------------------------
 
    function Is_Environment_Variable
      (Name      : POSIX.POSIX_String;
@@ -227,6 +260,10 @@ package body POSIX_Process_Environment is
    end Is_Environment_Variable;
 
 
+   -----------------------------
+   -- Is_Environment_Variable --
+   -----------------------------
+
    function Is_Environment_Variable
      (Name      : POSIX.POSIX_String)
       return Boolean
@@ -240,7 +277,10 @@ package body POSIX_Process_Environment is
       return Result;
    end Is_Environment_Variable;
 
-                -----------------------------------
+
+   -----------------------
+   -- Clear_Environment --
+   -----------------------
 
    procedure Clear_Environment
      (Env  : in out Environment)
@@ -252,6 +292,10 @@ package body POSIX_Process_Environment is
       Env := New_Environment;
    end Clear_Environment;
 
+
+   -----------------------
+   -- Clear_Environment --
+   -----------------------
 
    procedure Clear_Environment is
 
@@ -269,7 +313,10 @@ package body POSIX_Process_Environment is
       Delete_Current_Environment;
    end Clear_Environment;
 
-                -----------------------------------
+
+   ------------------------------
+   -- Set_Environment_Variable --
+   ------------------------------
 
    procedure Set_Environment_Variable
      (Name  : in     POSIX.POSIX_String;
@@ -288,6 +335,9 @@ package body POSIX_Process_Environment is
    end Set_Environment_Variable;
 
 
+   ------------------------------
+   -- Set_Environment_Variable --
+   ------------------------------
 
    procedure Set_Environment_Variable
      (Name  : in     POSIX.POSIX_String;
@@ -302,7 +352,10 @@ package body POSIX_Process_Environment is
       POSIX_Win32.Check_Result (Result, "Set_Environment_Variable");
    end Set_Environment_Variable;
 
-                -----------------------------------
+
+   ---------------------------------
+   -- Delete_Environment_Variable --
+   ---------------------------------
 
    procedure Delete_Environment_Variable
      (Name : in     POSIX.POSIX_String;
@@ -318,6 +371,10 @@ package body POSIX_Process_Environment is
       Copy_From_Current_Environment (Env);
       Copy_To_Current_Environment (Current_Environment);
    end Delete_Environment_Variable;
+
+   ---------------------------------
+   -- Delete_Environment_Variable --
+   ---------------------------------
 
    procedure Delete_Environment_Variable
      (Name : in     POSIX.POSIX_String)
@@ -336,7 +393,10 @@ package body POSIX_Process_Environment is
       end if;
    end Delete_Environment_Variable;
 
-                -----------------------------------
+
+   ------------
+   -- Length --
+   ------------
 
    function Length (Env : Environment)
                     return Natural
@@ -356,6 +416,10 @@ package body POSIX_Process_Environment is
       return I;
    end Length;
 
+   ------------
+   -- Length --
+   ------------
+
    function Length
      return Natural
    is
@@ -368,7 +432,10 @@ package body POSIX_Process_Environment is
       return Size;
    end Length;
 
-                -----------------------------------
+
+   ------------------------------------
+   -- For_Every_Environment_Variable --
+   ------------------------------------
 
    procedure For_Every_Environment_Variable
      (Env : in Environment)
@@ -436,6 +503,10 @@ package body POSIX_Process_Environment is
       end loop For_All_Variable;
    end For_Every_Environment_Variable;
 
+   --------------------------------------------
+   -- For_Every_Current_Environment_Variable --
+   --------------------------------------------
+
    procedure For_Every_Current_Environment_Variable is
 
       Current_Environment : Environment;
@@ -450,9 +521,11 @@ package body POSIX_Process_Environment is
    end For_Every_Current_Environment_Variable;
 
 
-                -----------------------------------
-
    --  Process Working Directory
+
+   ------------------------------
+   -- Change_Working_Directory --
+   ------------------------------
 
    procedure Change_Working_Directory
      (Directory_Name : in POSIX.Pathname)
@@ -465,7 +538,10 @@ package body POSIX_Process_Environment is
       POSIX_Win32.Check_Result (Result, "Change_Working_Directory");
    end Change_Working_Directory;
 
-                -----------------------------------
+
+   ---------------------------
+   -- Get_Working_Directory --
+   ---------------------------
 
    function Get_Working_Directory
      return POSIX.Pathname

@@ -8,6 +8,10 @@ package body POSIX_Process_Times is
 
    Result : Win32.BOOL;
 
+   ----------------------
+   -- Filetime_To_Tick --
+   ----------------------
+
    function Filetime_To_Tick (Filetime : in Win32.Winbase.Filetime)
                               return Tick_Count
    is
@@ -25,16 +29,23 @@ package body POSIX_Process_Times is
           (Filetime.DwLowDateTime / Hundred_Nano_To_Tick) );
    end Filetime_To_Tick;
 
+   -----------------------
+   -- Elapsed_Real_Time --
+   -----------------------
+
    function Elapsed_Real_Time
      return Tick_Count is
    begin
       return Elapsed_Real_Time_Of (Get_Process_Times);
    end Elapsed_Real_Time;
 
-                    -----------------------------------
 
    Creation_Time, Exit_Time : aliased Win32.Winbase.Filetime;
    Kernel_Time, User_Time   : aliased Win32.Winbase.Filetime;
+
+   -----------------------
+   -- Get_Process_Times --
+   -----------------------
 
    function Get_Process_Times
      return Process_Times
@@ -56,7 +67,10 @@ package body POSIX_Process_Times is
       return PT;
    end Get_Process_Times;
 
-                    -----------------------------------
+
+   --------------------------
+   -- Elapsed_Real_Time_Of --
+   --------------------------
 
    function Elapsed_Real_Time_Of (Times : Process_Times)
                                   return Tick_Count is
@@ -65,7 +79,10 @@ package body POSIX_Process_Times is
         Times.Children_User_Time + Times.Children_System_Time;
    end Elapsed_Real_Time_Of;
 
-                    -----------------------------------
+
+   ----------------------
+   -- User_CPU_Time_Of --
+   ----------------------
 
    function User_CPU_Time_Of (Times : Process_Times)
                               return Tick_Count is
@@ -73,7 +90,10 @@ package body POSIX_Process_Times is
       return Times.User_Time;
    end User_CPU_Time_Of;
 
-                    -----------------------------------
+
+   ------------------------
+   -- System_CPU_Time_Of --
+   ------------------------
 
    function System_CPU_Time_Of (Times : Process_Times)
                                 return Tick_Count is
@@ -81,7 +101,10 @@ package body POSIX_Process_Times is
       return Times.System_Time;
    end System_CPU_Time_Of;
 
-                    -----------------------------------
+
+   ----------------------------------
+   -- Descendants_User_CPU_Time_Of --
+   ----------------------------------
 
    function Descendants_User_CPU_Time_Of (Times : Process_Times)
                                           return Tick_Count is
@@ -89,7 +112,10 @@ package body POSIX_Process_Times is
       return Times.Children_User_Time;
    end Descendants_User_CPU_Time_Of;
 
-                    -----------------------------------
+
+   ------------------------------------
+   -- Descendants_System_CPU_Time_Of --
+   ------------------------------------
 
    function Descendants_System_CPU_Time_Of (Times : Process_Times)
                                             return Tick_Count is

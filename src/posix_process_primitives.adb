@@ -13,9 +13,17 @@ package body POSIX_Process_Primitives is
    use POSIX;
    use type Win32.ULONG;
 
+   ---------------------------------------
+   -- Process_ID_To_PROCESS_INFORMATION --
+   ---------------------------------------
+
    function Process_ID_To_PROCESS_INFORMATION is
       new Ada.Unchecked_Conversion (POSIX_Process_Identification.Process_ID,
                                     Win32.Winbase.PROCESS_INFORMATION);
+
+   ---------------------------------------
+   -- PROCESS_INFORMATION_To_Process_ID --
+   ---------------------------------------
 
    function PROCESS_INFORMATION_To_Process_ID is
       new Ada.Unchecked_Conversion (Win32.Winbase.PROCESS_INFORMATION,
@@ -27,6 +35,10 @@ package body POSIX_Process_Primitives is
          Win32.TRUE);
 
    --  Process Template
+
+   -------------------
+   -- Open_Template --
+   -------------------
 
    procedure Open_Template (Template: in out Process_Template) is
    begin
@@ -42,7 +54,10 @@ package body POSIX_Process_Primitives is
       Template.Last_File_Request := null;
    end Open_Template;
 
-                      ------------------------------
+
+   ----------------
+   -- Check_Open --
+   ----------------
 
    procedure Check_Open (Template : in Process_Template;
                          Message  : in String) is
@@ -52,7 +67,10 @@ package body POSIX_Process_Primitives is
       end if;
    end Check_Open;
 
-                      ------------------------------
+
+   ----------------
+   -- Check_File --
+   ----------------
 
    procedure Check_File (File : in POSIX_IO.File_Descriptor) is
    begin
@@ -68,10 +86,13 @@ package body POSIX_Process_Primitives is
       end case;
    end Check_File;
 
-                      ------------------------------
 
-   procedure Close_Template (Template: in out Process_Template)
-   is
+   --------------------
+   -- Close_Template --
+   --------------------
+
+   procedure Close_Template (Template: in out Process_Template) is
+
       P      : File_Request_Access;
       Result : Win32.BOOL;
 
@@ -133,7 +154,10 @@ package body POSIX_Process_Primitives is
       Free (Template.Process_Informations);
    end Close_Template;
 
-                      ------------------------------
+
+   ----------------------------
+   -- Set_Keep_Effective_IDs --
+   ----------------------------
 
    procedure Set_Keep_Effective_IDs (Template: in out Process_Template) is
    begin
@@ -141,7 +165,10 @@ package body POSIX_Process_Primitives is
       Template.Keep_Effective_IDs := True;
    end Set_Keep_Effective_IDs;
 
-                      ------------------------------
+
+   ---------------------
+   -- Set_Signal_Mask --
+   ---------------------
 
    procedure Set_Signal_Mask
      (Template : in out Process_Template;
@@ -151,7 +178,10 @@ package body POSIX_Process_Primitives is
       Template.Signal_Mask := Mask;
    end Set_Signal_Mask;
 
-                      ------------------------------
+
+   ---------------------------------
+   -- Set_Creation_Signal_Masking --
+   ---------------------------------
 
    procedure Set_Creation_Signal_Masking
      (Template       : in out Process_Template;
@@ -161,7 +191,10 @@ package body POSIX_Process_Primitives is
       Template.Signal_Creation_Masking := Masked_Signals;
    end Set_Creation_Signal_Masking;
 
-                      ------------------------------
+
+   ------------
+   -- Insert --
+   ------------
 
    procedure Insert (Request_Access : in     File_Request_Access;
                      Into           : in out Process_Template)
@@ -175,6 +208,10 @@ package body POSIX_Process_Primitives is
          Into.Last_File_Request      := Request_Access;
       end if;
    end Insert;
+
+   -----------------------------
+   -- Set_File_Action_To_Open --
+   -----------------------------
 
    procedure Set_File_Action_To_Open
      (Template : in out Process_Template;
@@ -199,7 +236,10 @@ package body POSIX_Process_Primitives is
       Insert (New_Action, Into => Template);
    end Set_File_Action_To_Open;
 
-                      ------------------------------
+
+   ------------------------------
+   -- Set_File_Action_To_Close --
+   ------------------------------
 
    procedure Set_File_Action_To_Close
      (Template : in out Process_Template;
@@ -215,7 +255,10 @@ package body POSIX_Process_Primitives is
       Insert (New_Action, Into => Template);
    end Set_File_Action_To_Close;
 
-                      ------------------------------
+
+   ----------------------------------
+   -- Set_File_Action_To_Duplicate --
+   ----------------------------------
 
    procedure Set_File_Action_To_Duplicate
      (Template  : in out Process_Template;
@@ -233,7 +276,10 @@ package body POSIX_Process_Primitives is
       Insert (New_Action, Into => Template);
    end Set_File_Action_To_Duplicate;
 
-                      ------------------------------
+
+   ----------------------
+   -- Execute_Template --
+   ----------------------
 
    procedure Execute_Template (Template : in     Process_Template;
                                SI       : in out Win32.Winbase.STARTUPINFO)
@@ -364,10 +410,13 @@ package body POSIX_Process_Primitives is
       end loop;
    end Execute_Template;
 
-                      ------------------------------
 
    Startup_Informations : aliased Win32.Winbase.STARTUPINFO;
    Process_Informations : aliased Win32.Winbase.PROCESS_INFORMATION;
+
+   -------------------
+   -- Start_Process --
+   -------------------
 
    procedure Start_Process
      (Child       :    out POSIX_Process_Identification.Process_ID;
@@ -455,7 +504,10 @@ package body POSIX_Process_Primitives is
       POSIX_Win32.Add_Child (Child);
    end Start_Process;
 
-                      ------------------------------
+
+   -------------------
+   -- Start_Process --
+   -------------------
 
    procedure Start_Process
      (Child    :    out POSIX_Process_Identification.Process_ID;
@@ -471,7 +523,10 @@ package body POSIX_Process_Primitives is
                      Environment => False);
    end Start_Process;
 
-                      ------------------------------
+
+   -------------------
+   -- Start_Process --
+   -------------------
 
    procedure Start_Process
      (Child    :    out POSIX_Process_Identification.Process_ID;
@@ -485,9 +540,12 @@ package body POSIX_Process_Primitives is
                      Environment => True);
    end Start_Process;
 
-                      ------------------------------
 
    lpFilePart : aliased Win32.LPSTR;
+
+   --------------------------
+   -- Start_Process_Search --
+   --------------------------
 
    procedure Start_Process_Search
      (Child    :    out POSIX_Process_Identification.Process_ID;
@@ -522,7 +580,10 @@ package body POSIX_Process_Primitives is
       end if;
    end Start_Process_Search;
 
-                      ------------------------------
+
+   --------------------------
+   -- Start_Process_Search --
+   --------------------------
 
    procedure Start_Process_Search
      (Child    :    out POSIX_Process_Identification.Process_ID;
@@ -571,14 +632,20 @@ package body POSIX_Process_Primitives is
       end if;
    end Start_Process_Search;
 
-                      ------------------------------
+
+   ------------------
+   -- Exit_Process --
+   ------------------
 
    procedure Exit_Process (Status : in Exit_Status := Normal_Exit) is
    begin
       Win32.Winbase.ExitProcess (Win32.UINT (Status));
    end Exit_Process;
 
-                      ------------------------------
+
+   ----------------------
+   -- Status_Available --
+   ----------------------
 
    function Status_Available (Status : in Termination_Status)
                               return Boolean is
@@ -586,7 +653,10 @@ package body POSIX_Process_Primitives is
       return Status.Pid /= Null_Process_ID;
    end Status_Available;
 
-                      ------------------------------
+
+   -------------------
+   -- Process_ID_Of --
+   -------------------
 
    function Process_ID_Of (Status : in Termination_Status)
                            return Process_ID is
@@ -598,7 +668,10 @@ package body POSIX_Process_Primitives is
       return Status.Pid;
    end  Process_ID_Of;
 
-                      ------------------------------
+
+   --------------------------
+   -- Termination_Cause_Of --
+   --------------------------
 
    function Termination_Cause_Of (Status : in Termination_Status)
                                   return Termination_Cause is
@@ -610,7 +683,10 @@ package body POSIX_Process_Primitives is
       return Exited;
    end Termination_Cause_Of;
 
-                      ------------------------------
+
+   --------------------
+   -- Exit_Status_Of --
+   --------------------
 
    function Exit_Status_Of (Status : in Termination_Status)
                             return Exit_Status is
@@ -623,7 +699,10 @@ package body POSIX_Process_Primitives is
       return Exit_Status (Status.Exit_Status);
    end Exit_Status_Of;
 
-                      ------------------------------
+
+   ---------------------------
+   -- Termination_Signal_Of --
+   ---------------------------
 
    function Termination_Signal_Of (Status: Termination_Status)
                                    return POSIX_Signals.Signal is
@@ -636,7 +715,10 @@ package body POSIX_Process_Primitives is
       return POSIX_Signals.Signal_Terminate;
    end Termination_Signal_Of;
 
-                      ------------------------------
+
+   ------------------------
+   -- Stopping_Signal_Of --
+   ------------------------
 
    function Stopping_Signal_Of (Status: Termination_Status)
                                 return POSIX_Signals.Signal is
@@ -649,9 +731,12 @@ package body POSIX_Process_Primitives is
       return POSIX_Signals.Signal_Abort;
    end Stopping_Signal_Of;
 
-                      ------------------------------
 
    Process_Status : aliased Win32.DWORD;
+
+   ----------------------------
+   -- Wait_For_Child_Process --
+   ----------------------------
 
    procedure Wait_For_Child_Process
      (Status         :    out Termination_Status;
@@ -702,7 +787,10 @@ package body POSIX_Process_Primitives is
       POSIX_Win32.Remove_Child (Child);
    end Wait_For_Child_Process;
 
-                      ------------------------------
+
+   ----------------------------
+   -- Wait_For_Child_Process --
+   ----------------------------
 
    procedure Wait_For_Child_Process
      (Status         :    out Termination_Status;
@@ -714,7 +802,10 @@ package body POSIX_Process_Primitives is
       POSIX_Win32.Wait (Status, Block);
    end Wait_For_Child_Process;
 
-                      ------------------------------
+
+   ----------------------------
+   -- Wait_For_Child_Process --
+   ----------------------------
 
    procedure Wait_For_Child_Process
      (Status         :    out Termination_Status;

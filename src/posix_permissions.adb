@@ -2,9 +2,12 @@
 --  $Id$
 
 with System;
---with POSIX_Win32;
 
 package body POSIX_Permissions is
+
+   -------------------------------------
+   -- Get_Allowed_Process_Permissions --
+   -------------------------------------
 
    function Get_Allowed_Process_Permissions
      return Permission_Set
@@ -14,7 +17,10 @@ package body POSIX_Permissions is
       return PS;
    end Get_Allowed_Process_Permissions;
 
-                -----------------------------------
+
+   -------------------------------------
+   -- Set_Allowed_Process_Permissions --
+   -------------------------------------
 
    procedure Set_Allowed_Process_Permissions
      (Permissions : in     Permission_Set)
@@ -23,7 +29,10 @@ package body POSIX_Permissions is
       null;
    end Set_Allowed_Process_Permissions;
 
-                -----------------------------------
+
+   -------------------------------------
+   -- Set_Allowed_Process_Permissions --
+   -------------------------------------
 
    procedure Set_Allowed_Process_Permissions
      (Permissions : in     Permission_Set;

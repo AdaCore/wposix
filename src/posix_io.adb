@@ -15,6 +15,10 @@ package body POSIX_IO is
 
    --  Operations to open or close file descriptors
 
+   --------------------
+   -- Mode_To_Access --
+   --------------------
+
    function Mode_To_Access (Mode : in File_Mode)
                             return Win32.DWORD is
    begin
@@ -28,7 +32,10 @@ package body POSIX_IO is
       end case;
    end Mode_To_Access;
 
-                -----------------------------------
+
+   ------------
+   -- Is_Set --
+   ------------
 
    function Is_Set (Options : in Open_Option_Set;
                     V       : in Open_Option_Set)
@@ -40,6 +47,10 @@ package body POSIX_IO is
          return True;
       end if;
    end Is_Set;
+
+   ------------
+   -- Shared --
+   ------------
 
    function Shared (Options : in Open_Option_Set)
                     return Win32.DWORD is
@@ -54,7 +65,10 @@ package body POSIX_IO is
       end if;
    end Shared;
 
-                -----------------------------------
+
+   ----------
+   -- Open --
+   ----------
 
    function Open
      (Name           : POSIX.Pathname;
@@ -92,7 +106,10 @@ package body POSIX_IO is
       return POSIX_Win32.File_Handle.Open (Handle);
    end Open;
 
-                -----------------------------------
+
+   --------------------
+   -- Open_Or_Create --
+   --------------------
 
    function Open_Or_Create
      (Name           : POSIX.Pathname;
@@ -145,7 +162,10 @@ package body POSIX_IO is
       return POSIX_Win32.File_Handle.Open (Handle);
    end Open_Or_Create;
 
-                -----------------------------------
+
+   -------------
+   -- Is_Open --
+   -------------
 
    function Is_Open (File : File_Descriptor)
                      return Boolean
@@ -155,7 +175,10 @@ package body POSIX_IO is
       return POSIX_Win32.File_Handle.Get (File) /= POSIX_Win32.Null_Handle;
    end Is_Open;
 
-                -----------------------------------
+
+   -----------
+   -- Close --
+   -----------
 
    procedure Close
      (File    : in File_Descriptor;
@@ -168,9 +191,11 @@ package body POSIX_IO is
    end Close;
 
 
-                -----------------------------------
-
    Handle : aliased Win32.Winnt.HANDLE;
+
+   ---------------
+   -- Duplicate --
+   ---------------
 
    function Duplicate
      (File   : File_Descriptor;
@@ -193,7 +218,10 @@ package body POSIX_IO is
       return New_File;
    end Duplicate;
 
-                -----------------------------------
+
+   -------------------------
+   -- Duplicate_And_Close --
+   -------------------------
 
    function Duplicate_And_Close
      (File           : File_Descriptor;
@@ -218,9 +246,12 @@ package body POSIX_IO is
       return New_File;
    end Duplicate_And_Close;
 
-                -----------------------------------
 
    Read_Handle, Write_Handle : aliased Win32.Winnt.HANDLE;
+
+   -----------------
+   -- Create_Pipe --
+   -----------------
 
    procedure Create_Pipe
      (Read_End  : out File_Descriptor;
@@ -244,6 +275,10 @@ package body POSIX_IO is
 
    Bytes_Read : aliased Win32.DWORD;
 
+   ----------
+   -- Read --
+   ----------
+
    procedure Read
      (File           : in     File_Descriptor;
       Buffer         :    out IO_Buffer;
@@ -263,9 +298,12 @@ package body POSIX_IO is
       Last := POSIX.IO_Count (Bytes_Read);
    end Read;
 
-                -----------------------------------
 
    Bytes_Written : aliased Win32.DWORD;
+
+   -----------
+   -- Write --
+   -----------
 
    procedure Write
      (File       : in     File_Descriptor;
@@ -286,7 +324,10 @@ package body POSIX_IO is
       Last := POSIX.IO_Count (Bytes_Written);
    end Write;
 
-                -----------------------------------
+
+   ------------------
+   -- Generic_Read --
+   ------------------
 
    procedure Generic_Read
      (File           : in     File_Descriptor;
@@ -307,7 +348,10 @@ package body POSIX_IO is
       POSIX_Win32.Check_Result (Result, "Generic_Read");
    end Generic_Read;
 
-                -----------------------------------
+
+   -------------------
+   -- Generic_Write --
+   -------------------
 
    procedure Generic_Write
      (File           : in     File_Descriptor;
@@ -334,6 +378,10 @@ package body POSIX_IO is
 
    --  File position operations
 
+   ---------------
+   -- To_Origin --
+   ---------------
+
    function To_Origin (SP : Position)
                        return Win32.DWORD is
    begin
@@ -348,6 +396,10 @@ package body POSIX_IO is
    end To_Origin;
 
    DistanceToMoveHigh : aliased Win32.LONG := 0;
+
+   ----------
+   -- Seek --
+   ----------
 
    procedure Seek
      (File           : in     File_Descriptor;
@@ -371,9 +423,12 @@ package body POSIX_IO is
       end if;
    end Seek;
 
-                -----------------------------------
 
    File_Size_High : aliased Win32.DWORD;
+
+   ---------------
+   -- File_Size --
+   ---------------
 
    function File_Size (File : File_Descriptor)
                        return POSIX.IO_Count
@@ -392,7 +447,10 @@ package body POSIX_IO is
       return POSIX.IO_Count (File_Size_Low);
    end File_Size;
 
-                -----------------------------------
+
+   -------------------
+   -- File_Position --
+   -------------------
 
    function File_Position (File : File_Descriptor)
                            return POSIX.IO_Count
@@ -418,13 +476,20 @@ package body POSIX_IO is
 
    --  Terminal operations
 
+   -------------------
+   -- Is_A_Terminal --
+   -------------------
+
    function Is_A_Terminal (File : File_Descriptor)
                            return Boolean is
    begin
       return False;
    end Is_A_Terminal;
 
-                -----------------------------------
+
+   -----------------------
+   -- Get_Terminal_Name --
+   -----------------------
 
    function Get_Terminal_Name (File : File_Descriptor)
                                return POSIX.Pathname is
@@ -436,6 +501,10 @@ package body POSIX_IO is
 
    --  File Control operations
 
+   ----------------------
+   -- Get_File_Control --
+   ----------------------
+
    procedure Get_File_Control
      (File       : in     File_Descriptor;
       Mode       :    out File_Mode;
@@ -445,7 +514,10 @@ package body POSIX_IO is
       null;
    end Get_File_Control;
 
-                -----------------------------------
+
+   ----------------------
+   -- Set_File_Control --
+   ----------------------
 
    procedure Set_File_Control
      (File    : in     File_Descriptor;
@@ -454,7 +526,10 @@ package body POSIX_IO is
       null;
    end Set_File_Control;
 
-                -----------------------------------
+
+   -----------------------
+   -- Get_Close_On_Exec --
+   -----------------------
 
    function Get_Close_On_Exec (File : File_Descriptor)
                                return Boolean is
@@ -462,7 +537,10 @@ package body POSIX_IO is
       return False;
    end Get_Close_On_Exec;
 
-                -----------------------------------
+
+   -----------------------
+   -- Set_Close_On_Exec --
+   -----------------------
 
    procedure Set_Close_On_Exec
      (File : in     File_Descriptor;

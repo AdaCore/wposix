@@ -17,6 +17,10 @@ package body POSIX_Files is
    --  Operations to create files in the File System
    Result  : Win32.BOOL;
 
+   ----------------------
+   -- Create_Directory --
+   ----------------------
+
    procedure Create_Directory
      (Pathname   : in POSIX.Pathname;
       Permission : in POSIX_Permissions.Permission_Set)
@@ -30,7 +34,10 @@ package body POSIX_Files is
       POSIX_Win32.Check_Result (Result, "Create_Directory");
    end Create_Directory;
 
-                    -----------------------------------
+
+   -----------------
+   -- Create_FIFO --
+   -----------------
 
    procedure Create_FIFO
      (Pathname   : in POSIX.Pathname;
@@ -48,6 +55,10 @@ package body POSIX_Files is
 
    --  Operations to remove files from the File System
 
+   ------------
+   -- Unlink --
+   ------------
+
    procedure Unlink (Pathname : in POSIX.Pathname) is
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
    begin
@@ -55,7 +66,10 @@ package body POSIX_Files is
       POSIX_Win32.Check_Result (Result, "Unlink");
    end Unlink;
 
-                    -----------------------------------
+
+   ----------------------
+   -- Remove_Directory --
+   ----------------------
 
    procedure Remove_Directory (Pathname : in POSIX.Pathname) is
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
@@ -70,6 +84,10 @@ package body POSIX_Files is
 
    --  Predicates on files in the File System
 
+   -------------
+   -- Is_File --
+   -------------
+
    function Is_File (Pathname : in POSIX.Pathname)
                      return Boolean
    is
@@ -81,7 +99,10 @@ package body POSIX_Files is
          return False;
    end Is_File;
 
-                    -----------------------------------
+
+   ------------------
+   -- Is_Directory --
+   ------------------
 
    function Is_Directory (Pathname : in POSIX.Pathname)
                           return Boolean
@@ -95,7 +116,9 @@ package body POSIX_Files is
    end Is_Directory;
 
 
-                    -----------------------------------
+   -------------
+   -- Is_FIFO --
+   -------------
 
    function Is_FIFO (Pathname : in POSIX.Pathname)
                      return Boolean
@@ -109,7 +132,9 @@ package body POSIX_Files is
    end Is_FIFO;
 
 
-                    -----------------------------------
+   -------------------------------
+   -- Is_Character_Special_File --
+   -------------------------------
 
    function Is_Character_Special_File (Pathname : in POSIX.Pathname)
                                        return Boolean
@@ -123,7 +148,9 @@ package body POSIX_Files is
    end Is_Character_Special_File;
 
 
-                    -----------------------------------
+   ---------------------------
+   -- Is_Block_Special_File --
+   ---------------------------
 
    function Is_Block_Special_File (Pathname : in POSIX.Pathname)
                                    return Boolean
@@ -142,6 +169,10 @@ package body POSIX_Files is
 
    --  Operations to modify File Pathnames
 
+   ----------
+   -- Link --
+   ----------
+
    procedure Link
      (Old_Pathname : in POSIX.Pathname;
       New_Pathname : in POSIX.Pathname)
@@ -157,7 +188,10 @@ package body POSIX_Files is
       POSIX_Win32.Check_Result (Result, "Link");
    end Link;
 
-                    -----------------------------------
+
+   ------------
+   -- Rename --
+   ------------
 
    procedure Rename
      (Old_Pathname : in POSIX.Pathname;
@@ -180,6 +214,10 @@ package body POSIX_Files is
 
    --  Iterating over files within a directory
 
+   -----------------
+   -- Filename_Of --
+   -----------------
+
    function Filename_Of (D_Entry : Directory_Entry)
                          return POSIX.Filename
    is
@@ -188,9 +226,12 @@ package body POSIX_Files is
         (Interfaces.C.To_Ada (Win32.To_C (D_Entry.cFileName)));
    end Filename_Of;
 
-                    -----------------------------------
 
    Data : aliased Win32.Winbase.WIN32_FIND_DATA;
+
+   -------------------------------
+   -- For_Every_Directory_Entry --
+   -------------------------------
 
    procedure For_Every_Directory_Entry
      (Pathname : in POSIX.Pathname)
@@ -244,6 +285,10 @@ package body POSIX_Files is
 
    --  Operations to Update File Status Information
 
+   ----------------------------
+   -- Change_Owner_And_Group --
+   ----------------------------
+
    procedure Change_Owner_And_Group
      (Pathname : in POSIX.Pathname;
       Owner    : in POSIX_Process_Identification.User_ID;
@@ -253,7 +298,9 @@ package body POSIX_Files is
    end Change_Owner_And_Group;
 
 
-                    -----------------------------------
+   ------------------------
+   -- Change_Permissions --
+   ------------------------
 
    procedure Change_Permissions
      (Pathname   : in POSIX.Pathname;
@@ -282,7 +329,10 @@ package body POSIX_Files is
       POSIX_Win32.Check_Result (Result, "Change_Permissions");
    end Change_Permissions;
 
-                    -----------------------------------
+
+   -------------------
+   -- To_SYSTEMTIME --
+   -------------------
 
    function To_SYSTEMTIME is new Ada.Unchecked_Conversion
      (POSIX_Calendar.POSIX_Time,
@@ -295,6 +345,10 @@ package body POSIX_Files is
    Current_Creation_FileTime     : aliased Win32.Winbase.FILETIME;
    UTC_Access_FileTime           : aliased Win32.Winbase.FILETIME;
    UTC_Modification_FileTime     : aliased Win32.Winbase.FILETIME;
+
+   --------------------
+   -- Set_File_Times --
+   --------------------
 
    procedure Set_File_Times
      (Pathname          : in POSIX.Pathname;
@@ -354,7 +408,9 @@ package body POSIX_Files is
    end Set_File_Times;
 
 
-                    -----------------------------------
+   --------------------
+   -- Set_File_Times --
+   --------------------
 
    procedure Set_File_Times (Pathname : in POSIX.Pathname) is
       Current_Time : POSIX_Calendar.POSIX_Time;
@@ -368,6 +424,10 @@ package body POSIX_Files is
 
    --  Operations to Determine File Accessibility
 
+   -------------------
+   -- Is_Accessible --
+   -------------------
+
    function Is_Accessible
      (Pathname    : in POSIX.Pathname;
       Access_Mode : in Access_Mode_Set)
@@ -378,7 +438,10 @@ package body POSIX_Files is
       return Accessibility (Pathname, Access_Mode) = POSIX.No_Error;
    end Is_Accessible;
 
-                    -----------------------------------
+
+   -------------------
+   -- Accessibility --
+   -------------------
 
    function Accessibility
      (Pathname    : in POSIX.Pathname;
@@ -405,7 +468,10 @@ package body POSIX_Files is
       return Retcode;
    end Accessibility;
 
-                    -----------------------------------
+
+   ---------------------
+   -- Is_File_Present --
+   ---------------------
 
    function Is_File_Present (Pathname : in POSIX.Pathname)
                              return Boolean
@@ -418,7 +484,10 @@ package body POSIX_Files is
       return Retcode /= 16#FFFF_FFFF#;
    end Is_File_Present;
 
-                    -----------------------------------
+
+   ---------------
+   -- Existence --
+   ---------------
 
    function Existence (Pathname : in POSIX.Pathname)
                        return POSIX.Error_Code
