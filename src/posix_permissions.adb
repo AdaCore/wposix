@@ -7,16 +7,16 @@ with System;
 
 package body POSIX_Permissions is
 
+   Dummy_Process_Permission_Set : Permission_Set := Owner_Permission_Set;
+
    -------------------------------------
    -- Get_Allowed_Process_Permissions --
    -------------------------------------
 
    function Get_Allowed_Process_Permissions
-     return Permission_Set
-   is
-      PS : Permission_Set;
+     return Permission_Set is
    begin
-      return PS;
+      return Dummy_Process_Permission_Set;
    end Get_Allowed_Process_Permissions;
 
 
@@ -28,7 +28,7 @@ package body POSIX_Permissions is
      (Permissions : in     Permission_Set)
    is
    begin
-      null;
+      Dummy_Process_Permission_Set := Permissions;
    end Set_Allowed_Process_Permissions;
 
 
@@ -41,7 +41,8 @@ package body POSIX_Permissions is
       Old_Perms   :    out Permission_Set)
    is
    begin
-      null;
+      Old_Perms := Dummy_Process_Permission_Set;
+      Dummy_Process_Permission_Set := Permissions;
    end Set_Allowed_Process_Permissions;
 
 end POSIX_Permissions;
