@@ -177,11 +177,9 @@ package body POSIX_File_Status is
    --------------
 
    function Owner_Of (File_Status : Status)
-                      return POSIX_Process_Identification.User_ID
-   is
-      Owner : POSIX_Process_Identification.User_ID;
+                      return POSIX_Process_Identification.User_ID is
    begin
-      return Owner;
+      return POSIX_Process_Identification.Get_Real_User_ID;
    end Owner_Of;
 
 
@@ -190,11 +188,9 @@ package body POSIX_File_Status is
    --------------
 
    function Group_Of (File_Status : Status)
-                      return POSIX_Process_Identification.Group_ID
-   is
-      Group : POSIX_Process_Identification.Group_ID;
+                      return POSIX_Process_Identification.Group_ID is
    begin
-      return Group;
+      return POSIX_Process_Identification.Get_Real_Group_ID;
    end Group_Of;
 
 
