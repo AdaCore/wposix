@@ -3,7 +3,7 @@
 
 .SILENT:
 
-GFLAGS		=	-O2 -gnaty3abcehiklmptrf
+GFLAGS		=	-I- -I. -O2 -gnaty3abcehiklmptrf -gnatwu
 INSTALL_DIR	=	/usr/Ada.Libraries/POSIX
 
 all:	src
