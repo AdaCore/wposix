@@ -426,11 +426,13 @@ package body POSIX_Process_Primitives is
       declare
          use type Win32.ULONG;
          use Win32.Winbase;
-         L_Arguments : constant String := To_String (Arguments) & ASCII.Nul;
+         L_Command : constant String :=
+           POSIX.To_String (Pathname) & ' ' & To_String (Arguments) &
+           ASCII.Nul;
       begin
          Result := CreateProcess
            (LpApplicationName    => Win32.Addr (L_Pathname),
-            LpCommandLine        => Win32.Addr (L_Arguments),
+            LpCommandLine        => Win32.Addr (L_Command),
             LpProcessAttributes  => Security_Handles_Inherited'Access,
             LpThreadAttributes   => null,
             BInheritHandles      => Win32.TRUE,
@@ -448,6 +450,9 @@ package body POSIX_Process_Primitives is
 
       Template.Process_Informations.all := Process_Informations;
       Child := PROCESS_INFORMATION_To_Process_ID (Process_Informations);
+
+      --  record all child process for Wait_For_Child_Process functions
+      POSIX_Win32.Add_Child (Child);
    end Start_Process;
 
                       ------------------------------
@@ -660,6 +665,10 @@ package body POSIX_Process_Primitives is
       Result   : Win32.BOOL;
       Process_Informations : Win32.Winbase.PROCESS_INFORMATION;
    begin
+      if not POSIX_Win32.Exist (Child) then
+         POSIX_Win32.Raise_Error ("No Child Process", POSIX.No_Child_Process);
+      end if;
+
       Process_Informations := Process_ID_To_PROCESS_INFORMATION (Child);
 
       if Child = Null_Process_ID then
@@ -670,9 +679,17 @@ package body POSIX_Process_Primitives is
          return;
       end if;
 
-      Retcode := Win32.Winbase.WaitForSingleObject
-        (Process_Informations.Hprocess,
-         Win32.Winbase.INFINITE);
+      if Block then
+         Retcode := Win32.Winbase.WaitForSingleObject
+           (Process_Informations.Hprocess, Win32.Winbase.INFINITE);
+      else
+         Retcode := Win32.Winbase.WaitForSingleObject
+           (Process_Informations.Hprocess, 0);
+         if Retcode = Win32.Winbase.WAIT_TIMEOUT then
+            Status := Termination_Status'(Null_Process_ID, 0);
+            return;
+         end if;
+      end if;
 
       Status.Pid := Child;
 
@@ -680,6 +697,9 @@ package body POSIX_Process_Primitives is
         (Process_Informations.Hprocess,
          Process_Status'Access);
       Status.Exit_Status := Exit_Stat (Process_Status);
+
+      --  remove child from the list of child process
+      POSIX_Win32.Remove_Child (Child);
    end Wait_For_Child_Process;
 
                       ------------------------------
@@ -691,7 +711,7 @@ package body POSIX_Process_Primitives is
       Trace_Stopped  : in     Boolean := True;
       Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals) is
    begin
-      POSIX_Win32.Raise_Not_Yet_Implemented ("Wait_For_Child_Process (Group)");
+      POSIX_Win32.Wait (Status, Block);
    end Wait_For_Child_Process;
 
                       ------------------------------
@@ -702,7 +722,7 @@ package body POSIX_Process_Primitives is
       Trace_Stopped  : in     Boolean := True;
       Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals) is
    begin
-      POSIX_Win32.Raise_Not_Yet_Implemented ("Wait_For_Child_Process (all)");
+      POSIX_Win32.Wait (Status, Block);
    end Wait_For_Child_Process;
 
 end POSIX_Process_Primitives;
