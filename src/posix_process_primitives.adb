@@ -444,7 +444,7 @@ package body POSIX_Process_Primitives is
       function Add_Exe (S : in String) return String is
       begin
          if S'Length > 4 and then
-           S (S'Last - 4 .. S'Last) /= ".exe"
+           S (S'Last - 3 .. S'Last) /= ".exe"
          then
             return S & ".exe";
          else
