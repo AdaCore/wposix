@@ -55,6 +55,10 @@ package body POSIX_Win32 is
          " : Error_Code = " & POSIX.Error_Code'Image (Error_Code));
    end Raise_Error;
 
+
+
+   BinaryType : aliased Win32.DWORD;
+
    function Is_Executable (Pathname : in POSIX.POSIX_String)
                            return Boolean
    is
@@ -68,7 +72,15 @@ package body POSIX_Win32 is
             if Ext = ".com" then
                return True;
             elsif Ext = ".exe" then
-               return True;
+               declare
+                  use type Win32.BOOL;
+                  L_Pathname      : constant String
+                    := POSIX.To_String (Pathname) & ASCII.Nul;
+               begin
+                  return Win32.Winbase.GetBinaryType
+                    (Win32.Addr (L_Pathname),
+                     BinaryType'Access)        = Win32.True;
+               end;
             elsif Ext =".bat" then
                return True;
             else
