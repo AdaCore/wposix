@@ -5,7 +5,16 @@ POSIX Ada Binding for Windows 95/98 and Windows NT
 ==================================================
 
 This is a partial implementation of POSIX using the Win32 API.
-Version 1.4 beta
+Version 1.5 beta
+
+
+changes since 1.4b
+------------------
+
+POSIX_File_Status
+	fix bug in Is_Regular_File
+	A file is regular under Windows if the attributes normal or archive is
+	set. Patch sent by Sune Falck [sunef@hem.passagen.se].
 
 
 changes since 1.3b
