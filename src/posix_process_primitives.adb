@@ -413,9 +413,6 @@ package body POSIX_Process_Primitives is
    end Execute_Template;
 
 
-   Startup_Informations : aliased Win32.Winbase.STARTUPINFO;
-   Process_Informations : aliased Win32.Winbase.PROCESS_INFORMATION;
-
    -------------------
    -- Start_Process --
    -------------------
@@ -430,6 +427,9 @@ package body POSIX_Process_Primitives is
    is
       use type Win32.BOOL;
       use type Win32.ULONG;
+
+      Startup_Informations : aliased Win32.Winbase.STARTUPINFO;
+      Process_Informations : aliased Win32.Winbase.PROCESS_INFORMATION;
 
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
 
@@ -490,8 +490,8 @@ package body POSIX_Process_Primitives is
             DwCreationFlags      => NORMAL_PRIORITY_CLASS,
             LpEnvironment        => Env_Pointer,
             LpCurrentDirectory   => null,
-            LpStartupInfo        => Startup_Informations'Access,
-            LpProcessInformation => Process_Informations'Access
+            LpStartupInfo        => Startup_Informations'Unchecked_Access,
+            LpProcessInformation => Process_Informations'Unchecked_Access
             );
       end Run_Process;
 

@@ -16,8 +16,6 @@ package body POSIX_Process_Identification is
    Default_UID : constant := 500;
    Default_GID : constant := 100;
 
-   Result : Win32.BOOL;
-
    --  Process Identification
 
    --------------------
@@ -180,6 +178,7 @@ package body POSIX_Process_Identification is
    is
       Buffer : String (1 .. 500);
       Size   : aliased Win32.DWORD := 500;
+      Result : Win32.BOOL;
    begin
       Result := Win32.Winbase.GetUserName (Win32.Addr (Buffer),
                                            Size'Unchecked_Access);

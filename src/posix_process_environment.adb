@@ -36,8 +36,6 @@ package body POSIX_Process_Environment is
 
    use type Win32.CHAR;
 
-   Result : Win32.BOOL;
-
    --  Process Parameters
 
    -------------------
@@ -93,6 +91,7 @@ package body POSIX_Process_Environment is
    end New_Environment;
 
    procedure Free_Environment (Env : in Environment) is
+      Result : Win32.BOOL;
    begin
       Result := Win32.Winbase.FreeEnvironmentStrings (Win32.PCHAR (Env));
    end Free_Environment;
@@ -347,6 +346,7 @@ package body POSIX_Process_Environment is
    is
       L_Name  : constant String := POSIX.To_String (Name) & ASCII.Nul;
       L_Value : constant String := POSIX.To_String (Value) & ASCII.Nul;
+      Result  : Win32.BOOL;
    begin
       Check_Name (Name, "Set_Environment_Variable");
       Result := Win32.Winbase.SetEnvironmentVariable (Win32.Addr (L_Name),
@@ -384,6 +384,7 @@ package body POSIX_Process_Environment is
       use type Win32.BOOL;
       use type Win32.DWORD;
       L_Name : constant String := POSIX.To_String (Name) & ASCII.Nul;
+      Result : Win32.BOOL;
    begin
       Check_Name (Name, "Delete_Environment_Variable");
       Result := Win32.Winbase.SetEnvironmentVariable (Win32.Addr (L_Name),
@@ -539,6 +540,7 @@ package body POSIX_Process_Environment is
    is
       L_Directory_Name : constant String
         := POSIX.To_String (Directory_Name) & ASCII.Nul;
+      Result           : Win32.BOOL;
    begin
       Result := Win32.Winbase.SetCurrentDirectory
         (Win32.Addr (L_Directory_Name));

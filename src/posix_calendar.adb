@@ -10,16 +10,14 @@ package body POSIX_Calendar is
 
    --  Time information
 
-   System_Time : aliased Win32.Winbase.SYSTEMTIME;
-
    -----------
    -- Clock --
    -----------
 
-   function Clock
-     return POSIX_Time is
+   function Clock return POSIX_Time is
+      System_Time : aliased Win32.Winbase.SYSTEMTIME;
    begin
-      Win32.Winbase.GetLocalTime (System_Time'Access);
+      Win32.Winbase.GetLocalTime (System_Time'Unchecked_Access);
       return POSIX_Time (System_Time);
    end Clock;
 

@@ -13,12 +13,8 @@ with POSIX_IO;
 
 package body POSIX_File_Status is
 
-   Result  : Win32.BOOL;
-
 
    --  Operations to Obtain File Status
-
-   Find_Data : aliased Win32.Winbase.WIN32_FIND_DATA;
 
    ---------------------
    -- Get_File_Status --
@@ -29,6 +25,7 @@ package body POSIX_File_Status is
    is
       use type Win32.DWORD;
 
+      Result  : Win32.BOOL;
       L_Pathname      : constant String
         := POSIX.To_String (Pathname) & ASCII.Nul;
 
@@ -36,6 +33,8 @@ package body POSIX_File_Status is
       File            : POSIX_IO.File_Descriptor;
       Handle          : Win32.Winnt.Handle;
       File_Status     : Status;
+      Find_Data       : aliased Win32.Winbase.WIN32_FIND_DATA;
+
    begin
       File_Attributes := Win32.Winbase.GetFileAttributes
         (Win32.Addr (L_Pathname));
@@ -46,7 +45,7 @@ package body POSIX_File_Status is
              Win32.Winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0 then
             Handle := Win32.Winbase.FindFirstFile
               (Win32.Addr (L_Pathname),
-               Find_Data'Access);
+               Find_Data'Unchecked_Access);
             File_Status.Is_Executable  := POSIX_Win32.Is_Executable (Pathname);
             File_Status.File_Attributes  := File_Attributes;
             File_Status.Creation_Time    := Find_Data.ftCreationTime;
@@ -68,8 +67,6 @@ package body POSIX_File_Status is
    end Get_File_Status;
 
 
-   File_Information : aliased Win32.Winbase.BY_HANDLE_FILE_INFORMATION;
-
    ---------------------
    -- Get_File_Status --
    ---------------------
@@ -77,11 +74,14 @@ package body POSIX_File_Status is
    function Get_File_Status (File     : POSIX_IO.File_Descriptor)
                              return Status
    is
-      File_Status : Status;
-      Handle      : Win32.Winnt.HANDLE := POSIX_Win32.File_Handle.Get (File);
+      Result           : Win32.BOOL;
+      File_Status      : Status;
+      Handle           : Win32.Winnt.HANDLE :=
+        POSIX_Win32.File_Handle.Get (File);
+      File_Information : aliased Win32.Winbase.BY_HANDLE_FILE_INFORMATION;
    begin
       Result := Win32.Winbase.GetFileInformationByHandle
-        (Handle, File_Information'Access);
+        (Handle, File_Information'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Get_File_Status (File)");
 
       File_Status.File_Attributes  := File_Information.dwFileAttributes;
@@ -217,11 +217,6 @@ package body POSIX_File_Status is
    function To_POSIX_Time is new Ada.Unchecked_Conversion
      (Win32.Winbase.SYSTEMTIME, POSIX_Calendar.POSIX_Time);
 
-   System_Time      : aliased Win32.Winbase.SYSTEMTIME;
-   Last_Access_Time : aliased Win32.Winbase.FILETIME;
-   Last_Write_Time  : aliased Win32.Winbase.FILETIME;
-   Local_Time       : aliased Win32.Winbase.FILETIME;
-
    -------------------------
    -- Last_Access_Time_Of --
    -------------------------
@@ -229,12 +224,16 @@ package body POSIX_File_Status is
    function Last_Access_Time_Of (File_Status : Status)
                                  return POSIX_Calendar.POSIX_Time
    is
+      Result           : Win32.BOOL;
+      System_Time      : aliased Win32.Winbase.SYSTEMTIME;
+      Last_Access_Time : aliased Win32.Winbase.FILETIME;
+      Local_Time       : aliased Win32.Winbase.FILETIME;
    begin
       Last_Access_Time := File_Status.Last_Access_Time;
       Result := Win32.Winbase.FileTimeToLocalFileTime
-        (Last_Access_Time'Access, Local_Time'Access);
+        (Last_Access_Time'Unchecked_Access, Local_Time'Unchecked_Access);
       Result := Win32.Winbase.FileTimeToSystemTime
-        (Local_Time'Access, System_Time'Access);
+        (Local_Time'Unchecked_Access, System_Time'Unchecked_Access);
       return To_POSIX_Time (System_Time);
    end Last_Access_Time_Of;
 
@@ -246,12 +245,16 @@ package body POSIX_File_Status is
    function Last_Modification_Time_Of (File_Status : Status)
                                        return POSIX_Calendar.POSIX_Time
    is
+      Result           : Win32.BOOL;
+      System_Time      : aliased Win32.Winbase.SYSTEMTIME;
+      Last_Write_Time  : aliased Win32.Winbase.FILETIME;
+      Local_Time       : aliased Win32.Winbase.FILETIME;
    begin
       Last_Write_Time := File_Status.Last_Write_Time;
       Result := Win32.Winbase.FileTimeToLocalFileTime
-        (Last_Write_Time'Access, Local_Time'Access);
+        (Last_Write_Time'Unchecked_Access, Local_Time'Unchecked_Access);
       Result := Win32.Winbase.FileTimeToSystemTime
-        (Local_Time'Access, System_Time'Access);
+        (Local_Time'Unchecked_Access, System_Time'Unchecked_Access);
       return To_POSIX_Time (System_Time);
    end Last_Modification_Time_Of;
 

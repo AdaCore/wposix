@@ -13,8 +13,6 @@ with POSIX_Win32.File_Handle;
 
 package body POSIX_IO is
 
-   Result  : Win32.BOOL;
-
 
    --  Operations to open or close file descriptors
 
@@ -185,7 +183,9 @@ package body POSIX_IO is
 
    procedure Close
      (File    : in File_Descriptor;
-      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals) is
+      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
+   is
+      Result : Win32.BOOL;
    begin
       Result := Win32.Winbase.CloseHandle
         (POSIX_Win32.File_Handle.Get (File));
@@ -207,6 +207,7 @@ package body POSIX_IO is
    is
       use type Win32.DWORD;
       New_File : File_Descriptor;
+      Result   : Win32.BOOL;
    begin
       Result := Win32.Winbase.DuplicateHandle
         (Win32.Winbase.GetCurrentProcess,
@@ -234,6 +235,7 @@ package body POSIX_IO is
    is
       use type Win32.DWORD;
       New_File : File_Descriptor;
+      Result   : Win32.BOOL;
    begin
       Result := Win32.Winbase.DuplicateHandle
         (Win32.Winbase.GetCurrentProcess,
@@ -250,8 +252,6 @@ package body POSIX_IO is
    end Duplicate_And_Close;
 
 
-   Read_Handle, Write_Handle : aliased Win32.Winnt.HANDLE;
-
    -----------------
    -- Create_Pipe --
    -----------------
@@ -260,10 +260,12 @@ package body POSIX_IO is
      (Read_End  : out File_Descriptor;
       Write_End : out File_Descriptor)
    is
+      Read_Handle, Write_Handle : aliased Win32.Winnt.HANDLE;
+      Result                    : Win32.BOOL;
    begin
       Result := Win32.Winbase.CreatePipe
-        (Read_Handle'Access,
-         Write_Handle'Access,
+        (Read_Handle'Unchecked_Access,
+         Write_Handle'Unchecked_Access,
          null, --  Security Attributes
          4096);
       POSIX_Win32.Check_Result (Result, "Create_Pipe");
@@ -276,8 +278,6 @@ package body POSIX_IO is
 
    --  File Input/Output operations
 
-   Bytes_Read : aliased Win32.DWORD;
-
    ----------
    -- Read --
    ----------
@@ -288,12 +288,14 @@ package body POSIX_IO is
       Last           :    out POSIX.IO_Count;
       Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
+      Result     : Win32.BOOL;
+      Bytes_Read : aliased Win32.DWORD;
    begin
       Result := Win32.Winbase.ReadFile
         (POSIX_Win32.File_Handle.Get (File),
          Buffer (Buffer'First)'Address,
          Win32.DWORD (Buffer'Length),
-         Bytes_Read'Access,
+         Bytes_Read'Unchecked_Access,
          null);
 
       POSIX_Win32.Check_Result (Result, "Read");
@@ -301,8 +303,6 @@ package body POSIX_IO is
       Last := POSIX.IO_Count (Bytes_Read);
    end Read;
 
-
-   Bytes_Written : aliased Win32.DWORD;
 
    -----------
    -- Write --
@@ -314,12 +314,14 @@ package body POSIX_IO is
       Last       :    out POSIX.IO_Count;
       Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
+      Result        : Win32.BOOL;
+      Bytes_Written : aliased Win32.DWORD;
    begin
       Result := Win32.Winbase.WriteFile
         (POSIX_Win32.File_Handle.Get (File),
          Buffer (Buffer'First)'Address,
          Win32.DWORD (Buffer'Length),
-         Bytes_Written'Access,
+         Bytes_Written'Unchecked_Access,
          null);
 
       POSIX_Win32.Check_Result (Result, "Write");
@@ -338,6 +340,8 @@ package body POSIX_IO is
       Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       Number_Of_Bytes : Positive;
+      Result          : Win32.BOOL;
+      Bytes_Read      : aliased Win32.DWORD;
    begin
       Number_Of_Bytes := Item'Size / 8;
 
@@ -345,7 +349,7 @@ package body POSIX_IO is
         (POSIX_Win32.File_Handle.Get (File),
          Item'Address,
          Win32.DWORD (Number_Of_Bytes),
-         Bytes_Read'Access,
+         Bytes_Read'Unchecked_Access,
          null);
 
       POSIX_Win32.Check_Result (Result, "Generic_Read");
@@ -362,6 +366,8 @@ package body POSIX_IO is
       Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       Number_Of_Bytes : Positive;
+      Result          : Win32.BOOL;
+      Bytes_Written   : aliased Win32.DWORD;
    begin
       Number_Of_Bytes := Item'Size / 8;
 
@@ -369,7 +375,7 @@ package body POSIX_IO is
         (POSIX_Win32.File_Handle.Get (File),
          Item'Address,
          Win32.DWORD (Number_Of_Bytes),
-         Bytes_Written'Access,
+         Bytes_Written'Unchecked_Access,
          null);
 
       POSIX_Win32.Check_Result (Result, "Generic_Write");
