@@ -3,8 +3,8 @@
 --  Author : Pascal Obry
 --  pascal_obry@csi.com
 
-with POSIX,
-with POSIX_IO,
+with POSIX;
+with POSIX_IO;
 with POSIX_Process_Identification;
 
 package POSIX_File_Locking is
