@@ -6,19 +6,12 @@ with Interfaces.C;
 with Ada.Unchecked_Conversion;
 with Win32.Winnt;
 with Win32.Winbase;
-with Win32.Windef;
 
 with POSIX_Win32;
 with POSIX_Calendar;
 with POSIX_File_Status;
 
 package body POSIX_Files is
-
-   use POSIX_Win32;
-   use type Win32.INT;
-   use type Win32.LONG;
-   use type Win32.ULONG;
-   use type Win32.BOOL;
 
    --  Operations to create files in the File System
    Retcode : Win32.INT;
@@ -217,6 +210,8 @@ package body POSIX_Files is
    procedure For_Every_Directory_Entry
      (Pathname : in POSIX.Pathname)
    is
+      use type Win32.INT;
+      use type Win32.BOOL;
       use type Win32.Winnt.HANDLE;
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
       Handle     : Win32.Winnt.HANDLE;
@@ -267,10 +262,27 @@ package body POSIX_Files is
      (Pathname   : in POSIX.Pathname;
       Permission : in POSIX_Permissions.Permission_Set)
    is
+      use type Win32.DWORD;
+      use POSIX_Permissions;
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
+      Attributes : Win32.DWORD;
    begin
-      POSIX_Win32.Raise_Not_Yet_Implemented ("Change_Permissions");
-      POSIX_Win32.Check_Retcode (Retcode, "Change_Permissions");
+      Attributes := Win32.Winbase.GetFileAttributes (Win32.Addr (L_Pathname));
+      if Attributes = 16#FFFF_FFFF# then
+        POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
+                                   "Change_Permissions");
+      end if;
+
+      if Permission (Owner_Read) or else Permission (Owner_Write) then
+         Attributes := Attributes and
+           (not Win32.Winnt.FILE_ATTRIBUTE_READONLY);
+      else
+         Attributes := Attributes and Win32.Winnt.FILE_ATTRIBUTE_READONLY;
+      end if;
+
+      Result := Win32.Winbase.SetFileAttributes (Win32.Addr (L_Pathname),
+                                                 Attributes);
+      POSIX_Win32.Check_Result (Result, "Change_Permissions");
    end Change_Permissions;
 
                     -----------------------------------
@@ -284,6 +296,8 @@ package body POSIX_Files is
    Current_Access_FileTime       : aliased Win32.Winbase.FILETIME;
    Current_Modification_FileTime : aliased Win32.Winbase.FILETIME;
    Current_Creation_FileTime     : aliased Win32.Winbase.FILETIME;
+   UTC_Access_FileTime           : aliased Win32.Winbase.FILETIME;
+   UTC_Modification_FileTime     : aliased Win32.Winbase.FILETIME;
 
    procedure Set_File_Times
      (Pathname          : in POSIX.Pathname;
@@ -318,16 +332,24 @@ package body POSIX_Files is
         (Access_System_Time'Access,
          Current_Access_FileTime'Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
+      Result := Win32.Winbase.LocalFileTimeToFileTime
+        (Current_Access_Filetime'Access, UTC_Access_Filetime'Access);
+      POSIX_Win32.Check_Result (Result, "Set_File_Times");
+
       Result := Win32.Winbase.SystemTimeToFileTime
         (Modification_System_Time'Access,
          Current_Modification_FileTime'Access);
+      POSIX_Win32.Check_Result (Result, "Set_File_Times");
+      Result := Win32.Winbase.LocalFileTimeToFileTime
+        (Current_Modification_Filetime'Access,
+         UTC_Modification_Filetime'Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
 
       Result := Win32.Winbase.SetFileTime
         (Handle,
          Current_Creation_FileTime'Access,
-         Current_Access_FileTime'Access,
-         Current_Modification_FileTime'Access);
+         UTC_Access_FileTime'Access,
+         UTC_Modification_FileTime'Access);
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
 
       Result := Win32.Winbase.CloseHandle (Handle);
@@ -391,7 +413,7 @@ package body POSIX_Files is
    function Is_File_Present (Pathname : in POSIX.Pathname)
                              return Boolean
    is
-      use type Interfaces.C.Int;
+      use type Win32.DWORD;
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
       Retcode    : Win32.DWORD;
    begin
