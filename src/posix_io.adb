@@ -516,7 +516,7 @@ package body POSIX_IO is
    -------------------
 
    function File_Position (File : File_Descriptor)
-                           return POSIX.IO_Count
+                           return IO_Offset
    is
       use type Win32.DWORD;
       Low_Position : Win32.DWORD;
@@ -531,7 +531,8 @@ package body POSIX_IO is
          POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
                                     "File_Position");
       end if;
-      return POSIX.IO_Count (Low_Position);
+
+      return IO_Offset (Low_Position);
    end File_Position;
 
 

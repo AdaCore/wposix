@@ -131,7 +131,7 @@ package POSIX_IO is
                        return POSIX.IO_Count;
 
    function File_Position (File : File_Descriptor)
-                           return POSIX.IO_Count;
+                           return IO_Offset;
 
 
 
