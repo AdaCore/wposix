@@ -24,6 +24,7 @@ POSIX_Process_Primitives
 POSIX_Process_Identification
 	Fix bug in Get_Login_Name
 
+
 changes since 1.7b
 ------------------
 
