@@ -55,8 +55,9 @@ package body POSIX_Process_Times is
          User_Time'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Get_Process_Times");
 
-      PT := (User_Time   => Filetime_To_Tick (User_Time),
-             System_Time => Filetime_To_Tick (Kernel_Time),
+      PT := (Creation_Time => Creation_Time,
+             User_Time     => Filetime_To_Tick (User_Time),
+             System_Time   => Filetime_To_Tick (Kernel_Time),
              Children_User_Time |
              Children_System_Time => 0);
       return PT;
@@ -68,8 +69,34 @@ package body POSIX_Process_Times is
    --------------------------
 
    function Elapsed_Real_Time_Of (Times : Process_Times)
-                                  return Tick_Count is
+                                  return Tick_Count
+   is
+      use type Win32.DWORD;
+      Ok      : Win32.BOOL;
+      Ctimes  : aliased Win32.Winbase.SYSTEMTIME;
+      Now     : aliased Win32.Winbase.Filetime;
+      Elapsed : Win32.Winbase.Filetime;
    begin
+      Win32.Winbase.GetSystemTime (Ctimes'Unchecked_Access);
+      Ok := Win32.Winbase.SystemTimeToFileTime (Ctimes'Unchecked_Access,
+                                                     Now'Unchecked_Access);
+      POSIX_Win32.Check_Result (Ok, "SystemTimeToFileTime");
+
+      if Now.dwLowDateTime < Times.Creation_Time.dwLowDateTime then
+         Elapsed.dwLowDateTime  :=
+           Win32.DWORD'Last -
+           (Now.dwLowDateTime  - Times.Creation_Time.dwLowDateTime) + 1;
+         Elapsed.DwHighDateTime :=
+           Now.dwHighDateTime - Times.Creation_Time.dwHighDateTime - 1;
+      else
+         Elapsed.dwLowDateTime  :=
+           Now.dwLowDateTime  - Times.Creation_Time.dwLowDateTime;
+         Elapsed.DwHighDateTime :=
+           Now.dwHighDateTime - Times.Creation_Time.dwHighDateTime;
+      end if;
+
+      return Filetime_To_Tick (Elapsed);
+
       return Times.User_Time + Times.System_Time +
         Times.Children_User_Time + Times.Children_System_Time;
    end Elapsed_Real_Time_Of;
