@@ -456,12 +456,17 @@ package body POSIX_Process_Environment is
       end To_POSIX_String;
 
    begin
+      --  if first character is 'nul' then the environment is empty
+      if Pointer.all = Win32.Nul then
+         return;
+      end if;
+
       For_All_Variable :
       loop
          Start := Pointer;
          Chars_Ptr.Increment (Pointer);
 
-         --  exit if the Env variable is empty
+         --  exit if there is no more environment variables
          exit when Start.all = Win32.Nul and then Pointer.all = Win32.Nul;
 
          Search_Name_End :
