@@ -3,14 +3,10 @@
 --  Author : Pascal Obry
 --  pascal_obry@csi.com
 
-with System;
 with Ada.Command_Line;
-with Ada.Unchecked_Conversion;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Ada.Exceptions;
-with Ada.Text_IO;
-with Interfaces.C.Strings;
 with Interfaces.C.Pointers;
 
 with Win32;
@@ -241,7 +237,9 @@ package body POSIX_Process_Environment is
       Found : Boolean := False;
 
       procedure Equal (N, V : in     POSIX.POSIX_String;
-                       Quit : in out Boolean) is
+                       Quit : in out Boolean)
+      is
+         pragma Warnings (Off, V);
       begin
          if N = Name then
             Found := True;
@@ -301,7 +299,9 @@ package body POSIX_Process_Environment is
    procedure Clear_Environment is
 
       procedure Delete (Name, Value : in     POSIX.POSIX_String;
-                        Quit        : in out Boolean) is
+                        Quit        : in out Boolean)
+      is
+         pragma Warnings (Off, Value);
       begin
          Delete_Environment_Variable (Name);
          Quit := False;
