@@ -78,26 +78,19 @@ package body POSIX_Process_Times is
    begin
       Win32.Winbase.GetSystemTime (Ctimes'Unchecked_Access);
       Ok := Win32.Winbase.SystemTimeToFileTime (Ctimes'Unchecked_Access,
-                                                     Now'Unchecked_Access);
+                                                Now'Unchecked_Access);
       POSIX_Win32.Check_Result (Ok, "SystemTimeToFileTime");
 
+      Elapsed.dwLowDateTime  :=
+        Now.dwLowDateTime  - Times.Creation_Time.dwLowDateTime;
+      Elapsed.dwHighDateTime :=
+        Now.dwHighDateTime - Times.Creation_Time.dwHighDateTime;
+
       if Now.dwLowDateTime < Times.Creation_Time.dwLowDateTime then
-         Elapsed.dwLowDateTime  :=
-           Win32.DWORD'Last -
-           (Now.dwLowDateTime  - Times.Creation_Time.dwLowDateTime) + 1;
-         Elapsed.DwHighDateTime :=
-           Now.dwHighDateTime - Times.Creation_Time.dwHighDateTime - 1;
-      else
-         Elapsed.dwLowDateTime  :=
-           Now.dwLowDateTime  - Times.Creation_Time.dwLowDateTime;
-         Elapsed.DwHighDateTime :=
-           Now.dwHighDateTime - Times.Creation_Time.dwHighDateTime;
+         Elapsed.dwHighDateTime := Elapsed.dwHighDateTime - 1;
       end if;
 
       return Filetime_To_Tick (Elapsed);
-
-      return Times.User_Time + Times.System_Time +
-        Times.Children_User_Time + Times.Children_System_Time;
    end Elapsed_Real_Time_Of;
 
 
