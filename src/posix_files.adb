@@ -80,7 +80,6 @@ package body POSIX_Files is
       return Is_Regular_File (Get_File_Status (Pathname));
    exception
       when others =>
-         POSIX_Win32.Check_Result (Win32.False, "Is_File");
          return False;
    end Is_File;
 
@@ -94,7 +93,6 @@ package body POSIX_Files is
       return Is_Directory (Get_File_Status (Pathname));
    exception
       when others =>
-         POSIX_Win32.Check_Result (Win32.False, "Is_Directory (POSIX_Files)");
          return False;
    end Is_Directory;
 
@@ -109,7 +107,6 @@ package body POSIX_Files is
       return Is_FIFO (Get_File_Status (Pathname));
    exception
       when others =>
-         POSIX_Win32.Check_Result (Win32.False, "Is_FIFO");
          return False;
    end Is_FIFO;
 
@@ -124,7 +121,6 @@ package body POSIX_Files is
       return Is_Character_Special_File (Get_File_Status (Pathname));
    exception
       when others =>
-         POSIX_Win32.Check_Result (Win32.False, "Is_Character_Special_File");
          return False;
    end Is_Character_Special_File;
 
@@ -139,7 +135,6 @@ package body POSIX_Files is
       return Is_Block_Special_File (Get_File_Status (Pathname));
    exception
       when others =>
-         POSIX_Win32.Check_Result (Win32.False, "Is_Block_Special_File");
          return False;
    end Is_Block_Special_File;
 
