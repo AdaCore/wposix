@@ -81,6 +81,8 @@ package body POSIX_Signals is
          return Signal_Segmentation_Violation;
       elsif Str = "SIGNAL_TERMINATE" then
          return Signal_Terminate;
+      else
+         return Signal_Null;
       end if;
    end Value;
 
@@ -227,8 +229,11 @@ package body POSIX_Signals is
 
    procedure Set_Blocked_Signals
      (New_Mask : in     Signal_Set;
-      Old_Mask :    out Signal_Set) is
+      Old_Mask :    out Signal_Set)
+   is
+      Dummy_Signal_Set : Signal_Set;
    begin
+      Old_Mask := Dummy_Signal_Set;
       POSIX_Win32.Raise_Not_Yet_Implemented ("Set_Blocked_Signals");
    end Set_Blocked_Signals;
 
@@ -239,8 +244,11 @@ package body POSIX_Signals is
 
    procedure Block_Signals
      (Mask_To_Add : in     Signal_Set;
-      Old_Mask    :    out Signal_Set) is
+      Old_Mask    :    out Signal_Set)
+   is
+      Dummy_Signal_Set : Signal_Set;
    begin
+      Old_Mask := Dummy_Signal_Set;
       POSIX_Win32.Raise_Not_Yet_Implemented ("Block_Signals");
    end Block_Signals;
 
@@ -251,8 +259,11 @@ package body POSIX_Signals is
 
    procedure Unblock_Signals
      (Mask_To_Substract : in     Signal_Set;
-      Old_Mask          :    out Signal_Set) is
+      Old_Mask          :    out Signal_Set)
+   is
+      Dummy_Signal_Set : Signal_Set;
    begin
+      Old_Mask := Dummy_Signal_Set;
       POSIX_Win32.Raise_Not_Yet_Implemented ("Unblock_Signals");
    end Unblock_Signals;
 
