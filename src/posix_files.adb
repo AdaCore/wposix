@@ -185,20 +185,9 @@ package body POSIX_Files is
    function Filename_Of (D_Entry : Directory_Entry)
                          return POSIX.Filename
    is
-      Max_Len : constant := 260;
-
-      Name : String (1 .. Max_Len);
-      I    : Natural := 0;
-      C    : Character;
    begin
-      loop
-         C := Interfaces.C.To_Ada (D_Entry.cFileName (I));
-         exit when C = ASCII.Nul;
-         I := I + 1;
-         Name (I) := C;
-         exit when I = Max_Len;
-      end loop;
-      return POSIX.To_POSIX_String (Name (1 .. I));
+      return POSIX.To_POSIX_String
+        (Interfaces.C.To_Ada (Win32.To_C (D_Entry.cFileName)));
    end Filename_Of;
 
                     -----------------------------------
@@ -212,12 +201,16 @@ package body POSIX_Files is
       use type Win32.DWORD;
       use type Win32.BOOL;
       use type Win32.Winnt.HANDLE;
-      L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
+
+      L_Pathname : constant String :=
+        POSIX.To_String (Pathname) & "/*" & ASCII.Nul;
       Handle     : Win32.Winnt.HANDLE;
       Quit       : Boolean := False;
+
    begin
       Handle := Win32.Winbase.FindFirstFile (Win32.Addr (L_Pathname),
                                              Data'Access);
+
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
          if Win32.Winbase.GetLastError =
            Win32.Winerror.ERROR_FILE_NOT_FOUND then
@@ -229,19 +222,23 @@ package body POSIX_Files is
       else
          Retcode := 0;
       end if;
+
       POSIX_Win32.Check_Retcode (Retcode, "For_Every_Directory_Entry");
 
-      Action  (Directory_Entry (Data), Quit);
-
-      if not Quit then
-         loop
-            Result := Win32.Winbase.FindNextFile (Handle,
-                                                  Data'Access);
-            exit when Result = Win32.FALSE;
-            Action  (Directory_Entry (Data), Quit);
-            exit when quit;
-         end loop;
-      end if;
+      loop
+         declare
+            Filename : constant String :=
+              POSIX.To_String (Filename_Of (Directory_Entry (Data)));
+         begin
+            if Filename /= "." and then Filename /= ".." then
+               Action  (Directory_Entry (Data), Quit);
+            end if;
+         end;
+         exit when quit;
+         Result := Win32.Winbase.FindNextFile (Handle,
+                                               Data'Access);
+         exit when Result = Win32.FALSE;
+      end loop;
 
       Result := Win32.Winbase.FindClose (Handle);
       POSIX_Win32.Check_Result (Result, "For_Every_Directory_Entry");
