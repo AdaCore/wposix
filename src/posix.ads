@@ -202,7 +202,7 @@ package POSIX is
      := 16#F000_0003#;
 
    File_Exists                         : constant Error_Code
-     := 16#F000_0004#;
+     := Win32.Winerror.ERROR_ALREADY_EXISTS;
 
    File_Too_Large                      : constant Error_Code
      := 16#F000_0005#;
