@@ -170,7 +170,7 @@ package POSIX is
 
    POSIX_Error : exception;
 
-   type Error_Code is new Long_Long_Integer;
+   type Error_Code is new Win32.DWORD;
 
    function Get_Error_Code
      return Error_Code;
