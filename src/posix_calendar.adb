@@ -141,14 +141,14 @@ package body POSIX_Calendar is
       Day     :   out Day_Number;
       Seconds :   out Day_Duration)
    is
-      use type Win32.WORD;
+      Ls : constant Natural := Natural (Date.wSecond);
+      Lm : constant Natural := Natural (Date.wMinute);
+      Lh : constant Natural := Natural (Date.wHour);
    begin
       Year    := Year_Number  (Date.wYear);
       Month   := Month_Number (Date.wMonth);
       Day     := Day_Number   (Date.wDay);
-      Seconds := Day_Duration (Date.wSecond +
-                               Date.wMinute * 60 +
-                               Date.wHour * 3600);
+      Seconds := Day_Duration (Ls + Lm*60 + Lh*3_600);
    end Split;
 
    -------------
