@@ -24,22 +24,22 @@ package POSIX_Signals is
      := 0;
 
    Signal_Abort, SIGABRT                          : constant Signal
-     := 0;
+     := 22;
 
    Signal_Floating_Point_Error, SIGFPE            : constant Signal
-     := 0;
+     := 8;
 
    Signal_Illegal_Instruction, SIGILL             : constant Signal
-     := 0;
+     := 4;
 
    Signal_Interrupt, SIGINT                       : constant Signal
-     := 0;
+     := 2;
 
    Signal_Segmentation_Violation, SIGSEGV         : constant Signal
-     := 0;
+     := 11;
 
    Signal_Terminate, SIGTERM                      : constant Signal
-     := 0;
+     := 15;
 
 
   --  Signal Handler References
