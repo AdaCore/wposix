@@ -1,4 +1,6 @@
 
+-- $Id$
+
 with Ada.Command_Line;
 with Ada.Text_IO;
 with POSIX;
