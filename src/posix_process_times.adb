@@ -20,15 +20,9 @@ package body POSIX_Process_Times is
       use type Win32.ULONG;
       Hundred_Nano_To_Tick : constant := 1E7 / Ticks_Per_Second;
 
-      function Shift_Left (Value  : Win32.DWORD;
-                           Amount : Natural)
-                           return    Win32.DWORD;
-      pragma Import (Intrinsic, Shift_Left);
-
+      --  ??? change the code to handle DwHighDateTime (see code in v1.4)
    begin
-      return Tick_Count
-        ( (Shift_Left (Filetime.DwHighDateTime, 32) / Hundred_Nano_To_Tick) +
-          (Filetime.DwLowDateTime / Hundred_Nano_To_Tick) );
+      return Tick_Count (Filetime.DwLowDateTime / Hundred_Nano_To_Tick);
    end Filetime_To_Tick;
 
    -----------------------
@@ -42,9 +36,6 @@ package body POSIX_Process_Times is
    end Elapsed_Real_Time;
 
 
-   Creation_Time, Exit_Time : aliased Win32.Winbase.Filetime;
-   Kernel_Time, User_Time   : aliased Win32.Winbase.Filetime;
-
    -----------------------
    -- Get_Process_Times --
    -----------------------
@@ -52,14 +43,16 @@ package body POSIX_Process_Times is
    function Get_Process_Times
      return Process_Times
    is
+      Creation_Time, Exit_Time : aliased Win32.Winbase.Filetime;
+      Kernel_Time, User_Time   : aliased Win32.Winbase.Filetime;
       PT : Process_Times;
    begin
       Result := Win32.Winbase.GetProcessTimes
         (Win32.Winbase.GetCurrentProcess,
-         Creation_Time'Access,
-         Exit_Time'Access,
-         Kernel_Time'Access,
-         User_Time'Access);
+         Creation_Time'Unchecked_Access,
+         Exit_Time'Unchecked_Access,
+         Kernel_Time'Unchecked_Access,
+         User_Time'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Get_Process_Times");
 
       PT := (User_Time   => Filetime_To_Tick (User_Time),
