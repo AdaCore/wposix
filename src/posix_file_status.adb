@@ -52,6 +52,8 @@ package body POSIX_File_Status is
             POSIX_IO.Close (File);
             File_Status.Is_Executable := POSIX_Win32.Is_Executable (Pathname);
          end if;
+      else
+         POSIX_Win32.Check_Result (Win32.FALSE, "Get_File_Status (Pathname)");
       end if;
       return File_Status;
    end Get_File_Status;
@@ -64,12 +66,12 @@ package body POSIX_File_Status is
    function Get_File_Status (File     : POSIX_IO.File_Descriptor)
                              return Status
    is
-      File_Status      : Status;
+      File_Status : Status;
+      Handle      : Win32.Winnt.HANDLE := POSIX_Win32.File_Handle.Get (File);
    begin
       Result := Win32.Winbase.GetFileInformationByHandle
-        (POSIX_Win32.File_Handle.Get (File),
-         File_Information'Access);
-      POSIX_Win32.Check_Result (Result, "Get_File_Status");
+        (Handle, File_Information'Access);
+      POSIX_Win32.Check_Result (Result, "Get_File_Status (File)");
 
       File_Status.File_Attributes  := File_Information.dwFileAttributes;
       File_Status.Creation_Time    := File_Information.ftCreationTime;
@@ -80,6 +82,8 @@ package body POSIX_File_Status is
       File_Status.File_Index_Low   := File_Information.nFileIndexLow;
       File_Status.File_Index_High  := File_Information.nFileIndexHigh;
       File_Status.File_Links       := File_Information.nNumberOfLinks;
+
+      File_Status.File_Type        := Win32.Winbase.GetFileType (Handle);
 
       return File_Status;
    end Get_File_Status;
@@ -179,15 +183,17 @@ package body POSIX_File_Status is
    System_Time      : aliased Win32.Winbase.SYSTEMTIME;
    Last_Access_Time : aliased Win32.Winbase.FILETIME;
    Last_Write_Time  : aliased Win32.Winbase.FILETIME;
+   Local_Time       : aliased Win32.Winbase.FILETIME;
 
    function Last_Access_Time_Of (File_Status : Status)
                                  return POSIX_Calendar.POSIX_Time
    is
    begin
       Last_Access_Time := File_Status.Last_Access_Time;
+      Result := Win32.Winbase.FileTimeToLocalFileTime
+        (Last_Access_Time'Access, Local_Time'Access);
       Result := Win32.Winbase.FileTimeToSystemTime
-        (Last_Access_Time'Access,
-         System_Time'Access);
+        (Local_Time'Access, System_Time'Access);
       return To_POSIX_Time (System_Time);
    end Last_Access_Time_Of;
 
@@ -198,9 +204,10 @@ package body POSIX_File_Status is
    is
    begin
       Last_Write_Time := File_Status.Last_Write_Time;
+      Result := Win32.Winbase.FileTimeToLocalFileTime
+        (Last_Write_Time'Access, Local_Time'Access);
       Result := Win32.Winbase.FileTimeToSystemTime
-        (Last_Write_Time'Access,
-         System_Time'Access);
+        (Local_Time'Access, System_Time'Access);
       return To_POSIX_Time (System_Time);
    end Last_Modification_Time_Of;
 
@@ -226,9 +233,11 @@ package body POSIX_File_Status is
                     -----------------------------------
 
    function Is_Character_Special_File (File_Status : Status)
-                                       return Boolean is
+                                       return Boolean
+   is
+      use type Win32.DWORD;
    begin
-      return False;
+      return File_Status.File_Type = Win32.Winbase.FILE_TYPE_CHAR;
    end Is_Character_Special_File;
 
                     -----------------------------------
