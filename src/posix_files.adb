@@ -189,7 +189,7 @@ package body POSIX_Files is
    begin
       Result := Win32.Winbase.CopyFile
         (Win32.Addr (L_Old_Pathname),
-         Win32.Addr (L_New_Pathname), 1);
+         Win32.Addr (L_New_Pathname), Win32.FALSE);
       POSIX_Win32.Check_Result (Result, "Link");
    end Link;
 
@@ -324,11 +324,11 @@ package body POSIX_Files is
                                     "Change_Permissions");
       end if;
 
-      if Permission (Owner_Read) or else Permission (Owner_Write) then
+      if Permission (Owner_Read) and then Permission (Owner_Write) then
          Attributes := Attributes and
            (not Win32.Winnt.FILE_ATTRIBUTE_READONLY);
       else
-         Attributes := Attributes and Win32.Winnt.FILE_ATTRIBUTE_READONLY;
+         Attributes := Attributes or Win32.Winnt.FILE_ATTRIBUTE_READONLY;
       end if;
 
       Result := Win32.Winbase.SetFileAttributes (Win32.Addr (L_Pathname),
