@@ -5,7 +5,7 @@ POSIX Ada Binding for Windows 95/98 and Windows NT
 ==================================================
 
 This is a partial implementation of POSIX using the Win32 API.
-Version 1.10 beta
+Version 1.11 beta
 
 Thanks to Sune Falck for the help provided for version 1.4. It has been
 reported that this binding compile fine with GNAT 3.11 and ObjectAda 7.1.2.
@@ -15,6 +15,14 @@ Thanks to Wilhelm Spickermann for a bug report.
 Thanks to Frank Beard for his contribution.
 
 It has also been tested with GNAT 3.12.
+
+
+changes since 1.10b
+-------------------
+
+All POSIX packages are now child of POSIX. The old names are now renaming of
+these packages. This is to conform to the latest Florist distribution under
+UNIX.
 
 
 changes since 1.9b
