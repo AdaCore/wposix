@@ -5,10 +5,22 @@ POSIX Ada Binding for Windows 95/98 and Windows NT
 ==================================================
 
 This is a partial implementation of POSIX using the Win32 API.
-Version 1.7 beta
+Version 1.8 beta
 
 Thanks to Sune Falck for the help provided from version 1.4. It has been
 reported that this binding compile fine with GNAT 3.10 and ObjectAda 7.1.2.
+
+It has also been tested with GNAT 3.11.
+
+
+changes since 1.7b
+------------------
+
+POSIX_Process_Primitives
+	Fix bug in Start_Process and Start_Process_Search
+
+	Handle program without .exe. It is possible to launch foo or
+	foo.exe. This makes the binding more compatible with UNIX.
 
 
 changes since 1.6b
