@@ -226,15 +226,9 @@ package body POSIX_Files is
       POSIX_Win32.Check_Retcode (Retcode, "For_Every_Directory_Entry");
 
       loop
-         declare
-            Filename : constant String :=
-              POSIX.To_String (Filename_Of (Directory_Entry (Data)));
-         begin
-            if Filename /= "." and then Filename /= ".." then
-               Action  (Directory_Entry (Data), Quit);
-            end if;
-         end;
+         Action  (Directory_Entry (Data), Quit);
          exit when quit;
+
          Result := Win32.Winbase.FindNextFile (Handle,
                                                Data'Access);
          exit when Result = Win32.FALSE;
