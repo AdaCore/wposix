@@ -559,6 +559,7 @@ package body POSIX_Process_Environment is
       use type Win32.INT;
       Max_Len      : constant := 500;
       Buffer       : String (1 .. Max_Len);
+      pragma Warnings (Off, Buffer);
       Number_Bytes : Win32.DWORD;
    begin
       Number_Bytes := Win32.Winbase.GetCurrentDirectory
