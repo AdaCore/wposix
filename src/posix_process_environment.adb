@@ -13,6 +13,7 @@ with Interfaces.C.Pointers;
 
 with Win32;
 with Win32.Winbase;
+with Win32.Winerror;
 
 with POSIX_Win32;
 
@@ -321,12 +322,18 @@ package body POSIX_Process_Environment is
    procedure Delete_Environment_Variable
      (Name : in     POSIX.POSIX_String)
    is
+      use type Win32.BOOL;
+      use type Win32.DWORD;
       L_Name : constant String := POSIX.To_String (Name) & ASCII.Nul;
    begin
       Check_Name (Name, "Delete_Environment_Variable");
       Result := Win32.Winbase.SetEnvironmentVariable (Win32.Addr (L_Name),
                                                       null);
-      POSIX_Win32.Check_Result (Result, "Delete_Environment_Variable");
+      if Result = Win32.False and
+        Win32.Winbase.GetLastError /=
+        Win32.Winerror.ERROR_ENVVAR_NOT_FOUND then
+         POSIX_Win32.Check_Result (Result, "Delete_Environment_Variable");
+      end if;
    end Delete_Environment_Variable;
 
                 -----------------------------------
