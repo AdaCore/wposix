@@ -15,7 +15,8 @@ procedure Demo1 is
    Filename : constant String := Command_Line.Argument (1);
 
 begin
-   Text_IO.Put_Line ("stat : " & Filename);
+   Text_IO.Put_Line ("stat : [" & Filename & "]   -   " &
+                     Integer'Image (Filename'Length));
 
    if Is_File_Present (To_POSIX_String (Filename)) then
       Text_IO.Put_Line (Filename & " is present");
