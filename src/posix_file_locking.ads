@@ -1,7 +1,7 @@
 
 --  $Id$
 --  Author : Pascal Obry
---  pascal_obry@csi.com
+--  p.obry@wanadoo.fr
 
 with POSIX;
 with POSIX_IO;

@@ -1,7 +1,7 @@
 
 --  $Id$
 --  Author : Pascal Obry
---  pascal_obry@csi.com
+--  p.obry@wanadoo.fr
 
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;

@@ -1,7 +1,7 @@
 
 --  $Id$
 --  Author : Pascal Obry
---  pascal_obry@csi.com
+--  p.obry@wanadoo.fr
 
 with Win32;
 with Win32.Winerror;
