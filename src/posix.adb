@@ -1,6 +1,7 @@
 
 --  $Id$
 --  Author : Pascal Obry
+--  pascal_obry@csi.com
 
 with Unchecked_Deallocation;
 with System;
