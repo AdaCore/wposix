@@ -26,6 +26,8 @@ package body POSIX.Files is
      (Pathname   : in POSIX.Pathname;
       Permission : in POSIX.Permissions.Permission_Set)
    is
+      pragma Warnings (Off, Permission);
+
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
       Result     : Win32.BOOL;
    begin
@@ -36,21 +38,19 @@ package body POSIX.Files is
       POSIX_Win32.Check_Result (Result, "Create_Directory");
    end Create_Directory;
 
-
    -----------------
    -- Create_FIFO --
    -----------------
 
    procedure Create_FIFO
      (Pathname   : in POSIX.Pathname;
-      Permission : in POSIX.Permissions.Permission_Set) is
+      Permission : in POSIX.Permissions.Permission_Set)
+   is
+      pragma Warnings (Off, Pathname);
+      pragma Warnings (Off, Permission);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Create_FIFO");
    end Create_FIFO;
-
-
-
-
 
    --  Operations to remove files from the File System
 
@@ -66,7 +66,6 @@ package body POSIX.Files is
       POSIX_Win32.Check_Result (Result, "Unlink");
    end Unlink;
 
-
    ----------------------
    -- Remove_Directory --
    ----------------------
@@ -79,94 +78,111 @@ package body POSIX.Files is
       POSIX_Win32.Check_Result (Result, "Remove_Directory");
    end Remove_Directory;
 
-
-
-
-
    --  Predicates on files in the File System
 
    -------------
    -- Is_File --
    -------------
 
-   function Is_File (Pathname : in POSIX.Pathname)
-                     return Boolean
-   is
+   function Is_File (Pathname : in POSIX.Pathname) return Boolean is
       use POSIX.File_Status;
    begin
       return Is_Regular_File (Get_File_Status (Pathname));
    exception
-      when others =>
+      when POSIX_Error =>
+         --  No such file
          return False;
    end Is_File;
-
 
    ------------------
    -- Is_Directory --
    ------------------
 
-   function Is_Directory (Pathname : in POSIX.Pathname)
-                          return Boolean
-   is
+   function Is_Directory (Pathname : in POSIX.Pathname) return Boolean is
       use POSIX.File_Status;
    begin
       return Is_Directory (Get_File_Status (Pathname));
    exception
-      when others =>
+      when POSIX_Error =>
+         --  No such file
          return False;
    end Is_Directory;
-
 
    -------------
    -- Is_FIFO --
    -------------
 
-   function Is_FIFO (Pathname : in POSIX.Pathname)
-                     return Boolean
-   is
+   function Is_FIFO (Pathname : in POSIX.Pathname) return Boolean is
       use POSIX.File_Status;
    begin
       return Is_FIFO (Get_File_Status (Pathname));
    exception
-      when others =>
+      when POSIX_Error =>
+         --  No such file
          return False;
    end Is_FIFO;
-
 
    -------------------------------
    -- Is_Character_Special_File --
    -------------------------------
 
-   function Is_Character_Special_File (Pathname : in POSIX.Pathname)
-                                       return Boolean
+   function Is_Character_Special_File
+     (Pathname : in POSIX.Pathname)
+     return Boolean
    is
       use POSIX.File_Status;
    begin
       return Is_Character_Special_File (Get_File_Status (Pathname));
    exception
-      when others =>
+      when POSIX_Error =>
+         --  No such file
          return False;
    end Is_Character_Special_File;
-
 
    ---------------------------
    -- Is_Block_Special_File --
    ---------------------------
 
-   function Is_Block_Special_File (Pathname : in POSIX.Pathname)
-                                   return Boolean
+   function Is_Block_Special_File
+     (Pathname : in POSIX.Pathname)
+     return Boolean
    is
       use POSIX.File_Status;
    begin
       return Is_Block_Special_File (Get_File_Status (Pathname));
    exception
-      when others =>
+      when POSIX_Error =>
+         --  No such file
          return False;
    end Is_Block_Special_File;
 
+   ----------------------
+   -- Is_Symbolic_Link --
+   ----------------------
 
+   function Is_Symbolic_Link
+     (Pathname : in POSIX.Pathname)
+     return Boolean
+   is
+      pragma Warnings (Off, Pathname);
+   begin
+      --  No such thing on Windows
+      return False;
+   end Is_Symbolic_Link;
 
+   ---------------
+   -- Is_Socket --
+   ---------------
 
+   function Is_Socket
+     (Pathname : in POSIX.Pathname)
+     return Boolean
+   is
+      pragma Warnings (Off, Pathname);
+   begin
+      --  No such thing on Windows
+      return False;
+   end Is_Socket;
 
    --  Operations to modify File Pathnames
 
@@ -190,7 +206,6 @@ package body POSIX.Files is
       POSIX_Win32.Check_Result (Result, "Link");
    end Link;
 
-
    ------------
    -- Rename --
    ------------
@@ -211,24 +226,19 @@ package body POSIX.Files is
       POSIX_Win32.Check_Result (Result, "Rename");
    end Rename;
 
-
-
-
-
    --  Iterating over files within a directory
 
    -----------------
    -- Filename_Of --
    -----------------
 
-   function Filename_Of (D_Entry : Directory_Entry)
-                         return POSIX.Filename
-   is
+   function Filename_Of
+     (D_Entry : in Directory_Entry)
+     return POSIX.Filename is
    begin
       return POSIX.To_POSIX_String
         (Interfaces.C.To_Ada (Win32.To_C (D_Entry.cFileName)));
    end Filename_Of;
-
 
    -------------------------------
    -- For_Every_Directory_Entry --
@@ -244,29 +254,38 @@ package body POSIX.Files is
 
       Result     : Win32.BOOL;
       Data       : aliased Win32.Winbase.WIN32_FIND_DATA;
-      L_Pathname : constant String :=
-        POSIX.To_String (Pathname) & "/*" & ASCII.Nul;
+      L_Pathname : String :=
+        POSIX.To_String (Pathname) & "\*" & ASCII.Nul;
       Handle     : Win32.Winnt.HANDLE;
       Quit       : Boolean := False;
 
    begin
+      --  if pathname included a terminal '/' or '\', L_pathname will end
+      --  in "/\*" or "\\*", which is not accepted. Fix that.
 
-      if not Is_File_Present (Pathname) then
-         POSIX_Win32.Raise_Error ("For_Every_Directory_Entry",
-                                  POSIX.No_Such_File_Or_Directory);
+      if L_Pathname (L_Pathname'Last - 3) = '/'
+        or else L_Pathname (L_Pathname'Last - 3) = '\'
+      then
+         L_Pathname (L_Pathname'Last - 2 .. L_Pathname'Last - 1)
+           := '*' & ASCII.Nul;
       end if;
 
-      Handle := Win32.Winbase.FindFirstFile (Win32.Addr (L_Pathname),
-                                             Data'Unchecked_Access);
+      if not Is_File_Present (Pathname) then
+         POSIX_Win32.Raise_Error
+           ("For_Every_Directory_Entry", POSIX.No_Such_File_Or_Directory);
+      end if;
+
+      Handle := Win32.Winbase.FindFirstFile
+        (Win32.Addr (L_Pathname), Data'Unchecked_Access);
 
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
          if Win32.Winbase.GetLastError =
            Win32.Winerror.ERROR_FILE_NOT_FOUND then
-            --  no file to be scanned
+            --  No file to be scanned
             return;
          else
-            POSIX_Win32.Raise_Error ("For_Every_Directory_Entry",
-                                     POSIX.Not_A_Directory);
+            POSIX_Win32.Raise_Error
+              ("For_Every_Directory_Entry", POSIX.Not_A_Directory);
          end if;
       end if;
 
@@ -283,9 +302,6 @@ package body POSIX.Files is
       POSIX_Win32.Check_Result (Result, "For_Every_Directory_Entry");
    end For_Every_Directory_Entry;
 
-
-
-
    --  Operations to Update File Status Information
 
    ----------------------------
@@ -295,11 +311,14 @@ package body POSIX.Files is
    procedure Change_Owner_And_Group
      (Pathname : in POSIX.Pathname;
       Owner    : in POSIX.Process_Identification.User_ID;
-      Group    : in POSIX.Process_Identification.Group_ID) is
+      Group    : in POSIX.Process_Identification.Group_ID)
+   is
+      pragma Warnings (Off, Pathname);
+      pragma Warnings (Off, Owner);
+      pragma Warnings (Off, Group);
    begin
       null;
    end Change_Owner_And_Group;
-
 
    ------------------------
    -- Change_Permissions --
@@ -333,14 +352,12 @@ package body POSIX.Files is
       POSIX_Win32.Check_Result (Result, "Change_Permissions");
    end Change_Permissions;
 
-
    -------------------
    -- To_SYSTEMTIME --
    -------------------
 
    function To_SYSTEMTIME is new Ada.Unchecked_Conversion
-     (POSIX.Calendar.POSIX_Time,
-      Win32.Winbase.SYSTEMTIME);
+     (POSIX.Calendar.POSIX_Time, Win32.Winbase.SYSTEMTIME);
 
    --------------------
    -- Set_File_Times --
@@ -365,7 +382,6 @@ package body POSIX.Files is
 
 
    begin
-
       Access_System_Time       := To_SYSTEMTIME (Access_Time);
       Modification_System_Time := To_SYSTEMTIME (Modification_Time);
 
@@ -414,7 +430,6 @@ package body POSIX.Files is
       POSIX_Win32.Check_Result (Result, "Set_File_Times");
    end Set_File_Times;
 
-
    --------------------
    -- Set_File_Times --
    --------------------
@@ -425,9 +440,6 @@ package body POSIX.Files is
       Current_Time := POSIX.Calendar.Clock;
       Set_File_Times (Pathname, Current_Time, Current_Time);
    end Set_File_Times;
-
-
-
 
    --  Operations to Determine File Accessibility
 
@@ -444,7 +456,6 @@ package body POSIX.Files is
    begin
       return Accessibility (Pathname, Access_Mode) = POSIX.No_Error;
    end Is_Accessible;
-
 
    -------------------
    -- Accessibility --
@@ -475,14 +486,11 @@ package body POSIX.Files is
       return Retcode;
    end Accessibility;
 
-
    ---------------------
    -- Is_File_Present --
    ---------------------
 
-   function Is_File_Present (Pathname : in POSIX.Pathname)
-                             return Boolean
-   is
+   function Is_File_Present (Pathname : in POSIX.Pathname) return Boolean is
       use type Win32.DWORD;
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.Nul;
       Retcode    : Win32.DWORD;
@@ -492,13 +500,11 @@ package body POSIX.Files is
       return Retcode /= 16#FFFF_FFFF#;
    end Is_File_Present;
 
-
    ---------------
    -- Existence --
    ---------------
 
-   function Existence (Pathname : in POSIX.Pathname)
-                       return POSIX.Error_Code is
+   function Existence (Pathname : in POSIX.Pathname) return POSIX.Error_Code is
    begin
       if Is_File_Present (Pathname) then
          return POSIX.No_Error;

@@ -11,7 +11,6 @@ with Win32;
 
 package POSIX.IO is
 
-
    --  Common type declarations
 
    type File_Descriptor is range 0 .. POSIX.Open_Files_Maxima'Last - 1;
@@ -40,47 +39,43 @@ package POSIX.IO is
    Not_Controlling_Terminal   : constant Open_Option_Set; --  not implemented
 
 
-
    --  Operations to open or close file descriptors
 
    function Open
-     (Name           : POSIX.Pathname;
-      Mode           : File_Mode;
-      Options        : Open_Option_Set := Empty_Set;
-      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
+     (Name           : in POSIX.Pathname;
+      Mode           : in File_Mode;
+      Options        : in Open_Option_Set := Empty_Set;
+      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor;
 
    function Open_Or_Create
-     (Name           : POSIX.Pathname;
-      Mode           : File_Mode;
-      Permissions    : POSIX.Permissions.Permission_Set;
-      Options        : Open_Option_Set := Empty_Set;
-      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
+     (Name           : in POSIX.Pathname;
+      Mode           : in File_Mode;
+      Permissions    : in POSIX.Permissions.Permission_Set;
+      Options        : in Open_Option_Set := Empty_Set;
+      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor;
 
-   function Is_Open (File : File_Descriptor)
-                     return Boolean;
+   function Is_Open (File : in File_Descriptor) return Boolean;
 
    procedure Close
      (File           : in File_Descriptor;
       Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals);
 
-
    function Duplicate
-     (File   : File_Descriptor;
-      Target : File_Descriptor := 0)
+     (File   : in File_Descriptor;
+      Target : in File_Descriptor := 0)
       return File_Descriptor;
 
    function Duplicate_And_Close
-     (File           : File_Descriptor;
-      Target         : File_Descriptor := 0;
-      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
+     (File           : in File_Descriptor;
+      Target         : in File_Descriptor := 0;
+      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor;
 
    procedure Create_Pipe
      (Read_End  : out File_Descriptor;
       Write_End : out File_Descriptor);
-
 
 
    --  File Input/Output operations
@@ -114,8 +109,6 @@ package POSIX.IO is
       Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals);
 
 
-
-
    --  File position operations
 
    type Position is (From_Beginning, From_Current_Position, From_End_Of_File);
@@ -126,22 +119,18 @@ package POSIX.IO is
       Result         :    out IO_Offset;
       Starting_Point : in     Position := From_Beginning);
 
-   function File_Size (File : File_Descriptor)
-                       return POSIX.IO_Count;
+   function File_Size (File : in File_Descriptor) return POSIX.IO_Count;
 
-   function File_Position (File : File_Descriptor)
-                           return IO_Offset;
-
+   function File_Position (File : in File_Descriptor) return IO_Offset;
 
 
    --  Terminal operations
 
-   function Is_A_Terminal (File : File_Descriptor)
-                           return Boolean;
+   function Is_A_Terminal (File : in File_Descriptor) return Boolean;
 
-   function Get_Terminal_Name (File : File_Descriptor)
-                               return POSIX.Pathname;
-
+   function Get_Terminal_Name
+     (File : in File_Descriptor)
+      return POSIX.Pathname;
 
 
    --  File Control operations
@@ -155,8 +144,7 @@ package POSIX.IO is
      (File       : in     File_Descriptor;
       Options    : in     Open_Option_Set);
 
-   function Get_Close_On_Exec (File : File_Descriptor)
-                               return Boolean;
+   function Get_Close_On_Exec (File : in File_Descriptor) return Boolean;
 
    procedure Set_Close_On_Exec
      (File : in     File_Descriptor;
@@ -167,19 +155,19 @@ private
    function UINT_To_Open_Option_Set is new
      Ada.Unchecked_Conversion (Win32.UINT, Open_Option_Set);
 
-   Non_Blocking             : constant Open_Option_Set :=
-     UINT_To_Open_Option_Set (1);
+   Non_Blocking             : constant Open_Option_Set
+     := UINT_To_Open_Option_Set (1);
 
-   Append                   : constant Open_Option_Set :=
-     UINT_To_Open_Option_Set (2);
+   Append                   : constant Open_Option_Set
+     := UINT_To_Open_Option_Set (2);
 
-   Truncate                 : constant Open_Option_Set :=
-     UINT_To_Open_Option_Set (4);
+   Truncate                 : constant Open_Option_Set
+     := UINT_To_Open_Option_Set (4);
 
-   Exclusive                : constant Open_Option_Set :=
-     UINT_To_Open_Option_Set (8);
+   Exclusive                : constant Open_Option_Set
+     := UINT_To_Open_Option_Set (8);
 
-   Not_Controlling_Terminal : constant Open_Option_Set :=
-     UINT_To_Open_Option_Set (16);
+   Not_Controlling_Terminal : constant Open_Option_Set
+     := UINT_To_Open_Option_Set (16);
 
 end POSIX.IO;

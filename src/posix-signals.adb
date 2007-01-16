@@ -12,37 +12,11 @@ with POSIX_Win32;
 
 package body POSIX.Signals is
 
-   ---------------------------------------------
-   -- Is_Valid_Signal_For_This_Implementation --
-   ---------------------------------------------
-
-   function Is_Valid_Signal_For_This_Implementation (Sig : Signal)
-                                                     return Boolean is
-   begin
-      if Sig = Signal_Abort then
-         return True;
-      elsif Sig = Signal_Floating_Point_Error then
-         return True;
-      elsif Sig = Signal_Illegal_Instruction then
-         return True;
-      elsif Sig = Signal_Interrupt then
-         return True;
-      elsif Sig = Signal_Segmentation_Violation then
-         return True;
-      elsif Sig = Signal_Terminate then
-         return True;
-      else
-         return False;
-      end if;
-   end Is_Valid_Signal_For_This_Implementation;
-
-
    -----------
    -- Image --
    -----------
 
-   function Image (Sig : Signal)
-                   return String is
+   function Image (Sig : in Signal) return String is
    begin
       if Sig = Signal_Abort then
          return "SIGNAL_ABORT";
@@ -61,13 +35,11 @@ package body POSIX.Signals is
       end if;
    end Image;
 
-
    -----------
    -- Value --
    -----------
 
-   function Value (Str : String)
-                   return Signal is
+   function Value (Str : in String) return Signal is
    begin
       if Str = "SIGNAL_ABORT" then
          return Signal_Abort;
@@ -86,9 +58,6 @@ package body POSIX.Signals is
       end if;
    end Value;
 
-
-
-
    --  type Signal Sets
 
    ----------------
@@ -97,23 +66,23 @@ package body POSIX.Signals is
 
    procedure Add_Signal
      (Set : in out Signal_Set;
-      Sig : in    Signal) is
+      Sig : in    Signal)
+   is
+      pragma Warnings (Off, Set);
+      pragma Warnings (Off, Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Add_Signal");
    end Add_Signal;
-
-
 
    ---------------------
    -- Add_All_Signals --
    ---------------------
 
    procedure Add_All_Signals (Set : in out Signal_Set) is
+      pragma Warnings (Off, Set);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Add_All_Signals");
    end Add_All_Signals;
-
-
 
    -------------------
    -- Delete_Signal --
@@ -121,35 +90,39 @@ package body POSIX.Signals is
 
    procedure Delete_Signal
      (Set : in out Signal_Set;
-      Sig : in    Signal) is
+      Sig : in    Signal)
+   is
+      pragma Warnings (Off, Set);
+      pragma Warnings (Off, Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Delete_Signal");
    end Delete_Signal;
-
 
    ------------------------
    -- Delete_All_Signals --
    ------------------------
 
    procedure Delete_All_Signals (Set : in out Signal_Set) is
+      pragma Warnings (Off, Set);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Delete_All_Signals");
    end Delete_All_Signals;
-
 
    ---------------
    -- Is_Member --
    ---------------
 
    function Is_Member
-     (Set : Signal_Set;
-      Sig : Signal)
-      return Boolean is
+     (Set : in Signal_Set;
+      Sig : in Signal)
+     return Boolean
+   is
+      pragma Warnings (Off, Set);
+      pragma Warnings (Off, Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Is_Member");
       return False;
    end Is_Member;
-
 
    --  Sending a Signal
 
@@ -187,26 +160,24 @@ package body POSIX.Signals is
       end if;
    end Send_Signal;
 
-
    -----------------
    -- Send_Signal --
    -----------------
 
    procedure Send_Signal
      (Process : in POSIX.Process_Identification.Process_Group_ID;
-      Sig     : in Signal) is
+      Sig     : in Signal)
+   is
+      pragma Warnings (Off, Process);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Send_Signal " & Image (Sig));
    end Send_Signal;
-
 
    -----------------
    -- Send_Signal --
    -----------------
 
-   procedure Send_Signal
-     (Sig     : in Signal)
-   is
+   procedure Send_Signal (Sig : in Signal) is
       Result : Win32.BOOL;
    begin
       if Sig = Signal_Terminate then
@@ -218,9 +189,6 @@ package body POSIX.Signals is
       end if;
    end Send_Signal;
 
-
-
-
    --  Blocking and Unblocking Signals
 
    -------------------------
@@ -231,12 +199,13 @@ package body POSIX.Signals is
      (New_Mask : in     Signal_Set;
       Old_Mask :    out Signal_Set)
    is
+      pragma Warnings (Off, New_Mask);
+
       Dummy_Signal_Set : Signal_Set;
    begin
       Old_Mask := Dummy_Signal_Set;
       POSIX_Win32.Raise_Not_Yet_Implemented ("Set_Blocked_Signals");
    end Set_Blocked_Signals;
-
 
    -------------------
    -- Block_Signals --
@@ -246,12 +215,13 @@ package body POSIX.Signals is
      (Mask_To_Add : in     Signal_Set;
       Old_Mask    :    out Signal_Set)
    is
+      pragma Warnings (Off, Mask_To_Add);
+
       Dummy_Signal_Set : Signal_Set;
    begin
       Old_Mask := Dummy_Signal_Set;
       POSIX_Win32.Raise_Not_Yet_Implemented ("Block_Signals");
    end Block_Signals;
-
 
    ---------------------
    -- Unblock_Signals --
@@ -261,29 +231,24 @@ package body POSIX.Signals is
      (Mask_To_Substract : in     Signal_Set;
       Old_Mask          :    out Signal_Set)
    is
+      pragma Warnings (Off, Mask_To_Substract);
+
       Dummy_Signal_Set : Signal_Set;
    begin
       Old_Mask := Dummy_Signal_Set;
       POSIX_Win32.Raise_Not_Yet_Implemented ("Unblock_Signals");
    end Unblock_Signals;
 
-
    ---------------------
    -- Blocked_Signals --
    ---------------------
 
-   function Blocked_Signals
-     return Signal_Set
-   is
+   function Blocked_Signals return Signal_Set is
       Sig_Set : Signal_Set;
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Blocked_Signals");
       return Sig_Set;
    end Blocked_Signals;
-
-
-
-
 
    --  Ignoring Signals
 
@@ -292,33 +257,31 @@ package body POSIX.Signals is
    -------------------
 
    procedure Ignore_Signal (Sig : in Signal) is
+      pragma Warnings (Off, Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Ignore_Signal");
    end Ignore_Signal;
-
 
    ---------------------
    -- Unignore_Signal --
    ---------------------
 
    procedure Unignore_Signal (Sig : in Signal) is
+      pragma Warnings (Off, Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Unignore_Signal");
    end Unignore_Signal;
-
 
    ----------------
    -- Is_Ignored --
    ----------------
 
-   function Is_Ignored (Sig : Signal)
-                        return Boolean is
+   function Is_Ignored (Sig : in Signal) return Boolean is
+      pragma Warnings (Off, Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Is_Ignored");
       return False;
    end Is_Ignored;
-
-
 
    --  Controling Delivery of Signal_Child Signal
 
@@ -326,25 +289,21 @@ package body POSIX.Signals is
    -- Set_Stopped_Child_Signal --
    ------------------------------
 
-   procedure Set_Stopped_Child_Signal
-     (Enable : in Boolean := True) is
+   procedure Set_Stopped_Child_Signal (Enable : in Boolean := True) is
+      pragma Warnings (Off, Enable);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Set_Stopped_Child_Signal");
    end Set_Stopped_Child_Signal;
-
 
    ----------------------------------
    -- Stopped_Child_Signal_Enabled --
    ----------------------------------
 
-   function Stopped_Child_Signal_Enabled
-     return Boolean is
+   function Stopped_Child_Signal_Enabled return Boolean is
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Stopped_Child_Signal_Enabled");
       return True;
    end Stopped_Child_Signal_Enabled;
-
-
 
    --  Examining Pending Signals
 
@@ -352,9 +311,7 @@ package body POSIX.Signals is
    -- Pending_Signals --
    ---------------------
 
-   function Pending_Signals
-     return Signal_Set
-   is
+   function Pending_Signals return Signal_Set is
       Sig_Set : Signal_Set;
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Pending_Signals");

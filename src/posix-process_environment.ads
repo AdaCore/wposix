@@ -27,23 +27,23 @@ package POSIX.Process_Environment is
       Target : in out Environment);
 
    function Environment_Value_Of
-     (Name      : POSIX.POSIX_String;
-      Env       : Environment;
-      Undefined : POSIX.POSIX_String := "")
+     (Name      : in POSIX.POSIX_String;
+      Env       : in Environment;
+      Undefined : in POSIX.POSIX_String := "")
       return POSIX.POSIX_String;
 
    function Environment_Value_Of
-     (Name      : POSIX.POSIX_String;
-      Undefined : POSIX.POSIX_String := "")
+     (Name      : in POSIX.POSIX_String;
+      Undefined : in POSIX.POSIX_String := "")
       return POSIX.POSIX_String;
 
    function Is_Environment_Variable
-     (Name      : POSIX.POSIX_String;
-      Env       : Environment)
+     (Name      : in POSIX.POSIX_String;
+      Env       : in Environment)
       return Boolean;
 
    function Is_Environment_Variable
-     (Name      : POSIX.POSIX_String)
+     (Name      : in POSIX.POSIX_String)
       return Boolean;
 
    procedure Clear_Environment
@@ -67,11 +67,9 @@ package POSIX.Process_Environment is
    procedure Delete_Environment_Variable
      (Name : in     POSIX.POSIX_String);
 
-   function Length (Env : Environment)
-                    return Natural;
+   function Length (Env : in Environment) return Natural;
 
-   function Length
-     return Natural;
+   function Length return Natural;
 
    generic
       with procedure Action
@@ -90,11 +88,9 @@ package POSIX.Process_Environment is
 
    --  Process Working Directory
 
-   procedure Change_Working_Directory
-     (Directory_Name : in POSIX.Pathname);
+   procedure Change_Working_Directory (Directory_Name : in POSIX.Pathname);
 
-   function Get_Working_Directory
-     return POSIX.Pathname;
+   function Get_Working_Directory return POSIX.Pathname;
 
 private
 

@@ -11,7 +11,6 @@ package POSIX is
    --  Symbolic subtypes and constants
 
 
-
    --  Optional Facilities
 
    subtype Job_Control_Support is Boolean
@@ -30,12 +29,10 @@ package POSIX is
    POSIX_Ada_Version           : constant := 1996_07;
 
 
-
    --  I/O Count
 
    type IO_Count is new Natural range 0 .. Natural'Last;
    subtype IO_count_Maximum is IO_Count range 32767 .. IO_Count'Last;
-
 
 
    --  System Limits
@@ -59,7 +56,6 @@ package POSIX is
    subtype Time_Zone_String_Maxima is Natural range 10 .. 10;
 
 
-
    --  Pathname Variable Values
 
    Portable_Link_Limit_Maximum        : constant Natural := 8;
@@ -79,7 +75,6 @@ package POSIX is
 
    Portable_Pipe_Limit_Maximum        : constant IO_Count := 512;
    subtype Pipe_Limit_Maxima is IO_Count range 512 .. 512;
-
 
 
    --  Blocking Behavior Values
@@ -107,25 +102,20 @@ package POSIX is
 
    type POSIX_String is array (Positive range <>) of POSIX_Character;
 
-   function To_POSIX_String (Str : string)
-                             return POSIX_String;
+   function To_POSIX_String (Str : in string) return POSIX_String;
+   pragma Inline (To_POSIX_String);
 
-   function To_String (Str : POSIX_String)
-                       return string;
+   function To_String (Str : in POSIX_String) return string;
+   pragma Inline (To_String);
 
    subtype Filename is POSIX_String;
    subtype Pathname is POSIX_String;
 
-   function Is_Filename (Str : POSIX_String)
-                         return Boolean;
-   function Is_Pathname (Str : POSIX_String)
-                         return Boolean;
+   function Is_Filename (Str : in POSIX_String) return Boolean;
+   function Is_Pathname (Str : in POSIX_String) return Boolean;
 
-   function Is_Portable_Filename (Str : POSIX_String)
-                                  return Boolean;
-   function Is_Portable_Pathname (Str : POSIX_String)
-                                  return Boolean;
-
+   function Is_Portable_Filename (Str : in POSIX_String) return Boolean;
+   function Is_Portable_Pathname (Str : in POSIX_String) return Boolean;
 
 
    --  String Lists
@@ -135,8 +125,9 @@ package POSIX is
 
    procedure Make_Empty (List : in out POSIX_String_List);
 
-   procedure Append  (List : in out POSIX_String_List;
-                      Str  : in     POSIX_String);
+   procedure Append
+     (List : in out POSIX_String_List;
+      Str  : in     POSIX_String);
 
    generic
       with procedure Action
@@ -144,13 +135,12 @@ package POSIX is
          Quit : in out Boolean);
    procedure For_Every_Item (List : in POSIX_String_List);
 
-   function Length (List : POSIX_String_List)
-                    return Natural;
+   function Length (List : in POSIX_String_List) return Natural;
 
-   function Value (List  : POSIX_String_List;
-                   Index : Positive)
-                   return POSIX_String;
-
+   function Value
+     (List  : in POSIX_String_List;
+      Index : in Positive)
+     return POSIX_String;
 
 
    --  Option Sets
@@ -160,12 +150,9 @@ package POSIX is
    function Empty_Set
      return Option_Set;
 
-   function "+" (L, R : Option_Set)
-                 return Option_Set;
+   function "+" (L, R : in Option_Set) return Option_Set;
 
-   function "-" (L, R : Option_Set)
-                 return Option_Set;
-
+   function "-" (L, R : in Option_Set) return Option_Set;
 
 
    --  Exceptions and error codes
@@ -179,11 +166,9 @@ package POSIX is
 
    procedure Set_Error_Code (Error : in Error_Code);
 
-   function Is_POSIX_Error (Error : Error_Code)
-                            return Boolean;
+   function Is_POSIX_Error (Error : in Error_Code) return Boolean;
 
-   function Image (Error : Error_Code)
-                   return String;
+   function Image (Error : in Error_Code) return String;
 
    No_Error                            : constant Error_Code
      := Win32.Winerror.NO_ERROR;
@@ -263,7 +248,7 @@ package POSIX is
    Operation_Not_Implemented           : constant Error_Code
      := Win32.Winerror.ERROR_NOT_SUPPORTED;
 
-   Operation_Not_Permited              : constant Error_Code
+   Operation_Not_Permitted             : constant Error_Code
      := 16#F000_0018#;
 
    Permission_Denied                   : constant Error_Code
@@ -292,7 +277,6 @@ package POSIX is
 
 
 
-
    --  System Identification
 
    function System_Name
@@ -316,12 +300,11 @@ private
    type String_Ptr_Array is array (positive range <>) of POSIX_String_Ptr;
    type String_Ptr_Array_Ptr is access String_Ptr_Array;
 
-   type POSIX_String_List is
-      record
-         Last    : Natural := 0;
-         Length  : Natural := 0;
-         Strings : String_Ptr_Array_Ptr := null;
-      end record;
+   type POSIX_String_List is record
+      Last    : Natural := 0;
+      Length  : Natural := 0;
+      Strings : String_Ptr_Array_Ptr := null;
+   end record;
 
    Empty_String_List : constant POSIX_String_List
      := POSIX_String_List'(0, 0, null);

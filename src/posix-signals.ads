@@ -11,11 +11,9 @@ package POSIX.Signals is
 
    type Signal is new Natural;
 
-   function Image (Sig : Signal)
-                   return String;
+   function Image (Sig : in Signal) return String;
 
-   function Value (Str : String)
-                   return Signal;
+   function Value (Str : in String) return Signal;
 
 
    --  Standard Signals (required)
@@ -115,8 +113,8 @@ package POSIX.Signals is
    procedure Delete_All_Signals (Set : in out Signal_Set);
 
    function Is_Member
-     (Set : Signal_Set;
-      Sig : Signal)
+     (Set : in Signal_Set;
+      Sig : in Signal)
       return Boolean;
 
 
@@ -152,17 +150,14 @@ package POSIX.Signals is
      return Signal_Set;
 
 
-
-
    --  Ignoring Signals
 
    procedure Ignore_Signal (Sig : in Signal);
 
    procedure Unignore_Signal (Sig : in Signal);
 
-   function Is_Ignored (Sig : Signal)
-                        return Boolean;
-
+   function Is_Ignored (Sig : in Signal)
+     return Boolean;
 
 
    --  Controling Delivery of Signal_Child Signal
@@ -174,7 +169,6 @@ package POSIX.Signals is
      return Boolean;
 
 
-
    --  Examining Pending Signals
 
    function Pending_Signals
@@ -183,9 +177,8 @@ package POSIX.Signals is
 
 private
 
-   type Signal_Set is
-      record
-         Values : Integer := 0;
-      end record;
+   type Signal_Set is record
+      Values : Integer := 0;
+   end record;
 
 end POSIX.Signals;

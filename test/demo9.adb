@@ -41,18 +41,18 @@ begin
 
    PPP.Start_Process
      (Child    => GMAKE_Id,
-      Pathname => POSIX.To_POSIX_String ("/usr/bin/gnatmake.exe"),
+      Pathname => POSIX.To_POSIX_String ("/usr/gnatpro/bin/gnatmake.exe"),
       Template => GMAKE_Template,
       Arg_List => GMAKE_Args1);
    Text_IO.Put_Line ("Process 1 : " & PPI.Image (GMAKE_Id));
 
    POSIX.Append (GMAKE_Args2, "-i");
-   POSIX.Append (GMAKE_Args1, "-I../src");
+   POSIX.Append (GMAKE_Args2, "-I../src");
    POSIX.Append (GMAKE_Args2, "demo2");
 
    PPP.Start_Process
      (Child    => GMAKE_Id,
-      Pathname => POSIX.To_POSIX_String ("/usr/bin/gnatmake.exe"),
+      Pathname => POSIX.To_POSIX_String ("/usr/gnatpro/bin/gnatmake.exe"),
       Template => GMAKE_Template,
       Arg_List => GMAKE_Args2);
    Text_IO.Put_Line ("Process 2 : " & PPI.Image (GMAKE_Id));

@@ -29,17 +29,21 @@ package body POSIX_Win32 is
    -- Check_Retcode --
    -------------------
 
-   procedure Check_Retcode (RETCODE : in Win32.INT;
-                            Fct     : in String)
+   procedure Check_Retcode
+     (RETCODE : in Win32.INT;
+      Fct     : in String)
    is
       use type Win32.INT;
    begin
       if RETCODE = Retcode_Error then
-         POSIX.Set_Error_Code (POSIX.Error_Code (Win32.Winbase.GetLastError));
-         Ada.Exceptions.Raise_Exception
-           (POSIX.POSIX_Error'Identity,
-            Message => Fct &
-            " : errno = " & Win32.DWORD'Image (Win32.Winbase.GetLastError));
+         declare
+            Code : constant Win32.DWORD := Win32.Winbase.GetLastError;
+         begin
+            POSIX.Set_Error_Code (POSIX.Error_Code (Code));
+            Ada.Exceptions.Raise_Exception
+              (POSIX.POSIX_Error'Identity,
+               Message => Fct & " : errno = " & Win32.DWORD'Image (Code));
+         end;
       end if;
    end Check_Retcode;
 
@@ -47,17 +51,22 @@ package body POSIX_Win32 is
    -- Check_Result --
    ------------------
 
-   procedure Check_Result (RETCODE : in Win32.BOOL;
-                           Fct     : in String)
+   procedure Check_Result
+     (RETCODE : in Win32.BOOL;
+      Fct     : in String)
    is
       use type Win32.BOOL;
    begin
       if RETCODE = Win32.FALSE then
-         POSIX.Set_Error_Code (POSIX.Error_Code (Win32.Winbase.GetLastError));
-         Ada.Exceptions.Raise_Exception
-           (POSIX.POSIX_Error'Identity,
-            Message => Fct &
-            " : errno = " & Win32.DWORD'Image (Win32.Winbase.GetLastError));
+         declare
+            Code : constant Win32.DWORD := Win32.Winbase.GetLastError;
+         begin
+            POSIX.Set_Error_Code (POSIX.Error_Code (Code));
+            Ada.Exceptions.Raise_Exception
+              (POSIX.POSIX_Error'Identity,
+               Message => Fct &
+               " : errno = " & Win32.DWORD'Image (Code));
+         end;
       end if;
    end Check_Result;
 
@@ -65,8 +74,9 @@ package body POSIX_Win32 is
    -- Raise_Error --
    -----------------
 
-   procedure Raise_Error (Message    : in String;
-                          Error_Code : in POSIX.Error_Code) is
+   procedure Raise_Error
+     (Message    : in String;
+      Error_Code : in POSIX.Error_Code) is
    begin
       POSIX.Set_Error_Code (Error_Code);
       Ada.Exceptions.Raise_Exception
@@ -75,14 +85,13 @@ package body POSIX_Win32 is
          " : Error_Code = " & POSIX.Error_Code'Image (Error_Code));
    end Raise_Error;
 
-
-
    -------------------
    -- Is_Executable --
    -------------------
 
-   function Is_Executable (Pathname : in POSIX.POSIX_String)
-                           return Boolean
+   function Is_Executable
+     (Pathname : in POSIX.POSIX_String)
+     return Boolean
    is
       BinaryType : aliased Win32.DWORD;
    begin
@@ -94,6 +103,7 @@ package body POSIX_Win32 is
          begin
             if Ext = ".com" then
                return True;
+
             elsif Ext = ".exe" then
                declare
                   use type Win32.BOOL;
@@ -102,10 +112,12 @@ package body POSIX_Win32 is
                begin
                   return Win32.Winbase.GetBinaryType
                     (Win32.Addr (L_Pathname),
-                     BinaryType'Unchecked_Access)        = Win32.TRUE;
+                     BinaryType'Unchecked_Access) = Win32.TRUE;
                end;
+
             elsif Ext = ".bat" then
                return True;
+
             else
                return False;
             end if;
@@ -128,11 +140,10 @@ package body POSIX_Win32 is
    type P_List;
    type P_List_Access is access P_List;
 
-   type P_List is
-      record
-         Process : PPI.Process_ID;
-         Next    : P_List_Access;
-      end record;
+   type P_List is record
+      Process : PPI.Process_ID;
+      Next    : P_List_Access;
+   end record;
 
    ----------
    -- Free --
@@ -147,10 +158,15 @@ package body POSIX_Win32 is
    protected Process_List is
 
       procedure Add    (Child  : in     PPI.Process_ID);
+
       procedure Remove (Child  : in     PPI.Process_ID);
+
       function  Exist  (Child  : in     PPI.Process_ID) return Boolean;
-      procedure Wait   (Status :    out PPP.Termination_Status;
-                        Block  : in     Boolean);
+
+      procedure Wait
+        (Status :    out PPP.Termination_Status;
+         Block  : in     Boolean);
+
    private
       Process   : P_List_Access := null;
       N_Process : Natural := 0;
@@ -162,7 +178,7 @@ package body POSIX_Win32 is
       -- Add --
       ---------
 
-      procedure Add    (Child  : in     PPI.Process_ID) is
+      procedure Add    (Child  : in PPI.Process_ID) is
       begin
          Process := new P_List'(Child, Next => Process);
          N_Process := N_Process + 1;
@@ -172,26 +188,32 @@ package body POSIX_Win32 is
       -- Remove --
       ------------
 
-      procedure Remove (Child  : in     PPI.Process_ID) is
+      procedure Remove (Child  : in PPI.Process_ID) is
          use type PPI.Process_ID;
          PLa, PLa_Prev : P_List_Access;
+         pragma Warnings (Off, PLa_Prev);
       begin
          PLa := Process;
 
          Remove_Child :
          while PLa /= null loop
+
             if PLa.Process = Child then
+
                if PLa = Process then
                   Process := PLa.Next;
                else
                   PLa_Prev.Next := PLa.Next;
                end if;
+
                Free (PLa);
                exit Remove_Child;
+
             else
                PLa_Prev := PLa;
                PLa := PLa.Next;
             end if;
+
          end loop Remove_Child;
          N_Process := N_Process - 1;
       end Remove;
@@ -200,7 +222,7 @@ package body POSIX_Win32 is
       -- Exist --
       -----------
 
-      function  Exist  (Child  : in     PPI.Process_ID) return Boolean is
+      function  Exist  (Child  : in PPI.Process_ID) return Boolean is
          use type PPI.Process_ID;
          PLa : P_List_Access := Process;
       begin
@@ -212,6 +234,7 @@ package body POSIX_Win32 is
                PLa := PLa.Next;
             end if;
          end loop Check_Child;
+
          return False;
       end Exist;
 
@@ -219,8 +242,9 @@ package body POSIX_Win32 is
       -- Get_Process_ID --
       --------------------
 
-      function Get_Process_ID (H : Win32.Winnt.HANDLE)
-                               return PPI.Process_ID
+      function Get_Process_ID
+        (H : in Win32.Winnt.HANDLE)
+        return PPI.Process_ID
       is
          use type Win32.Winnt.HANDLE;
          PLa, PLa_Prev : P_List_Access;
@@ -243,18 +267,19 @@ package body POSIX_Win32 is
       -- Wait --
       ----------
 
-      procedure Wait   (Status :    out PPP.Termination_Status;
-                        Block  : in     Boolean)
+      procedure Wait
+        (Status :    out PPP.Termination_Status;
+         Block  : in     Boolean)
       is
 
          use type Interfaces.C.unsigned_long;
 
          type Exit_Stat is mod 2 ** Integer'Size;
-         type Termination_Status is
-            record
-               Pid         :  PPI.Process_ID := PPI.Null_Process_ID;
-               Exit_Status :  Exit_Stat;
-            end record;
+
+         type Termination_Status is record
+            Pid         :  PPI.Process_ID := PPI.Null_Process_ID;
+            Exit_Status :  Exit_Stat;
+         end record;
 
          function Termination_Status_Conv is
            new Ada.Unchecked_Conversion
@@ -295,6 +320,7 @@ package body POSIX_Win32 is
                Handles (1)'Unchecked_Access,
                Win32.FALSE,
                0);
+
             if Retcode = Win32.Winbase.WAIT_TIMEOUT then
                Status := Termination_Status_Conv
                  (Termination_Status'(PPI.Null_Process_ID, 0));
@@ -304,8 +330,8 @@ package body POSIX_Win32 is
 
          H := Handles (Integer (Retcode - Win32.Winbase.WAIT_OBJECT_0 + 1));
 
-         Ok := Win32.Winbase.GetExitCodeProcess (H,
-                                                 Exit_Code'Unchecked_Access);
+         Ok := Win32.Winbase.GetExitCodeProcess
+           (H, Exit_Code'Unchecked_Access);
 
          Ok := Win32.Winbase.CloseHandle (H);
 
@@ -322,7 +348,7 @@ package body POSIX_Win32 is
    -- Add_Child --
    ---------------
 
-   procedure Add_Child    (Child  : in     PPI.Process_ID) is
+   procedure Add_Child (Child : in PPI.Process_ID) is
    begin
       Process_List.Add (Child);
    end Add_Child;
@@ -331,7 +357,7 @@ package body POSIX_Win32 is
    -- Remove_Child --
    ------------------
 
-   procedure Remove_Child (Child  : in     PPI.Process_ID) is
+   procedure Remove_Child (Child : in PPI.Process_ID) is
    begin
       Process_List.Remove (Child);
    end Remove_Child;
@@ -340,7 +366,7 @@ package body POSIX_Win32 is
    -- Exist --
    -----------
 
-   function  Exist  (Child  : in     PPI.Process_ID) return Boolean is
+   function  Exist (Child : in PPI.Process_ID) return Boolean is
    begin
       return Process_List.Exist (Child);
    end Exist;
@@ -349,8 +375,9 @@ package body POSIX_Win32 is
    -- Wait --
    ----------
 
-   procedure Wait         (Status :    out PPP.Termination_Status;
-                           Block  : in     Boolean) is
+   procedure Wait
+     (Status :    out PPP.Termination_Status;
+      Block  : in     Boolean) is
    begin
       Process_List.Wait (Status, Block);
    end Wait;

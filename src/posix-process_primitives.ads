@@ -105,25 +105,29 @@ package POSIX.Process_Primitives is
    type Termination_Status is private;
    type Termination_Cause is (Exited, Terminated_By_Signal, Stopped_By_Signal);
 
-   function Status_Available (Status : Termination_Status)
-                              return Boolean;
+   function Status_Available
+     (Status : in Termination_Status)
+     return Boolean;
 
-   function Process_ID_Of (Status : Termination_Status)
-                           return POSIX.Process_Identification.Process_ID;
+   function Process_ID_Of
+     (Status : in Termination_Status)
+     return POSIX.Process_Identification.Process_ID;
 
-   function Termination_Cause_Of (Status : Termination_Status)
-                                  return Termination_Cause;
+   function Termination_Cause_Of
+     (Status : in Termination_Status)
+     return Termination_Cause;
 
-   function Exit_Status_Of (Status : Termination_Status)
-                            return Exit_Status;
+   function Exit_Status_Of
+     (Status : in Termination_Status)
+     return Exit_Status;
 
-   function Termination_Signal_Of (Status : Termination_Status)
-                                   return POSIX.Signals.Signal;
+   function Termination_Signal_Of
+     (Status : in Termination_Status)
+     return POSIX.Signals.Signal;
 
-   function Stopping_Signal_Of (Status : Termination_Status)
-                                return POSIX.Signals.Signal;
-
-
+   function Stopping_Signal_Of
+     (Status : in Termination_Status)
+     return POSIX.Signals.Signal;
 
    --  Wait for Process Termination
 
@@ -146,8 +150,7 @@ package POSIX.Process_Primitives is
      (Status         :    out Termination_Status;
       Block          : in     Boolean := True;
       Trace_Stopped  : in     Boolean := True;
-      Masked_Signals : in     POSIX.Signal_Masking
-        := POSIX.RTS_Signals);
+      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals);
 
 private
 
@@ -160,39 +163,41 @@ private
    type File_Request;
    type File_Request_Access is access File_Request;
 
-   type File_Request (Action : File_Action) is
-      record
-         Next : File_Request_Access;
-         File : POSIX.IO.File_Descriptor;
-         case Action is
-            when Open =>
-               Name    : Unbounded_String;
-               Mode    : POSIX.IO.File_Mode;
-               Options : POSIX.IO.Open_Option_Set;
-               OHandle : Win32.Winnt.HANDLE;
-            when Close =>
-               CHandle : Win32.Winnt.HANDLE;
-            when Duplicate =>
-               From_File : POSIX.IO.File_Descriptor;
-         end case;
-      end record;
+   type File_Request (Action : File_Action) is record
+      Next : File_Request_Access;
+      File : POSIX.IO.File_Descriptor;
 
-   type Process_Template is
-      record
-         Is_Open                 : Boolean := False;
-         Keep_Effective_IDs      : Boolean;
-         Signal_Mask             : POSIX.Signals.Signal_Set;
-         Signal_Creation_Masking : POSIX.Signal_Masking;
-         File_Request_List       : File_Request_Access;
-         Last_File_Request       : File_Request_Access;
-         Process_Informations    : Win32.Winbase.LPPROCESS_INFORMATION;
-      end record;
+      case Action is
+
+         when Open =>
+            Name    : Unbounded_String;
+            Mode    : POSIX.IO.File_Mode;
+            Options : POSIX.IO.Open_Option_Set;
+            OHandle : Win32.Winnt.HANDLE;
+
+         when Close =>
+            CHandle : Win32.Winnt.HANDLE;
+
+         when Duplicate =>
+            From_File : POSIX.IO.File_Descriptor;
+      end case;
+   end record;
+
+   type Process_Template is record
+      Is_Open                 : Boolean := False;
+      Keep_Effective_IDs      : Boolean;
+      Signal_Mask             : POSIX.Signals.Signal_Set;
+      Signal_Creation_Masking : POSIX.Signal_Masking;
+      File_Request_List       : File_Request_Access;
+      Last_File_Request       : File_Request_Access;
+      Process_Informations    : Win32.Winbase.LPPROCESS_INFORMATION;
+   end record;
 
    type Exit_Stat is mod 2 ** Integer'Size;
-   type Termination_Status is
-      record
-         Pid         :  Process_ID := Null_Process_ID;
-         Exit_Status :  Exit_Stat;
-      end record;
+
+   type Termination_Status is record
+      Pid         :  Process_ID := Null_Process_ID;
+      Exit_Status :  Exit_Stat;
+   end record;
 
 end POSIX.Process_Primitives;

@@ -12,8 +12,9 @@ package body POSIX.Process_Times is
    -- Filetime_To_Tick --
    ----------------------
 
-   function Filetime_To_Tick (Filetime : in Win32.Winbase.FILETIME)
-                              return Tick_Count
+   function Filetime_To_Tick
+     (Filetime : in Win32.Winbase.FILETIME)
+     return Tick_Count
    is
       use type Win32.ULONG;
       Hundred_Nano_To_Tick : constant := 1E7 / Ticks_Per_Second;
@@ -27,20 +28,16 @@ package body POSIX.Process_Times is
    -- Elapsed_Real_Time --
    -----------------------
 
-   function Elapsed_Real_Time
-     return Tick_Count is
+   function Elapsed_Real_Time return Tick_Count is
    begin
       return Elapsed_Real_Time_Of (Get_Process_Times);
    end Elapsed_Real_Time;
-
 
    -----------------------
    -- Get_Process_Times --
    -----------------------
 
-   function Get_Process_Times
-     return Process_Times
-   is
+   function Get_Process_Times return Process_Times is
       Result                   : Win32.BOOL;
       Creation_Time, Exit_Time : aliased Win32.Winbase.FILETIME;
       Kernel_Time, User_Time   : aliased Win32.Winbase.FILETIME;
@@ -62,15 +59,16 @@ package body POSIX.Process_Times is
       return PT;
    end Get_Process_Times;
 
-
    --------------------------
    -- Elapsed_Real_Time_Of --
    --------------------------
 
-   function Elapsed_Real_Time_Of (Times : Process_Times)
-                                  return Tick_Count
+   function Elapsed_Real_Time_Of
+     (Times : in Process_Times)
+     return Tick_Count
    is
       use type Win32.DWORD;
+
       Ok      : Win32.BOOL;
       Ctimes  : aliased Win32.Winbase.SYSTEMTIME;
       Now     : aliased Win32.Winbase.FILETIME;
@@ -93,46 +91,42 @@ package body POSIX.Process_Times is
       return Filetime_To_Tick (Elapsed);
    end Elapsed_Real_Time_Of;
 
-
    ----------------------
    -- User_CPU_Time_Of --
    ----------------------
 
-   function User_CPU_Time_Of (Times : Process_Times)
-                              return Tick_Count is
+   function User_CPU_Time_Of (Times : in Process_Times) return Tick_Count is
    begin
       return Times.User_Time;
    end User_CPU_Time_Of;
-
 
    ------------------------
    -- System_CPU_Time_Of --
    ------------------------
 
-   function System_CPU_Time_Of (Times : Process_Times)
-                                return Tick_Count is
+   function System_CPU_Time_Of (Times : in Process_Times) return Tick_Count is
    begin
       return Times.System_Time;
    end System_CPU_Time_Of;
-
 
    ----------------------------------
    -- Descendants_User_CPU_Time_Of --
    ----------------------------------
 
-   function Descendants_User_CPU_Time_Of (Times : Process_Times)
-                                          return Tick_Count is
+   function Descendants_User_CPU_Time_Of
+     (Times : in Process_Times)
+     return Tick_Count is
    begin
       return Times.Children_User_Time;
    end Descendants_User_CPU_Time_Of;
-
 
    ------------------------------------
    -- Descendants_System_CPU_Time_Of --
    ------------------------------------
 
-   function Descendants_System_CPU_Time_Of (Times : Process_Times)
-                                            return Tick_Count is
+   function Descendants_System_CPU_Time_Of
+     (Times : in Process_Times)
+     return Tick_Count is
    begin
       return Times.Children_System_Time;
    end Descendants_System_CPU_Time_Of;

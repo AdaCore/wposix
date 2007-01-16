@@ -10,7 +10,6 @@ with Win32.Winbase;
 
 package POSIX.Files is
 
-
    --  Operations to create files in the File System
 
    procedure Create_Directory
@@ -22,7 +21,6 @@ package POSIX.Files is
       Permission : in POSIX.Permissions.Permission_Set);
 
 
-
    --  Operations to remove files from the File System
 
    procedure Unlink (Pathname : in POSIX.Pathname);
@@ -30,25 +28,35 @@ package POSIX.Files is
    procedure Remove_Directory (Pathname : in POSIX.Pathname);
 
 
-
    --  Predicates on files in the File System
 
-   function Is_File (Pathname : in POSIX.Pathname)
-                     return Boolean;
+   function Is_File
+     (Pathname : in POSIX.Pathname)
+     return Boolean;
 
-   function Is_Directory (Pathname : in POSIX.Pathname)
-                          return Boolean;
+   function Is_Directory
+     (Pathname : in POSIX.Pathname)
+     return Boolean;
 
-   function Is_FIFO (Pathname : in POSIX.Pathname)
-                     return Boolean;
+   function Is_FIFO
+     (Pathname : in POSIX.Pathname)
+     return Boolean;
 
-   function Is_Character_Special_File (Pathname : in POSIX.Pathname)
-                                       return Boolean;
+   function Is_Character_Special_File
+     (Pathname : in POSIX.Pathname)
+     return Boolean;
 
-   function Is_Block_Special_File (Pathname : in POSIX.Pathname)
-                                   return Boolean;
+   function Is_Block_Special_File
+     (Pathname : in POSIX.Pathname)
+     return Boolean;
 
+   function Is_Symbolic_Link
+     (Pathname : in POSIX.Pathname)
+     return Boolean;
 
+   function Is_Socket
+     (Pathname : in POSIX.Pathname)
+     return Boolean;
 
    --  Operations to modify File Pathnames
 
@@ -61,13 +69,11 @@ package POSIX.Files is
       New_Pathname : in POSIX.Pathname);
 
 
-
    --  Iterating over files within a directory
 
    type Directory_Entry is limited private;
 
-   function Filename_Of (D_Entry : Directory_Entry)
-                         return POSIX.Filename;
+   function Filename_Of (D_Entry : Directory_Entry) return POSIX.Filename;
 
    generic
       with procedure Action
@@ -75,7 +81,6 @@ package POSIX.Files is
          Quit    : in out Boolean);
    procedure For_Every_Directory_Entry
      (Pathname : in POSIX.Pathname);
-
 
 
    --  Operations to Update File Status Information
@@ -97,7 +102,6 @@ package POSIX.Files is
    procedure Set_File_Times (Pathname : in POSIX.Pathname);
 
 
-
    --  Operations to Determine File Accessibility
 
    type Access_Mode is (Read_Ok, Write_Ok, Execute_Ok);
@@ -113,11 +117,13 @@ package POSIX.Files is
       Access_Mode : in Access_Mode_Set)
       return POSIX.Error_Code;
 
-   function Is_File_Present (Pathname : in POSIX.Pathname)
-                             return Boolean;
+   function Is_File_Present
+     (Pathname : in POSIX.Pathname)
+     return Boolean;
 
-   function Existence (Pathname : in POSIX.Pathname)
-                       return POSIX.Error_Code;
+   function Existence
+     (Pathname : in POSIX.Pathname)
+     return POSIX.Error_Code;
 
 private
 

@@ -18,14 +18,11 @@ package body POSIX.Calendar is
       return POSIX_Time (System_Time);
    end Clock;
 
-
    -------------
    -- To_Time --
    -------------
 
-   function To_Time (Date : POSIX_Time)
-                     return Ada.Calendar.Time
-   is
+   function To_Time (Date : in POSIX_Time) return Ada.Calendar.Time is
       Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
@@ -38,14 +35,11 @@ package body POSIX.Calendar is
                                    Ada.Calendar.Day_Duration (Seconds));
    end To_Time;
 
-
    -------------------
    -- To_POSIX_Time --
    -------------------
 
-   function To_POSIX_Time (Date : Ada.Calendar.Time)
-                           return POSIX_Time
-   is
+   function To_POSIX_Time (Date : in Ada.Calendar.Time) return POSIX_Time is
       Year    : Ada.Calendar.Year_Number;
       Month   : Ada.Calendar.Month_Number;
       Day     : Ada.Calendar.Day_Number;
@@ -55,17 +49,13 @@ package body POSIX.Calendar is
       return Time_Of (Year, Month, Day, Seconds);
    end To_POSIX_Time;
 
-
-
    --  Operations on POSIX_Time
 
    ----------
    -- Year --
    ----------
 
-   function Year (Date : POSIX_Time)
-                  return Year_Number
-   is
+   function Year (Date : in POSIX_Time) return Year_Number is
       Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
@@ -75,14 +65,11 @@ package body POSIX.Calendar is
       return Year;
    end Year;
 
-
    -----------
    -- Month --
    -----------
 
-   function Month (Date : POSIX_Time)
-                   return Month_Number
-   is
+   function Month (Date : in POSIX_Time) return Month_Number is
       Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
@@ -92,14 +79,11 @@ package body POSIX.Calendar is
       return Month;
    end Month;
 
-
    ---------
    -- Day --
    ---------
 
-   function Day (Date : POSIX_Time)
-                 return Day_Number
-   is
+   function Day (Date : in POSIX_Time) return Day_Number is
       Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
@@ -109,14 +93,11 @@ package body POSIX.Calendar is
       return Day;
    end Day;
 
-
    -------------
    -- Seconds --
    -------------
 
-   function Seconds (Date : POSIX_Time)
-                     return Day_Duration
-   is
+   function Seconds (Date : in POSIX_Time) return Day_Duration is
       Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
@@ -125,7 +106,6 @@ package body POSIX.Calendar is
       Split (Date, Year, Month, Day, Seconds);
       return Seconds;
    end Seconds;
-
 
    -----------
    -- Split --
@@ -136,16 +116,15 @@ package body POSIX.Calendar is
       Year    :    out Year_Number;
       Month   :    out Month_Number;
       Day     :    out Day_Number;
-      Seconds :    out Day_Duration)
-   is
-      Ls : constant Natural := Natural (Date.wSecond);
-      Lm : constant Natural := Natural (Date.wMinute);
-      Lh : constant Natural := Natural (Date.wHour);
+      Seconds :    out Day_Duration) is
    begin
       Year    := Year_Number  (Date.wYear);
       Month   := Month_Number (Date.wMonth);
       Day     := Day_Number   (Date.wDay);
-      Seconds := Day_Duration (Ls + Lm*60 + Lh*3_600);
+      Seconds := Day_Duration (Date.wHour) * 3600 +
+                 Day_Duration (Date.wMinute) * 60 +
+                 Day_Duration (Date.wSecond)      +
+                 Day_Duration (Date.wMilliseconds) / 1000;
    end Split;
 
    -------------
@@ -153,11 +132,12 @@ package body POSIX.Calendar is
    -------------
 
    function Time_Of
-     (Year    : Year_Number;
-      Month   : Month_Number;
-      Day     : Day_Number;
-      Seconds : Day_Duration := 0.0)
-      return POSIX_Time is
+     (Year    : in Year_Number;
+      Month   : in Month_Number;
+      Day     : in Day_Number;
+      Seconds : in Day_Duration := 0.0)
+     return POSIX_Time
+   is
 
       Local_Time : Win32.Winbase.SYSTEMTIME;
 
@@ -172,18 +152,17 @@ package body POSIX.Calendar is
       Lsec := Lsec rem 3600;
       Local_Time.wMinute := Win32.WORD (Lsec / 60);
       Local_Time.wSecond := Win32.WORD (Lsec rem 60);
-      Local_Time.wMilliseconds := Win32.WORD (0);
+      Local_Time.wMilliseconds
+        := Win32.WORD ((Seconds - Day_Duration (Lsec) - 0.5) * 1000);
+      --  Lsec is rounded, not truncated - hence the "-0.5"
       return POSIX_Time (Local_Time);
    end Time_Of;
-
 
    ---------
    -- "+" --
    ---------
 
-   function "+" (L : POSIX_Time; R : Duration)
-                 return POSIX_Time
-   is
+   function "+" (L : in POSIX_Time; R : in Duration) return POSIX_Time is
       use type Ada.Calendar.Time;
    begin
       return To_POSIX_Time (To_Time (L) + R);
@@ -192,14 +171,11 @@ package body POSIX.Calendar is
          raise Time_Error;
    end "+";
 
-
    ---------
    -- "+" --
    ---------
 
-   function "+" (L : Duration; R : POSIX_Time)
-                 return POSIX_Time
-   is
+   function "+" (L : in Duration; R : in POSIX_Time) return POSIX_Time is
       use type Ada.Calendar.Time;
    begin
       return To_POSIX_Time (L + To_Time (R));
@@ -208,14 +184,11 @@ package body POSIX.Calendar is
          raise Time_Error;
    end "+";
 
-
    ---------
    -- "-" --
    ---------
 
-   function "-" (L : POSIX_Time; R : Duration)
-                 return POSIX_Time
-   is
+   function "-" (L : in POSIX_Time; R : in Duration) return POSIX_Time is
       use type Ada.Calendar.Time;
    begin
       return To_POSIX_Time (To_Time (L) - R);
@@ -224,14 +197,11 @@ package body POSIX.Calendar is
          raise Time_Error;
    end "-";
 
-
    ---------
    -- "-" --
    ---------
 
-   function "-" (L : POSIX_Time; R : POSIX_Time)
-                 return Duration
-   is
+   function "-" (L : in POSIX_Time; R : in POSIX_Time) return Duration is
       use type Ada.Calendar.Time;
    begin
       return Duration (To_Time (L) - To_Time (R));
@@ -240,53 +210,41 @@ package body POSIX.Calendar is
          raise Time_Error;
    end "-";
 
-
    ---------
    -- "<" --
    ---------
 
-   function "<" (L, R : POSIX_Time)
-                 return Boolean
-   is
+   function "<" (L, R : in POSIX_Time) return Boolean is
       use type Ada.Calendar.Time;
    begin
       return To_Time (L) < To_Time (R);
    end "<";
 
-
    ----------
    -- "<=" --
    ----------
 
-   function "<=" (L, R : POSIX_Time)
-                  return Boolean
-   is
+   function "<=" (L, R : in POSIX_Time) return Boolean is
       use type Ada.Calendar.Time;
    begin
       return To_Time (L) <= To_Time (R);
    end "<=";
 
-
    ---------
    -- ">" --
    ---------
 
-   function ">" (L, R : POSIX_Time)
-                 return Boolean
-   is
+   function ">" (L, R : in POSIX_Time) return Boolean is
       use type Ada.Calendar.Time;
    begin
       return To_Time (L) > To_Time (R);
    end ">";
 
-
    ----------
    -- ">=" --
    ----------
 
-   function ">=" (L, R : POSIX_Time)
-                  return Boolean
-   is
+   function ">=" (L, R : in POSIX_Time) return Boolean is
       use type Ada.Calendar.Time;
    begin
       return To_Time (L) >= To_Time (R);

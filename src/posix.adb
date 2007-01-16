@@ -6,15 +6,16 @@
 with Interfaces.C;
 with Unchecked_Deallocation;
 with System;
+with Ada.Task_Attributes;
 
 with Win32.Winbase;
 
 package body POSIX is
 
 
-   --  constants
+   --  Make Errno a Task Attribute to be safe wrt multi-tasking
 
-   Errno : Error_Code;
+   package Errno is new Ada.Task_Attributes (Error_Code, No_Error);
 
    --  Characters and String
 
@@ -22,8 +23,7 @@ package body POSIX is
    -- To_POSIX_Character --
    ------------------------
 
-   function To_POSIX_Character (Char : Character)
-                                return POSIX_Character is
+   function To_POSIX_Character (Char : in Character) return POSIX_Character is
    begin
       return POSIX_Character'Value (Character'Image (Char));
    exception
@@ -35,8 +35,7 @@ package body POSIX is
    -- To_Character --
    ------------------
 
-   function To_Character (Char : POSIX_Character)
-                          return Character is
+   function To_Character (Char : in POSIX_Character) return Character is
    begin
       return Character'Value (POSIX_Character'Image (Char));
    exception
@@ -44,13 +43,11 @@ package body POSIX is
          return ' ';
    end To_Character;
 
-
    ---------------------
    -- To_POSIX_String --
    ---------------------
 
-   function To_POSIX_String (Str : String)
-                             return POSIX_String is
+   function To_POSIX_String (Str : in String) return POSIX_String is
       Posix_Str : POSIX_String (Str'Range);
    begin
       for I in Posix_Str'Range loop
@@ -59,13 +56,11 @@ package body POSIX is
       return Posix_Str;
    end To_POSIX_String;
 
-
    ---------------
    -- To_String --
    ---------------
 
-   function To_String (Str : POSIX_String)
-                       return String is
+   function To_String (Str : in POSIX_String) return String is
       Sstr : String (Str'Range);
    begin
       for I in Sstr'Range loop
@@ -74,16 +69,14 @@ package body POSIX is
       return Sstr;
    end To_String;
 
-
-
    -----------------
    -- Is_Filename --
    -----------------
 
    --  A valid Filename is everything except the null string,
    --  the strings "." and ".."
-   function Is_Filename (Str : POSIX_String)
-                         return Boolean is
+
+   function Is_Filename (Str : in POSIX_String) return Boolean is
    begin
       if Str = (Str'Range => ' ') or else Str = "." or else Str = ".." then
          return False;
@@ -92,14 +85,13 @@ package body POSIX is
       end if;
    end Is_Filename;
 
-
    -----------------
    -- Is_Pathname --
    -----------------
 
    --  A valid Pathname is everything except the null string
-   function Is_Pathname (Str : POSIX_String)
-                         return Boolean is
+
+   function Is_Pathname (Str : in POSIX_String) return Boolean is
    begin
       if Str = (Str'Range => ' ') then
          return False;
@@ -108,31 +100,25 @@ package body POSIX is
       end if;
    end Is_Pathname;
 
-
    --------------------------
    -- Is_Portable_Filename --
    --------------------------
 
-   function Is_Portable_Filename (Str : POSIX_String)
-                                  return Boolean is
+   function Is_Portable_Filename (Str : in POSIX_String) return Boolean is
    begin
       return Is_Filename (Str) and then
         Str'Length <= POSIX.Portable_Filename_Limit_Maximum;
    end Is_Portable_Filename;
 
-
    --------------------------
    -- Is_Portable_Pathname --
    --------------------------
 
-   function Is_Portable_Pathname (Str : POSIX_String)
-                                  return Boolean is
+   function Is_Portable_Pathname (Str : in POSIX_String) return Boolean is
    begin
       return Is_Pathname (Str) and then
         Str'Length <= POSIX.Portable_Pathname_Limit_Maximum;
    end Is_Portable_Pathname;
-
-
 
    --  String Lists
 
@@ -153,24 +139,32 @@ package body POSIX is
         (POSIX_String, POSIX_String_Ptr);
 
    begin
-      --  free the memory
+      if List.Strings = null then
+         --  Already empty
+         return;
+      end if;
+
+      --  Free the memory
+
       for I in List.Strings'First .. List.Last loop
          Free (List.Strings (I));
       end loop;
       Free (List.Strings);
-      --  reinitialize the values
+
+      --  Reinitialize the values
+
       List.Length := 0;
       List.Last := 0;
       List.Strings := null;
    end Make_Empty;
 
-
    ------------
    -- Append --
    ------------
 
-   procedure Append  (List : in out POSIX_String_List;
-                      Str  : in     POSIX_String)
+   procedure Append
+     (List : in out POSIX_String_List;
+      Str  : in     POSIX_String)
    is
       Strings : String_Ptr_Array_Ptr;
    begin
@@ -195,7 +189,6 @@ package body POSIX is
       List.Strings (List.Last) := new POSIX_String'(Str);
    end Append;
 
-
    --------------------
    -- For_Every_Item --
    --------------------
@@ -213,66 +206,55 @@ package body POSIX is
       end loop;
    end For_Every_Item;
 
-
    ------------
    -- Length --
    ------------
 
-   function Length (List : POSIX_String_List)
-                    return Natural is
+   function Length (List : in POSIX_String_List) return Natural is
    begin
       return List.Last;
    end Length;
-
 
    -----------
    -- Value --
    -----------
 
-   function Value (List  : POSIX_String_List;
-                   Index : Positive)
-                   return POSIX_String is
+   function Value
+     (List  : in POSIX_String_List;
+      Index : in Positive)
+     return POSIX_String is
    begin
       return List.Strings (Index) . all;
    end Value;
-
 
    ---------------
    -- Empty_Set --
    ---------------
 
-   function Empty_Set
-     return Option_Set is
+   function Empty_Set return Option_Set is
    begin
       return Option_Set'(0);
    end Empty_Set;
-
 
    ---------
    -- "+" --
    ---------
 
-   function "+" (L, R : Option_Set)
-                 return Option_Set is
+   function "+" (L, R : in Option_Set) return Option_Set is
       use type Win32.UINT;
    begin
       return Option_Set (L or R);
    end "+";
 
-
    ---------
    -- "-" --
    ---------
 
-   function "-" (L, R : Option_Set)
-                 return Option_Set
-   is
+   function "-" (L, R : in Option_Set) return Option_Set is
       use type Win32.UINT;
    begin
       return Option_Set (L xor (L and R));
    end "-";
-
-
 
    --  Exceptions and error codes
 
@@ -280,12 +262,10 @@ package body POSIX is
    -- Get_Error_Code --
    --------------------
 
-   function Get_Error_Code
-     return Error_Code is
+   function Get_Error_Code return Error_Code is
    begin
-      return Errno;
+      return Errno.Value;
    end Get_Error_Code;
-
 
    --------------------
    -- Set_Error_Code --
@@ -293,177 +273,131 @@ package body POSIX is
 
    procedure Set_Error_Code (Error : in Error_Code) is
    begin
-      Errno := Error;
+      Errno.Set_Value (Error);
    end Set_Error_Code;
-
 
    --------------------
    -- Is_POSIX_Error --
    --------------------
 
-   function Is_POSIX_Error (Error : Error_Code)
-                            return Boolean is
+   function Is_POSIX_Error (Error : in Error_Code) return Boolean is
    begin
-      if Error = No_Error then
-         return True;
-      elsif Error = Argument_List_Too_Long then
-         return True;
-      elsif Error = Bad_File_Descriptor then
-         return True;
-      elsif Error = Broken_Pipe then
-         return True;
-      elsif Error = Directory_Not_Empty then
-         return True;
-      elsif Error = Exec_Format_Error then
-         return True;
-      elsif Error = File_Exists then
-         return True;
-      elsif Error = File_Too_Large then
-         return True;
-      elsif Error = Filename_Too_Long then
-         return True;
-      elsif Error = Improper_Link then
-         return True;
-      elsif Error = Inappropriate_IO_Control_Operation then
-         return True;
-      elsif Error = Input_Output_Error then
-         return True;
-      elsif Error = Interrupted_Operation then
-         return True;
-      elsif Error = Invalid_Argument then
-         return True;
-      elsif Error = Invalid_Seek then
-         return True;
-      elsif Error = Is_A_Directory then
-         return True;
-      elsif Error = No_Child_Process then
-         return True;
-      elsif Error = No_Locks_Available then
-         return True;
-      elsif Error = No_Space_Left_On_Device then
-         return True;
-      elsif Error = No_Such_Operation_On_Device then
-         return True;
-      elsif Error = No_Such_Device_Or_Address then
-         return True;
-      elsif Error = No_Such_File_Or_Directory then
-         return True;
-      elsif Error = No_Such_Process then
-         return True;
-      elsif Error = Not_A_Directory then
-         return True;
-      elsif Error = Not_Enough_Space then
-         return True;
-      elsif Error = Operation_Not_Implemented then
-         return True;
-      elsif Error = Operation_Not_Permited then
-         return True;
-      elsif Error = Permission_Denied then
-         return True;
-      elsif Error = Read_Only_File_System then
-         return True;
-      elsif Error = Resource_Busy then
-         return True;
-      elsif Error = Resource_Deadlock_Avoided then
-         return True;
-      elsif Error = Resource_Temporarily_Unavailable then
-         return True;
-      elsif Error = Too_Many_Links then
-         return True;
-      elsif Error = Too_Many_Open_Files then
-         return True;
-      elsif Error = Too_Many_Open_Files_In_System then
-         return True;
-      else
-         return False;
-      end if;
-   end Is_POSIX_Error;
+      case Error is
+         when
+             No_Error                  | Argument_List_Too_Long
+           | Bad_File_Descriptor       | Broken_Pipe
+           | Directory_Not_Empty       | Exec_Format_Error
+           | File_Exists               | File_Too_Large
+           | Filename_Too_Long         | Improper_Link
+           | Inappropriate_IO_Control_Operation
+           | Input_Output_Error        | Interrupted_Operation
+           | Invalid_Argument          | Invalid_Seek
+           | Is_A_Directory            | No_Child_Process
+           | No_Locks_Available        | No_Space_Left_On_Device
+           | No_Such_Operation_On_Device
+           | No_Such_Device_Or_Address | No_Such_File_Or_Directory
+           | No_Such_Process           | Not_A_Directory
+           | Not_Enough_Space          | Operation_Not_Implemented
+           | Operation_Not_Permitted   | Permission_Denied
+           | Read_Only_File_System     | Resource_Busy
+           | Resource_Deadlock_Avoided | Resource_Temporarily_Unavailable
+           | Too_Many_Links            | Too_Many_Open_Files
+           | Too_Many_Open_Files_In_System
+           =>
+            return True;
 
+         when others =>
+            return False;
+      end case;
+   end Is_POSIX_Error;
 
    -----------
    -- Image --
    -----------
 
-   function Image (Error : Error_Code)
-                   return String is
+   function Image (Error : in Error_Code) return String is
    begin
-      if Error = No_Error then
-         return "NO_ERROR";
-      elsif Error = Argument_List_Too_Long then
-         return "ARGUMENT_LIST_TOO_LONG";
-      elsif Error = Bad_File_Descriptor then
-         return "BAD_FILE_DESCRIPTOR";
-      elsif Error = Broken_Pipe then
-         return "BROKEN_PIPE";
-      elsif Error = Directory_Not_Empty then
-         return "DIRECTORY_NOT_EMPTY";
-      elsif Error = Exec_Format_Error then
-         return "EXEC_FORMAT_ERROR";
-      elsif Error = File_Exists then
-         return "FILE_EXISTS";
-      elsif Error = File_Too_Large then
-         return "FILE_TOO_LARGE";
-      elsif Error = Filename_Too_Long then
-         return "FILENAME_TOO_LONG";
-      elsif Error = Improper_Link then
-         return "IMPROPER_LINK";
-      elsif Error = Inappropriate_IO_Control_Operation then
-         return "INAPPROPRIATE_IO_CONTROL_OPERATION";
-      elsif Error = Input_Output_Error then
-         return "INPUT_OUTPUT_ERROR";
-      elsif Error = Interrupted_Operation then
-         return "INTERRUPTED_OPERATION";
-      elsif Error = Invalid_Argument then
-         return "INVALID_ARGUMENT";
-      elsif Error = Invalid_Seek then
-         return "INVALID_SEEK";
-      elsif Error = Is_A_Directory then
-         return "IS_A_DIRECTORY";
-      elsif Error = No_Child_Process then
-         return "NO_CHILD_PROCESS";
-      elsif Error = No_Locks_Available then
-         return "NO_LOCKS_AVAILABLE";
-      elsif Error = No_Space_Left_On_Device then
-         return "NO_SPACE_LEFT_ON_DEVICE";
-      elsif Error = No_Such_Operation_On_Device then
-         return "NO_SUCH_OPERATION_ON_DEVICE";
-      elsif Error = No_Such_Device_Or_Address then
-         return "NO_SUCH_DEVICE_OR_ADDRESS";
-      elsif Error = No_Such_File_Or_Directory then
-         return "NO_SUCH_FILE_OR_DIRECTORY";
-      elsif Error = No_Such_Process then
-         return "NO_SUCH_PROCESS";
-      elsif Error = Not_A_Directory then
-         return "NOT_A_DIRECTORY";
-      elsif Error = Not_Enough_Space then
-         return "NOT_ENOUGH_SPACE";
-      elsif Error = Operation_Not_Implemented then
-         return "OPERATION_NOT_IMPLEMENTED";
-      elsif Error = Operation_Not_Permited then
-         return "OPERATION_NOT_PERMITED";
-      elsif Error = Permission_Denied then
-         return "PERMISSION_DENIED";
-      elsif Error = Read_Only_File_System then
-         return "READ_ONLY_FILE_SYSTEM";
-      elsif Error = Resource_Busy then
-         return "RESOURCE_BUSY";
-      elsif Error = Resource_Deadlock_Avoided then
-         return "RESOURCE_DEADLOCK_AVOIDED";
-      elsif Error = Resource_Temporarily_Unavailable then
-         return "RESOURCE_TEMPORARILY_UNAVAILABLE";
-      elsif Error = Too_Many_Links then
-         return "TOO_MANY_LINKS";
-      elsif Error = Too_Many_Open_Files then
-         return "TOO_MANY_OPEN_FILES";
-      elsif Error = Too_Many_Open_Files_In_System then
-         return "TOO_MANY_OPEN_FILES_IN_SYSTEM";
-      end if;
-      return "Error Not Known";
+      case Error is
+         when No_Error =>
+            return "NO_ERROR";
+         when Argument_List_Too_Long =>
+            return "ARGUMENT_LIST_TOO_LONG";
+         when Bad_File_Descriptor =>
+            return "BAD_FILE_DESCRIPTOR";
+         when Broken_Pipe =>
+            return "BROKEN_PIPE";
+         when Directory_Not_Empty =>
+            return "DIRECTORY_NOT_EMPTY";
+         when Exec_Format_Error =>
+            return "EXEC_FORMAT_ERROR";
+         when File_Exists =>
+            return "FILE_EXISTS";
+         when File_Too_Large =>
+            return "FILE_TOO_LARGE";
+         when Filename_Too_Long =>
+            return "FILENAME_TOO_LONG";
+         when Improper_Link =>
+            return "IMPROPER_LINK";
+         when Inappropriate_IO_Control_Operation =>
+            return "INAPPROPRIATE_IO_CONTROL_OPERATION";
+         when Input_Output_Error =>
+            return "INPUT_OUTPUT_ERROR";
+         when Interrupted_Operation =>
+            return "INTERRUPTED_OPERATION";
+         when Invalid_Argument =>
+            return "INVALID_ARGUMENT";
+         when Invalid_Seek =>
+            return "INVALID_SEEK";
+         when Is_A_Directory =>
+            return "IS_A_DIRECTORY";
+         when No_Child_Process =>
+            return "NO_CHILD_PROCESS";
+         when No_Locks_Available =>
+            return "NO_LOCKS_AVAILABLE";
+         when No_Space_Left_On_Device =>
+            return "NO_SPACE_LEFT_ON_DEVICE";
+         when No_Such_Operation_On_Device =>
+            return "NO_SUCH_OPERATION_ON_DEVICE";
+         when No_Such_Device_Or_Address =>
+            return "NO_SUCH_DEVICE_OR_ADDRESS";
+         when No_Such_File_Or_Directory =>
+            return "NO_SUCH_FILE_OR_DIRECTORY";
+         when No_Such_Process =>
+            return "NO_SUCH_PROCESS";
+         when Not_A_Directory =>
+            return "NOT_A_DIRECTORY";
+         when Not_Enough_Space =>
+            return "NOT_ENOUGH_SPACE";
+         when Operation_Not_Implemented =>
+            return "OPERATION_NOT_IMPLEMENTED";
+         when Operation_Not_Permitted =>
+            return "OPERATION_NOT_PERMITTED";
+         when Permission_Denied =>
+            return "PERMISSION_DENIED";
+         when Read_Only_File_System =>
+            return "READ_ONLY_FILE_SYSTEM";
+         when Resource_Busy =>
+            return "RESOURCE_BUSY";
+         when Resource_Deadlock_Avoided =>
+            return "RESOURCE_DEADLOCK_AVOIDED";
+         when Resource_Temporarily_Unavailable =>
+            return "RESOURCE_TEMPORARILY_UNAVAILABLE";
+         when Too_Many_Links =>
+            return "TOO_MANY_LINKS";
+         when Too_Many_Open_Files =>
+            return "TOO_MANY_OPEN_FILES";
+         when Too_Many_Open_Files_In_System =>
+            return "TOO_MANY_OPEN_FILES_IN_SYSTEM";
+         when others =>
+            return "Error Not Known";
+      end case;
    end Image;
 
-
-
    --  System Identification
+
+   ----------------------
+   -- Get_Version_Info --
+   ----------------------
 
    procedure Get_Version_Info
      (Version_Information : out Win32.Winbase.OSVERSIONINFOA)
@@ -490,9 +424,7 @@ package body POSIX is
    -----------------
 
    function System_Name return POSIX_String is
-
       VersionInformation : Win32.Winbase.OSVERSIONINFOA;
-
    begin
       Get_Version_Info (VersionInformation);
 
@@ -514,13 +446,11 @@ package body POSIX is
          return To_POSIX_String ("unknown");
    end System_Name;
 
-
    ---------------
    -- Node_Name --
    ---------------
 
    function Node_Name return POSIX_String is
-
       use type Interfaces.C.size_t;
       use type Interfaces.C.unsigned_long;
       use type Win32.BOOL;

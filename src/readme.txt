@@ -1,11 +1,14 @@
 
 $Id$
 
-POSIX Ada Binding for Windows 95/98 and Windows NT
-==================================================
+POSIX Ada Binding for Windows 95/98 and Windows NT/2000/XP
+==========================================================
 
 This is a partial implementation of POSIX using the Win32 API.
-Version 1.11 beta
+Version 1.13 beta
+
+Thanks to Jean-Pierre Rosen who has made a lot of changes and make it possible
+to have the 1.12 release out.
 
 Thanks to Sune Falck for the help provided for version 1.4. It has been
 reported that this binding compile fine with GNAT 3.11 and ObjectAda 7.1.2.
@@ -14,8 +17,42 @@ Thanks to Wilhelm Spickermann for a bug report.
 
 Thanks to Frank Beard for his contribution.
 
-It has also been tested with GNAT 3.12.
 
+This version has been tested with GNAT 3.14, GNAT 3.15.
+
+
+changes since 1.12b
+-------------------
+
+POSIX.Process_Primitives
+	Add support for Set_File_Action_To_Duplicate (only of standard files
+	handles - stdin, stdout and stderr).
+
+changes since 1.11b
+-------------------
+
+POSIX API should be thread safe. In many places this was not true before.
+
+POSIX.Process_Primitives
+	It is possible to launch .com and .exe (not only .exe as before).
+
+POSIX.Calendar
+	Handle milliseconds.
+
+POSIX.Files
+	Is_Symbolic_Link added.
+	Is_Socket added.
+	Both always return False on Win32.
+	For_Every_Directory_Entry, check for pathname with directory separator.
+
+POSIX.File_Status
+	Get_File_Status new version should be better than before. Do not
+	handle devices as this seems to be impossible on Win32.
+
+POSIX.Process_Environment
+	Environment_Value_Of correctly return Undefined if variable not found.
+
+Reformat the code.
 
 changes since 1.10b
 -------------------

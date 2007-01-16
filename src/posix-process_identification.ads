@@ -22,12 +22,11 @@ package POSIX.Process_Identification is
    function Get_Parent_Process_ID
      return Process_ID;
 
-   function Image (ID : Process_ID)
-                   return Standard.String;
+   function Image (ID : in Process_ID)
+     return Standard.String;
 
-   function Value (Str : Standard.String)
-                   return Process_ID;
-
+   function Value (Str : in Standard.String)
+     return Process_ID;
 
 
    --  Process Group Identification
@@ -47,12 +46,11 @@ package POSIX.Process_Identification is
 
    procedure Create_Session (Session_Leader : out Process_Group_ID);
 
-   function Image (ID : Process_Group_ID)
-                   return Standard.String;
+   function Image (ID : in Process_Group_ID)
+     return Standard.String;
 
-   function Value (Str : Standard.String)
-                   return Process_Group_ID;
-
+   function Value (Str : in Standard.String)
+     return Process_Group_ID;
 
 
    --  User Identification
@@ -70,12 +68,11 @@ package POSIX.Process_Identification is
    function Get_Login_Name
      return POSIX.POSIX_String;
 
-   function Image (ID : User_ID)
-                   return Standard.String;
+   function Image (ID : in User_ID)
+     return Standard.String;
 
-   function Value (Str : Standard.String)
-                   return User_ID;
-
+   function Value (Str : in Standard.String)
+     return User_ID;
 
 
    --  User Group Identification
@@ -97,23 +94,20 @@ package POSIX.Process_Identification is
    function Get_Groups
      return Group_List;
 
-   function Image (ID : Group_ID)
-                   return Standard.String;
+   function Image (ID : in Group_ID)
+     return Standard.String;
 
-   function Value (Str : Standard.String)
-                   return Group_ID;
+   function Value (Str : in Standard.String)
+     return Group_ID;
 
 private
 
    type Process_ID is new Win32.Winbase.PROCESS_INFORMATION;
 
-   Null_Process_ID   : constant Process_ID := (System.Null_Address,
-                                               System.Null_Address,
-                                               0, 0);
+   Null_Process_ID   : constant Process_ID
+     := (System.Null_Address, System.Null_Address, 0, 0);
 
-   System_Process_ID : constant Process_ID := (System.Null_Address,
-                                               System.Null_Address,
-                                               0, 0);
+   System_Process_ID : constant Process_ID := Null_Process_ID;
 
    type Process_Group_ID is new Integer;
    type User_ID is new Integer;
