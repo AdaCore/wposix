@@ -1,15 +1,35 @@
-
---  $Id$
---  Author : Pascal Obry
---  p.obry@wanadoo.fr
+------------------------------------------------------------------------------
+--                                  wPOSIX                                  --
+--                                                                          --
+--                       Copyright (C) 2008, AdaCore                        --
+--                                                                          --
+--  This library is free software; you can redistribute it and/or modify    --
+--  it under the terms of the GNU General Public License as published by    --
+--  the Free Software Foundation; either version 2 of the License, or (at   --
+--  your option) any later version.                                         --
+--                                                                          --
+--  This library is distributed in the hope that it will be useful, but     --
+--  WITHOUT ANY WARRANTY; without even the implied warranty of              --
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU       --
+--  General Public License for more details.                                --
+--                                                                          --
+--  You should have received a copy of the GNU General Public License       --
+--  along with this library; if not, write to the Free Software Foundation, --
+--  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.          --
+--                                                                          --
+--  As a special exception, if other files instantiate generics from this   --
+--  unit, or you link this unit with other files to produce an executable,  --
+--  this  unit  does not  by itself cause  the resulting executable to be   --
+--  covered by the GNU General Public License. This exception does not      --
+--  however invalidate any other reasons why the executable file  might be  --
+--  covered by the  GNU Public License.                                     --
+------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
 with Ada.Unchecked_Conversion;
 with System;
 
 with POSIX_Win32.File_Handle;
-
-with Win32.Winbase;
 
 package body POSIX.Process_Primitives is
 
@@ -20,43 +40,64 @@ package body POSIX.Process_Primitives is
    -- Process_ID_To_PROCESS_INFORMATION --
    ---------------------------------------
 
-   function Process_ID_To_PROCESS_INFORMATION is
-      new Ada.Unchecked_Conversion (POSIX.Process_Identification.Process_ID,
-                                    Win32.Winbase.PROCESS_INFORMATION);
+   function Process_ID_To_PROCESS_INFORMATION is new Ada.Unchecked_Conversion
+       (Process_Identification.Process_ID, Win32.Winbase.PROCESS_INFORMATION);
 
    ---------------------------------------
    -- PROCESS_INFORMATION_To_Process_ID --
    ---------------------------------------
 
-   function PROCESS_INFORMATION_To_Process_ID is
-      new Ada.Unchecked_Conversion (Win32.Winbase.PROCESS_INFORMATION,
-                                    POSIX.Process_Identification.Process_ID);
+   function PROCESS_INFORMATION_To_Process_ID is new Ada.Unchecked_Conversion
+     (Win32.Winbase.PROCESS_INFORMATION, Process_Identification.Process_ID);
 
-   Security_Handles_Inherited : aliased Win32.Winbase.SECURITY_ATTRIBUTES
-     := (Win32.Winbase.SECURITY_ATTRIBUTES'Size / 8,
-         System.Null_Address,
-         Win32.TRUE);
+   Security_Handles_Inherited : aliased Win32.Winbase.SECURITY_ATTRIBUTES :=
+                                  (Win32.Winbase.SECURITY_ATTRIBUTES'Size / 8,
+                                   System.Null_Address, Win32.TRUE);
 
-   --  Process Template
+   procedure Check_Open
+     (Template : in Process_Template;
+      Message  : in String);
+   --  ???
 
-   -------------------
-   -- Open_Template --
-   -------------------
+   procedure Check_File (File : in POSIX.IO.File_Descriptor);
+   --  ???
 
-   procedure Open_Template (Template : in out Process_Template) is
+   procedure Insert
+     (Request_Access : in     File_Request_Access;
+      Into           : in out Process_Template);
+   --  ???
+
+   procedure Execute_Template
+     (Template : in     Process_Template;
+      SI       : in out Win32.Winbase.STARTUPINFO);
+   --  ???
+
+   procedure Start_Process
+     (Child       :    out POSIX.Process_Identification.Process_ID;
+      Pathname    : in     POSIX.Pathname;
+      Template    : in     Process_Template;
+      Env_List    : in     POSIX.Process_Environment.Environment;
+      Arg_List    : in     POSIX.POSIX_String_List := POSIX.Empty_String_List;
+      Environment : in Boolean);
+   --  ???
+
+   ----------------
+   -- Check_File --
+   ----------------
+
+   procedure Check_File (File : in POSIX.IO.File_Descriptor) is
    begin
-      if Template.Is_Open then
-         Close_Template (Template);
-      end if;
-
-      Template.Keep_Effective_IDs := False;
-      --  POSIX.Signals.Delete_All_Signals (Template.Signal_Mask);
-      Template.Is_Open := True;
-      Template.Process_Informations := new
-        Win32.Winbase.PROCESS_INFORMATION;
-      Template.File_Request_List := null;
-      Template.Last_File_Request := null;
-   end Open_Template;
+      case File is
+         when POSIX.IO.Standard_Input |
+              POSIX.IO.Standard_Output |
+              POSIX.IO.Standard_Error =>
+            null;
+         when others =>
+            POSIX_Win32.Raise_Error
+              ("(POSIX implementation restriction) Check_File",
+               Invalid_Argument);
+      end case;
+   end Check_File;
 
    ----------------
    -- Check_Open --
@@ -71,24 +112,6 @@ package body POSIX.Process_Primitives is
       end if;
    end Check_Open;
 
-   ----------------
-   -- Check_File --
-   ----------------
-
-   procedure Check_File (File : in POSIX.IO.File_Descriptor) is
-   begin
-      case File is
-         when POSIX.IO.Standard_Input |
-           POSIX.IO.Standard_Output |
-           POSIX.IO.Standard_Error =>
-            null;
-         when others =>
-            POSIX_Win32.Raise_Error
-              ("(POSIX implementation restriction) Check_File",
-               Invalid_Argument);
-      end case;
-   end Check_File;
-
    --------------------
    -- Close_Template --
    --------------------
@@ -97,6 +120,7 @@ package body POSIX.Process_Primitives is
 
       P      : File_Request_Access;
       Result : Win32.BOOL;
+      pragma Unreferenced (Result);
 
       procedure Free is new Ada.Unchecked_Deallocation
         (File_Request, File_Request_Access);
@@ -115,10 +139,9 @@ package body POSIX.Process_Primitives is
 
             when Open =>
                case P.File is
-                  when
-                    POSIX.IO.Standard_Input |
-                    POSIX.IO.Standard_Output |
-                    POSIX.IO.Standard_Error =>
+                  when POSIX.IO.Standard_Input |
+                       POSIX.IO.Standard_Output |
+                       POSIX.IO.Standard_Error =>
                      Result := Win32.Winbase.CloseHandle (P.OHandle);
                   when others =>
                      null; -- not handled
@@ -126,10 +149,9 @@ package body POSIX.Process_Primitives is
 
             when Close =>
                case P.File is
-                  when
-                    POSIX.IO.Standard_Input |
-                    POSIX.IO.Standard_Output |
-                    POSIX.IO.Standard_Error =>
+                  when POSIX.IO.Standard_Input |
+                       POSIX.IO.Standard_Output |
+                       POSIX.IO.Standard_Error =>
                      Result := Win32.Winbase.CloseHandle (P.CHandle);
                   when others =>
                      null; -- not handled
@@ -145,7 +167,8 @@ package body POSIX.Process_Primitives is
 
       Template.Is_Open := False;
 
-      --  close the handle of the Process and Primary Thread.
+      --  Close the handle of the Process and Primary Thread
+
       Result := Win32.Winbase.CloseHandle
         (Template.Process_Informations.hProcess);
 
@@ -154,122 +177,6 @@ package body POSIX.Process_Primitives is
 
       Free (Template.Process_Informations);
    end Close_Template;
-
-   ----------------------------
-   -- Set_Keep_Effective_IDs --
-   ----------------------------
-
-   procedure Set_Keep_Effective_IDs (Template : in out Process_Template) is
-   begin
-      Check_Open (Template, "Set_Keep_Effective_IDs");
-      Template.Keep_Effective_IDs := True;
-   end Set_Keep_Effective_IDs;
-
-   ---------------------
-   -- Set_Signal_Mask --
-   ---------------------
-
-   procedure Set_Signal_Mask
-     (Template : in out Process_Template;
-      Mask     : in     POSIX.Signals.Signal_Set) is
-   begin
-      Check_Open (Template, "Set_Signal_Mask");
-      Template.Signal_Mask := Mask;
-   end Set_Signal_Mask;
-
-   ---------------------------------
-   -- Set_Creation_Signal_Masking --
-   ---------------------------------
-
-   procedure Set_Creation_Signal_Masking
-     (Template       : in out Process_Template;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals) is
-   begin
-      Check_Open (Template, "Set_Creation_Signal_Masking");
-      Template.Signal_Creation_Masking := Masked_Signals;
-   end Set_Creation_Signal_Masking;
-
-   ------------
-   -- Insert --
-   ------------
-
-   procedure Insert (Request_Access : in     File_Request_Access;
-                     Into           : in out Process_Template)
-   is
-   begin
-      if Into.File_Request_List = null then
-         Into.File_Request_List := Request_Access;
-         Into.Last_File_Request := Request_Access;
-      else
-         Into.Last_File_Request.Next := Request_Access;
-         Into.Last_File_Request      := Request_Access;
-      end if;
-   end Insert;
-
-   -----------------------------
-   -- Set_File_Action_To_Open --
-   -----------------------------
-
-   procedure Set_File_Action_To_Open
-     (Template : in out Process_Template;
-      File     : in     POSIX.IO.File_Descriptor;
-      Name     : in     POSIX.Pathname;
-      Mode     : in     POSIX.IO.File_Mode       := POSIX.IO.Read_Only;
-      Options  : in     POSIX.IO.Open_Option_Set := POSIX.IO.Empty_Set)
-   is
-      New_Action : File_Request_Access;
-   begin
-      Check_Open (Template, "Set_File_Action_To_Open");
-      Check_File (File);
-      New_Action :=
-       new File_Request'(Next    => null,
-                         File    => File,
-                         Action  => Open,
-                         Name    => To_Unbounded_String
-                                     (POSIX.To_String (Name)),
-                         Mode    => Mode,
-                         Options => Options,
-                         OHandle => POSIX_Win32.Null_Handle);
-      Insert (New_Action, Into => Template);
-   end Set_File_Action_To_Open;
-
-   ------------------------------
-   -- Set_File_Action_To_Close --
-   ------------------------------
-
-   procedure Set_File_Action_To_Close
-     (Template : in out Process_Template;
-      File     : in     POSIX.IO.File_Descriptor)
-   is
-      New_Action : File_Request_Access;
-   begin
-      Check_Open (Template, "Set_File_Action_To_Close");
-      New_Action := new File_Request'(Next    => null,
-                                      File    => File,
-                                      Action  => Close,
-                                      CHandle => POSIX_Win32.Null_Handle);
-      Insert (New_Action, Into => Template);
-   end Set_File_Action_To_Close;
-
-   ----------------------------------
-   -- Set_File_Action_To_Duplicate --
-   ----------------------------------
-
-   procedure Set_File_Action_To_Duplicate
-     (Template  : in out Process_Template;
-      File      : in     POSIX.IO.File_Descriptor;
-      From_File : in     POSIX.IO.File_Descriptor)
-   is
-      New_Action : File_Request_Access;
-   begin
-      Check_Open (Template, "Set_File_Action_To_Duplicate");
-      New_Action :=
-       new File_Request'(Next      => null,
-                         File      => File,
-                         Action    => Duplicate,
-                         From_File => From_File);
-      Insert (New_Action, Into => Template);
-   end Set_File_Action_To_Duplicate;
 
    ----------------------
    -- Execute_Template --
@@ -284,14 +191,55 @@ package body POSIX.Process_Primitives is
 
       P             : File_Request_Access;
 
+      function Mode_To_File_Access
+        (Mode : in POSIX.IO.File_Mode) return Win32.DWORD;
+      --  ???
+
+      function Create_File
+        (Name : in String;
+         Mode : in POSIX.IO.File_Mode) return Win32.Winnt.HANDLE;
+      --  ???
+
+      function Open_File
+        (Name : in String;
+         Mode : in POSIX.IO.File_Mode) return Win32.Winnt.HANDLE;
+      --  ???
+
+      -----------------
+      -- Create_File --
+      -----------------
+
+      function Create_File
+        (Name : in String;
+         Mode : in POSIX.IO.File_Mode) return Win32.Winnt.HANDLE
+      is
+         use type Win32.INT;
+         use type System.Address;
+         L_Name : constant String := Name & ASCII.NUL;
+         H      : Win32.Winnt.HANDLE;
+      begin
+         H := Win32.Winbase.CreateFile
+           (Win32.Addr (L_Name),
+            Mode_To_File_Access (Mode),
+            Win32.Winnt.FILE_SHARE_WRITE,
+            Security_Handles_Inherited'Access,
+            Win32.Winbase.CREATE_ALWAYS,
+            Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
+            System.Null_Address);
+
+         if H = Win32.Winbase.INVALID_HANDLE_VALUE then
+            POSIX_Win32.Check_Retcode
+              (POSIX_Win32.Retcode_Error, "Template : Create_File " & Name);
+         end if;
+         return H;
+      end Create_File;
+
       -------------------------
       -- Mode_To_File_Access --
       -------------------------
 
-      function Mode_To_File_Access (Mode : in POSIX.IO.File_Mode)
-                                    return Win32.DWORD
-      is
-         use type Win32.ULONG;
+      function Mode_To_File_Access
+        (Mode : in POSIX.IO.File_Mode) return Win32.DWORD is
       begin
          case Mode is
             when POSIX.IO.Read_Only =>
@@ -305,14 +253,14 @@ package body POSIX.Process_Primitives is
       -- Open_File --
       ---------------
 
-      function Open_File (Name : in String;
-                          Mode : in POSIX.IO.File_Mode)
-                          return Win32.Winnt.HANDLE
+      function Open_File
+        (Name : in String;
+         Mode : in POSIX.IO.File_Mode) return Win32.Winnt.HANDLE
       is
          use type Win32.INT;
          use type System.Address;
-         L_Name      : constant String := Name & ASCII.Nul;
-         H           : Win32.Winnt.HANDLE;
+         L_Name : constant String := Name & ASCII.NUL;
+         H      : Win32.Winnt.HANDLE;
       begin
          H := Win32.Winbase.CreateFile
            (Win32.Addr (L_Name),
@@ -322,40 +270,13 @@ package body POSIX.Process_Primitives is
             Win32.Winbase.OPEN_EXISTING,
             Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
             System.Null_Address);
+
          if H = Win32.Winbase.INVALID_HANDLE_VALUE then
             POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
                                        "Template : Open_File " & Name);
          end if;
          return H;
       end Open_File;
-
-      -----------------
-      -- Create_File --
-      -----------------
-
-      function Create_File (Name : in String;
-                            Mode : in POSIX.IO.File_Mode)
-                            return Win32.Winnt.HANDLE
-      is
-         use type Win32.INT;
-         use type System.Address;
-         L_Name : constant String := Name & ASCII.Nul;
-         H : Win32.Winnt.HANDLE;
-      begin
-         H := Win32.Winbase.CreateFile
-           (Win32.Addr (L_Name),
-            Mode_To_File_Access (Mode),
-            Win32.Winnt.FILE_SHARE_WRITE,
-            Security_Handles_Inherited'Access,
-            Win32.Winbase.CREATE_ALWAYS,
-            Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
-            System.Null_Address);
-         if H = Win32.Winbase.INVALID_HANDLE_VALUE then
-            POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
-                                       "Template : Create_File " & Name);
-         end if;
-         return H;
-      end Create_File;
 
    begin
       if not Template.Keep_Effective_IDs then
@@ -392,18 +313,18 @@ package body POSIX.Process_Primitives is
             when Close =>
                case P.File is
                   when POSIX.IO.Standard_Input =>
-                     SI.hStdInput
-                       := Open_File (Null_Filename, POSIX.IO.Read_Only);
+                     SI.hStdInput := Open_File
+                       (Null_Filename, POSIX.IO.Read_Only);
                      P.CHandle := SI.hStdInput;
 
                   when POSIX.IO.Standard_Output =>
-                     SI.hStdOutput := Create_File (Null_Filename,
-                                                   POSIX.IO.Write_Only);
+                     SI.hStdOutput := Create_File
+                       (Null_Filename, POSIX.IO.Write_Only);
                      P.CHandle := SI.hStdOutput;
 
                   when POSIX.IO.Standard_Error =>
-                     SI.hStdError := Create_File (Null_Filename,
-                                                  POSIX.IO.Write_Only);
+                     SI.hStdError := Create_File
+                       (Null_Filename, POSIX.IO.Write_Only);
                      P.CHandle := SI.hStdError;
 
                   when others =>
@@ -433,6 +354,179 @@ package body POSIX.Process_Primitives is
       end loop;
    end Execute_Template;
 
+   ------------------
+   -- Exit_Process --
+   ------------------
+
+   procedure Exit_Process (Status : in Exit_Status := Normal_Exit) is
+   begin
+      Win32.Winbase.ExitProcess (Win32.UINT (Status));
+   end Exit_Process;
+
+   --------------------
+   -- Exit_Status_Of --
+   --------------------
+
+   function Exit_Status_Of
+     (Status : in Termination_Status) return Exit_Status is
+   begin
+      if not Status_Available (Status)
+        or else Termination_Cause_Of (Status) /= Exited
+      then
+         Set_Error_Code (Invalid_Argument);
+         raise POSIX_Error;
+      end if;
+      return Exit_Status (Status.Exit_Status);
+   end Exit_Status_Of;
+
+   ------------
+   -- Insert --
+   ------------
+
+   procedure Insert
+     (Request_Access : in     File_Request_Access;
+      Into           : in out Process_Template) is
+   begin
+      if Into.File_Request_List = null then
+         Into.File_Request_List := Request_Access;
+         Into.Last_File_Request := Request_Access;
+      else
+         Into.Last_File_Request.Next := Request_Access;
+         Into.Last_File_Request      := Request_Access;
+      end if;
+   end Insert;
+
+   -------------------
+   -- Open_Template --
+   -------------------
+
+   procedure Open_Template (Template : in out Process_Template) is
+   begin
+      if Template.Is_Open then
+         Close_Template (Template);
+      end if;
+
+      Template.Keep_Effective_IDs := False;
+      --  POSIX.Signals.Delete_All_Signals (Template.Signal_Mask);
+      Template.Is_Open := True;
+      Template.Process_Informations := new
+        Win32.Winbase.PROCESS_INFORMATION;
+      Template.File_Request_List := null;
+      Template.Last_File_Request := null;
+   end Open_Template;
+
+   -------------------
+   -- Process_ID_Of --
+   -------------------
+
+   function Process_ID_Of (Status : in Termination_Status) return Process_ID is
+   begin
+      if not Status_Available (Status) then
+         Set_Error_Code (Invalid_Argument);
+         raise POSIX_Error;
+      end if;
+      return Status.Pid;
+   end  Process_ID_Of;
+
+   ---------------------------------
+   -- Set_Creation_Signal_Masking --
+   ---------------------------------
+
+   procedure Set_Creation_Signal_Masking
+     (Template       : in out Process_Template;
+      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals) is
+   begin
+      Check_Open (Template, "Set_Creation_Signal_Masking");
+      Template.Signal_Creation_Masking := Masked_Signals;
+   end Set_Creation_Signal_Masking;
+
+   ------------------------------
+   -- Set_File_Action_To_Close --
+   ------------------------------
+
+   procedure Set_File_Action_To_Close
+     (Template : in out Process_Template;
+      File     : in     POSIX.IO.File_Descriptor)
+   is
+      New_Action : File_Request_Access;
+   begin
+      Check_Open (Template, "Set_File_Action_To_Close");
+      New_Action := new File_Request'
+        (Next    => null,
+         File    => File,
+         Action  => Close,
+         CHandle => POSIX_Win32.Null_Handle);
+      Insert (New_Action, Into => Template);
+   end Set_File_Action_To_Close;
+
+   ----------------------------------
+   -- Set_File_Action_To_Duplicate --
+   ----------------------------------
+
+   procedure Set_File_Action_To_Duplicate
+     (Template  : in out Process_Template;
+      File      : in     POSIX.IO.File_Descriptor;
+      From_File : in     POSIX.IO.File_Descriptor)
+   is
+      New_Action : File_Request_Access;
+   begin
+      Check_Open (Template, "Set_File_Action_To_Duplicate");
+      New_Action := new File_Request'
+        (Next      => null,
+         File      => File,
+         Action    => Duplicate,
+         From_File => From_File);
+      Insert (New_Action, Into => Template);
+   end Set_File_Action_To_Duplicate;
+
+   -----------------------------
+   -- Set_File_Action_To_Open --
+   -----------------------------
+
+   procedure Set_File_Action_To_Open
+     (Template : in out Process_Template;
+      File     : in     POSIX.IO.File_Descriptor;
+      Name     : in     POSIX.Pathname;
+      Mode     : in     POSIX.IO.File_Mode       := POSIX.IO.Read_Only;
+      Options  : in     POSIX.IO.Open_Option_Set := POSIX.IO.Empty_Set)
+   is
+      New_Action : File_Request_Access;
+   begin
+      Check_Open (Template, "Set_File_Action_To_Open");
+      Check_File (File);
+      New_Action := new File_Request'
+        (Next    => null,
+         File    => File,
+         Action  => Open,
+         Name    => To_Unbounded_String (POSIX.To_String (Name)),
+         Mode    => Mode,
+         Options => Options,
+         OHandle => POSIX_Win32.Null_Handle);
+      Insert (New_Action, Into => Template);
+   end Set_File_Action_To_Open;
+
+   ----------------------------
+   -- Set_Keep_Effective_IDs --
+   ----------------------------
+
+   procedure Set_Keep_Effective_IDs (Template : in out Process_Template) is
+   begin
+      Check_Open (Template, "Set_Keep_Effective_IDs");
+      Template.Keep_Effective_IDs := True;
+   end Set_Keep_Effective_IDs;
+
+   ---------------------
+   -- Set_Signal_Mask --
+   ---------------------
+
+   procedure Set_Signal_Mask
+     (Template : in out Process_Template;
+      Mask     : in     POSIX.Signals.Signal_Set) is
+   begin
+      Check_Open (Template, "Set_Signal_Mask");
+      Template.Signal_Mask := Mask;
+   end Set_Signal_Mask;
+
    -------------------
    -- Start_Process --
    -------------------
@@ -446,7 +540,6 @@ package body POSIX.Process_Primitives is
       Environment : in Boolean)
    is
       use type Win32.BOOL;
-      use type Win32.ULONG;
 
       Startup_Informations : aliased Win32.Winbase.STARTUPINFO;
       Process_Informations : aliased Win32.Winbase.PROCESS_INFORMATION;
@@ -456,12 +549,18 @@ package body POSIX.Process_Primitives is
       Arguments      : Unbounded_String;
       Argument_Count : Natural := 0;
 
+      procedure Concat
+        (Item : in POSIX_String;
+         Quit : in out Boolean);
+      --  ???
+
       ------------
       -- Concat --
       ------------
 
-      procedure Concat (Item : in POSIX_String;
-                        Quit : in out Boolean) is
+      procedure Concat
+        (Item : in POSIX_String;
+         Quit : in out Boolean) is
       begin
          --  the first argument is by convention the program name and we don't
          --  want to add it to the command line.
@@ -485,9 +584,8 @@ package body POSIX.Process_Primitives is
       -- To_LPVOID --
       ---------------
 
-      function To_LPVOID is
-        new Ada.Unchecked_Conversion (POSIX.Process_Environment.Environment,
-                                      Win32.LPVOID);
+      function To_LPVOID is new Ada.Unchecked_Conversion
+        (POSIX.Process_Environment.Environment, Win32.LPVOID);
 
       Env_Pointer : Win32.LPVOID;
 
@@ -523,23 +621,21 @@ package body POSIX.Process_Primitives is
          Env_Pointer := System.Null_Address;
       end if;
 
-      Run_Process :
-      declare
-         use type Win32.ULONG;
+      Run_Process : declare
          use Win32.Winbase;
-         Args : constant String := To_String (Arguments) & ASCII.Nul;
+         Args : constant String := To_String (Arguments) & ASCII.NUL;
       begin
          Result := CreateProcess
-           (LpApplicationName    => null,
-            LpCommandLine        => Win32.Addr (Args),
-            LpProcessAttributes  => Security_Handles_Inherited'Access,
-            LpThreadAttributes   => null,
-            BInheritHandles      => Win32.TRUE,
-            DwCreationFlags      => NORMAL_PRIORITY_CLASS,
-            LpEnvironment        => Env_Pointer,
-            LpCurrentDirectory   => null,
-            LpStartupInfo        => Startup_Informations'Unchecked_Access,
-            LpProcessInformation => Process_Informations'Unchecked_Access
+           (lpApplicationName    => null,
+            lpCommandLine        => Win32.Addr (Args),
+            lpProcessAttributes  => Security_Handles_Inherited'Access,
+            lpThreadAttributes   => null,
+            bInheritHandles      => Win32.TRUE,
+            dwCreationFlags      => NORMAL_PRIORITY_CLASS,
+            lpEnvironment        => Env_Pointer,
+            lpCurrentDirectory   => null,
+            lpStartupInfo        => Startup_Informations'Unchecked_Access,
+            lpProcessInformation => Process_Informations'Unchecked_Access
             );
       end Run_Process;
 
@@ -582,8 +678,8 @@ package body POSIX.Process_Primitives is
       Env_List : in     POSIX.Process_Environment.Environment;
       Arg_List : in     POSIX.POSIX_String_List := POSIX.Empty_String_List) is
    begin
-      Start_Process (Child, Pathname, Template, Env_List, Arg_List,
-                     Environment => True);
+      Start_Process
+        (Child, Pathname, Template, Env_List, Arg_List, Environment => True);
    end Start_Process;
 
    --------------------------
@@ -601,8 +697,8 @@ package body POSIX.Process_Primitives is
       Pathname   : String (1 .. Max_Len) := (others => '.');
       pragma Warnings (Off, Pathname);
 
-      L_Filename : constant String := POSIX.To_String (Filename) & ASCII.Nul;
-      Ext_Var    : constant String := ".exe" & ASCII.Nul;
+      L_Filename : constant String := POSIX.To_String (Filename) & ASCII.NUL;
+      Ext_Var    : constant String := ".exe" & ASCII.NUL;
       lpFilePart : aliased Win32.LPSTR;
 
       Result     : Win32.DWORD;
@@ -618,9 +714,9 @@ package body POSIX.Process_Primitives is
          lpFilePart'Unchecked_Access);
 
       if Result = 0 then
-         Start_Process (Child, Filename,
-                        Template, Null_Environment, Arg_List,
-                        Environment => False);
+         Start_Process
+           (Child, Filename, Template, Null_Environment, Arg_List,
+            Environment => False);
       else
          Start_Process
            (Child,
@@ -645,15 +741,14 @@ package body POSIX.Process_Primitives is
       Pathname   : String (1 .. Max_Len);
       pragma Warnings (Off, Pathname);
 
-      L_Filename : constant String := POSIX.To_String (Filename) & ASCII.Nul;
-      Ext_Var    : constant String := ".exe" & ASCII.Nul;
+      L_Filename : constant String := POSIX.To_String (Filename) & ASCII.NUL;
+      Ext_Var    : constant String := ".exe" & ASCII.NUL;
       lpFilePart : aliased Win32.LPSTR;
       Result     : Win32.DWORD;
    begin
       Check_Open (Template, "Start_Process_Search");
 
-      Search_Filename_In_Env :
-      declare
+      Search_Filename_In_Env : declare
          Old_Environment : POSIX.Process_Environment.Environment;
       begin
          POSIX.Process_Environment.Copy_From_Current_Environment
@@ -675,9 +770,9 @@ package body POSIX.Process_Primitives is
       end Search_Filename_In_Env;
 
       if Result = 0 then
-         Start_Process (Child, Filename,
-                        Template, Env_List, Arg_List,
-                        Environment => True);
+         Start_Process
+           (Child, Filename, Template, Env_List, Arg_List,
+            Environment => True);
       else
          Start_Process
            (Child,
@@ -686,15 +781,6 @@ package body POSIX.Process_Primitives is
             Environment => True);
       end if;
    end Start_Process_Search;
-
-   ------------------
-   -- Exit_Process --
-   ------------------
-
-   procedure Exit_Process (Status : in Exit_Status := Normal_Exit) is
-   begin
-      Win32.Winbase.ExitProcess (Win32.UINT (Status));
-   end Exit_Process;
 
    ----------------------
    -- Status_Available --
@@ -705,26 +791,28 @@ package body POSIX.Process_Primitives is
       return Status.Pid /= Null_Process_ID;
    end Status_Available;
 
-   -------------------
-   -- Process_ID_Of --
-   -------------------
+   ------------------------
+   -- Stopping_Signal_Of --
+   ------------------------
 
-   function Process_ID_Of (Status : in Termination_Status) return Process_ID is
+   function Stopping_Signal_Of
+     (Status : in Termination_Status) return POSIX.Signals.Signal is
    begin
-      if not Status_Available (Status) then
+      if not Status_Available (Status)
+        or else Termination_Cause_Of (Status) /= Stopped_By_Signal
+      then
          Set_Error_Code (Invalid_Argument);
          raise POSIX_Error;
       end if;
-      return Status.Pid;
-   end  Process_ID_Of;
+      return POSIX.Signals.Signal_Abort;
+   end Stopping_Signal_Of;
 
    --------------------------
    -- Termination_Cause_Of --
    --------------------------
 
    function Termination_Cause_Of
-     (Status : in Termination_Status)
-     return Termination_Cause is
+     (Status : in Termination_Status) return Termination_Cause is
    begin
       if not Status_Available (Status) then
          Set_Error_Code (Invalid_Argument);
@@ -733,53 +821,21 @@ package body POSIX.Process_Primitives is
       return Exited;
    end Termination_Cause_Of;
 
-   --------------------
-   -- Exit_Status_Of --
-   --------------------
-
-   function Exit_Status_Of
-     (Status : in Termination_Status)
-     return Exit_Status is
-   begin
-      if not Status_Available (Status)
-        or Termination_Cause_Of (Status) /= Exited then
-         Set_Error_Code (Invalid_Argument);
-         raise POSIX_Error;
-      end if;
-      return Exit_Status (Status.Exit_Status);
-   end Exit_Status_Of;
-
    ---------------------------
    -- Termination_Signal_Of --
    ---------------------------
 
    function Termination_Signal_Of
-     (Status : in Termination_Status)
-     return POSIX.Signals.Signal is
+     (Status : in Termination_Status) return POSIX.Signals.Signal is
    begin
       if not Status_Available (Status)
-        or Termination_Cause_Of (Status) /= Terminated_By_Signal then
+        or else Termination_Cause_Of (Status) /= Terminated_By_Signal
+      then
          Set_Error_Code (Invalid_Argument);
          raise POSIX_Error;
       end if;
       return POSIX.Signals.Signal_Terminate;
    end Termination_Signal_Of;
-
-   ------------------------
-   -- Stopping_Signal_Of --
-   ------------------------
-
-   function Stopping_Signal_Of
-     (Status : in Termination_Status)
-     return POSIX.Signals.Signal is
-   begin
-      if not Status_Available (Status)
-        or Termination_Cause_Of (Status) /= Stopped_By_Signal then
-         Set_Error_Code (Invalid_Argument);
-         raise POSIX_Error;
-      end if;
-      return POSIX.Signals.Signal_Abort;
-   end Stopping_Signal_Of;
 
    ----------------------------
    -- Wait_For_Child_Process --
@@ -795,9 +851,9 @@ package body POSIX.Process_Primitives is
       pragma Warnings (Off, Trace_Stopped);
       pragma Warnings (Off, Masked_Signals);
 
-      use type Win32.ULONG;
       Retcode  : Win32.DWORD;
       Result   : Win32.BOOL;
+      pragma Unreferenced (Result);
       Process_Informations : Win32.Winbase.PROCESS_INFORMATION;
 
       Process_Status : aliased Win32.DWORD;

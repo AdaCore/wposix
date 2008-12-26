@@ -1,162 +1,81 @@
+------------------------------------------------------------------------------
+--                                  wPOSIX                                  --
+--                                                                          --
+--                       Copyright (C) 2008, AdaCore                        --
+--                                                                          --
+--  This library is free software; you can redistribute it and/or modify    --
+--  it under the terms of the GNU General Public License as published by    --
+--  the Free Software Foundation; either version 2 of the License, or (at   --
+--  your option) any later version.                                         --
+--                                                                          --
+--  This library is distributed in the hope that it will be useful, but     --
+--  WITHOUT ANY WARRANTY; without even the implied warranty of              --
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU       --
+--  General Public License for more details.                                --
+--                                                                          --
+--  You should have received a copy of the GNU General Public License       --
+--  along with this library; if not, write to the Free Software Foundation, --
+--  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.          --
+--                                                                          --
+--  As a special exception, if other files instantiate generics from this   --
+--  unit, or you link this unit with other files to produce an executable,  --
+--  this  unit  does not  by itself cause  the resulting executable to be   --
+--  covered by the GNU General Public License. This exception does not      --
+--  however invalidate any other reasons why the executable file  might be  --
+--  covered by the  GNU Public License.                                     --
+------------------------------------------------------------------------------
 
---  $Id$
---  Author : Pascal Obry
---  p.obry@wanadoo.fr
-
-with Interfaces.C;
-with Unchecked_Deallocation;
-with System;
 with Ada.Task_Attributes;
+with Ada.Unchecked_Deallocation;
+with Interfaces.C;
+with System;
 
 with Win32.Winbase;
 
 package body POSIX is
 
-
    --  Make Errno a Task Attribute to be safe wrt multi-tasking
 
    package Errno is new Ada.Task_Attributes (Error_Code, No_Error);
 
-   --  Characters and String
-
-   ------------------------
-   -- To_POSIX_Character --
-   ------------------------
-
-   function To_POSIX_Character (Char : in Character) return POSIX_Character is
-   begin
-      return POSIX_Character'Value (Character'Image (Char));
-   exception
-      when Constraint_Error =>
-         return ' ';
-   end To_POSIX_Character;
-
-   ------------------
-   -- To_Character --
-   ------------------
-
-   function To_Character (Char : in POSIX_Character) return Character is
-   begin
-      return Character'Value (POSIX_Character'Image (Char));
-   exception
-      when Constraint_Error =>
-         return ' ';
-   end To_Character;
-
-   ---------------------
-   -- To_POSIX_String --
-   ---------------------
-
-   function To_POSIX_String (Str : in String) return POSIX_String is
-      Posix_Str : POSIX_String (Str'Range);
-   begin
-      for I in Posix_Str'Range loop
-         Posix_Str (I) := To_POSIX_Character (Str (I));
-      end loop;
-      return Posix_Str;
-   end To_POSIX_String;
-
-   ---------------
-   -- To_String --
-   ---------------
-
-   function To_String (Str : in POSIX_String) return String is
-      Sstr : String (Str'Range);
-   begin
-      for I in Sstr'Range loop
-         Sstr (I) := To_Character (Str (I));
-      end loop;
-      return Sstr;
-   end To_String;
-
-   -----------------
-   -- Is_Filename --
-   -----------------
-
-   --  A valid Filename is everything except the null string,
-   --  the strings "." and ".."
-
-   function Is_Filename (Str : in POSIX_String) return Boolean is
-   begin
-      if Str = (Str'Range => ' ') or else Str = "." or else Str = ".." then
-         return False;
-      else
-         return True;
-      end if;
-   end Is_Filename;
-
-   -----------------
-   -- Is_Pathname --
-   -----------------
-
-   --  A valid Pathname is everything except the null string
-
-   function Is_Pathname (Str : in POSIX_String) return Boolean is
-   begin
-      if Str = (Str'Range => ' ') then
-         return False;
-      else
-         return True;
-      end if;
-   end Is_Pathname;
-
-   --------------------------
-   -- Is_Portable_Filename --
-   --------------------------
-
-   function Is_Portable_Filename (Str : in POSIX_String) return Boolean is
-   begin
-      return Is_Filename (Str) and then
-        Str'Length <= POSIX.Portable_Filename_Limit_Maximum;
-   end Is_Portable_Filename;
-
-   --------------------------
-   -- Is_Portable_Pathname --
-   --------------------------
-
-   function Is_Portable_Pathname (Str : in POSIX_String) return Boolean is
-   begin
-      return Is_Pathname (Str) and then
-        Str'Length <= POSIX.Portable_Pathname_Limit_Maximum;
-   end Is_Portable_Pathname;
-
-   --  String Lists
-
-   ----------
-   -- Free --
-   ----------
-
-   procedure Free is new Unchecked_Deallocation
+   procedure Free is new Ada.Unchecked_Deallocation
      (String_Ptr_Array, String_Ptr_Array_Ptr);
 
-   ----------------
-   -- Make_Empty --
-   ----------------
+   function To_POSIX_Character (Char : in Character) return POSIX_Character;
+   pragma Inline (To_POSIX_Character);
+   --  ???
 
-   procedure Make_Empty (List : in out POSIX_String_List) is
+   function To_Character (Char : in POSIX_Character) return Character;
+   pragma Inline (To_Character);
+   --  ???
 
-      procedure Free is new Unchecked_Deallocation
-        (POSIX_String, POSIX_String_Ptr);
+   function Remove_First (S : in String) return POSIX_String;
+   pragma Inline (Remove_First);
+   --  ???
 
+   procedure Get_Version_Info
+     (Version_Information : out Win32.Winbase.OSVERSIONINFOA);
+   --  ???
+
+   ---------
+   -- "+" --
+   ---------
+
+   overriding function "+" (L, R : in Option_Set) return Option_Set is
+      use type Win32.UINT;
    begin
-      if List.Strings = null then
-         --  Already empty
-         return;
-      end if;
+      return Option_Set (L or R);
+   end "+";
 
-      --  Free the memory
+   ---------
+   -- "-" --
+   ---------
 
-      for I in List.Strings'First .. List.Last loop
-         Free (List.Strings (I));
-      end loop;
-      Free (List.Strings);
-
-      --  Reinitialize the values
-
-      List.Length := 0;
-      List.Last := 0;
-      List.Strings := null;
-   end Make_Empty;
+   overriding function "-" (L, R : in Option_Set) return Option_Set is
+      use type Win32.UINT;
+   begin
+      return Option_Set (L xor (L and R));
+   end "-";
 
    ------------
    -- Append --
@@ -189,44 +108,6 @@ package body POSIX is
       List.Strings (List.Last) := new POSIX_String'(Str);
    end Append;
 
-   --------------------
-   -- For_Every_Item --
-   --------------------
-
-   procedure For_Every_Item (List : in POSIX_String_List) is
-      Quit : Boolean := False;
-   begin
-      --  return if list empty
-      if List.Last = 0 then
-         return;
-      end if;
-      for I in List.Strings'First .. List.Last loop
-         Action (List.Strings (I) . all, Quit);
-         exit when Quit;
-      end loop;
-   end For_Every_Item;
-
-   ------------
-   -- Length --
-   ------------
-
-   function Length (List : in POSIX_String_List) return Natural is
-   begin
-      return List.Last;
-   end Length;
-
-   -----------
-   -- Value --
-   -----------
-
-   function Value
-     (List  : in POSIX_String_List;
-      Index : in Positive)
-     return POSIX_String is
-   begin
-      return List.Strings (Index) . all;
-   end Value;
-
    ---------------
    -- Empty_Set --
    ---------------
@@ -236,27 +117,23 @@ package body POSIX is
       return Option_Set'(0);
    end Empty_Set;
 
-   ---------
-   -- "+" --
-   ---------
+   --------------------
+   -- For_Every_Item --
+   --------------------
 
-   function "+" (L, R : in Option_Set) return Option_Set is
-      use type Win32.UINT;
+   procedure For_Every_Item (List : in POSIX_String_List) is
+      Quit : Boolean := False;
    begin
-      return Option_Set (L or R);
-   end "+";
+      --  Returns if list empty
+      if List.Last = 0 then
+         return;
+      end if;
 
-   ---------
-   -- "-" --
-   ---------
-
-   function "-" (L, R : in Option_Set) return Option_Set is
-      use type Win32.UINT;
-   begin
-      return Option_Set (L xor (L and R));
-   end "-";
-
-   --  Exceptions and error codes
+      for I in List.Strings'First .. List.Last loop
+         Action (List.Strings (I) . all, Quit);
+         exit when Quit;
+      end loop;
+   end For_Every_Item;
 
    --------------------
    -- Get_Error_Code --
@@ -267,49 +144,29 @@ package body POSIX is
       return Errno.Value;
    end Get_Error_Code;
 
-   --------------------
-   -- Set_Error_Code --
-   --------------------
+   ----------------------
+   -- Get_Version_Info --
+   ----------------------
 
-   procedure Set_Error_Code (Error : in Error_Code) is
+   procedure Get_Version_Info
+     (Version_Information : out Win32.Winbase.OSVERSIONINFOA)
+   is
+      use type Win32.BOOL;
+      VersionInformation : aliased Win32.Winbase.OSVERSIONINFOA;
+      Status             : Win32.BOOL;
    begin
-      Errno.Set_Value (Error);
-   end Set_Error_Code;
+      VersionInformation.dwOSVersionInfoSize :=
+        Win32.DWORD (VersionInformation'Size / System.Storage_Unit);
 
-   --------------------
-   -- Is_POSIX_Error --
-   --------------------
+      Status := Win32.Winbase.GetVersionEx
+        (VersionInformation'Unchecked_Access);
 
-   function Is_POSIX_Error (Error : in Error_Code) return Boolean is
-   begin
-      case Error is
-         when
-             No_Error                  | Argument_List_Too_Long
-           | Bad_File_Descriptor       | Broken_Pipe
-           | Directory_Not_Empty       | Exec_Format_Error
-           | File_Exists               | File_Too_Large
-           | Filename_Too_Long         | Improper_Link
-           | Inappropriate_IO_Control_Operation
-           | Input_Output_Error        | Interrupted_Operation
-           | Invalid_Argument          | Invalid_Seek
-           | Is_A_Directory            | No_Child_Process
-           | No_Locks_Available        | No_Space_Left_On_Device
-           | No_Such_Operation_On_Device
-           | No_Such_Device_Or_Address | No_Such_File_Or_Directory
-           | No_Such_Process           | Not_A_Directory
-           | Not_Enough_Space          | Operation_Not_Implemented
-           | Operation_Not_Permitted   | Permission_Denied
-           | Read_Only_File_System     | Resource_Busy
-           | Resource_Deadlock_Avoided | Resource_Temporarily_Unavailable
-           | Too_Many_Links            | Too_Many_Open_Files
-           | Too_Many_Open_Files_In_System
-           =>
-            return True;
+      Version_Information := VersionInformation;
 
-         when others =>
-            return False;
-      end case;
-   end Is_POSIX_Error;
+      if Status = 0 then
+         raise POSIX_Error;
+      end if;
+   end Get_Version_Info;
 
    -----------
    -- Image --
@@ -393,31 +250,199 @@ package body POSIX is
       end case;
    end Image;
 
-   --  System Identification
+   -----------------
+   -- Is_Filename --
+   -----------------
 
-   ----------------------
-   -- Get_Version_Info --
-   ----------------------
-
-   procedure Get_Version_Info
-     (Version_Information : out Win32.Winbase.OSVERSIONINFOA)
-   is
-      use type Win32.BOOL;
-      VersionInformation : aliased Win32.Winbase.OSVERSIONINFOA;
-      Status             : Win32.BOOL;
+   function Is_Filename (Str : in POSIX_String) return Boolean is
    begin
-      VersionInformation.dwOSVersionInfoSize :=
-        Win32.DWORD (VersionInformation'Size / System.Storage_Unit);
+      if Str = (Str'Range => ' ') or else Str = "." or else Str = ".." then
+         return False;
+      else
+         return True;
+      end if;
+   end Is_Filename;
 
-      Status := Win32.Winbase.GetVersionEx
-        (VersionInformation'Unchecked_Access);
+   -----------------
+   -- Is_Pathname --
+   -----------------
 
-      Version_Information := VersionInformation;
+   function Is_Pathname (Str : in POSIX_String) return Boolean is
+   begin
+      if Str = (Str'Range => ' ') then
+         return False;
+      else
+         return True;
+      end if;
+   end Is_Pathname;
+
+   --------------------------
+   -- Is_Portable_Filename --
+   --------------------------
+
+   function Is_Portable_Filename (Str : in POSIX_String) return Boolean is
+   begin
+      return Is_Filename (Str)
+        and then Str'Length <= POSIX.Portable_Filename_Limit_Maximum;
+   end Is_Portable_Filename;
+
+   --------------------------
+   -- Is_Portable_Pathname --
+   --------------------------
+
+   function Is_Portable_Pathname (Str : in POSIX_String) return Boolean is
+   begin
+      return Is_Pathname (Str)
+        and then Str'Length <= POSIX.Portable_Pathname_Limit_Maximum;
+   end Is_Portable_Pathname;
+
+   --------------------
+   -- Is_POSIX_Error --
+   --------------------
+
+   function Is_POSIX_Error (Error : in Error_Code) return Boolean is
+   begin
+      case Error is
+         when
+             No_Error                  | Argument_List_Too_Long
+           | Bad_File_Descriptor       | Broken_Pipe
+           | Directory_Not_Empty       | Exec_Format_Error
+           | File_Exists               | File_Too_Large
+           | Filename_Too_Long         | Improper_Link
+           | Inappropriate_IO_Control_Operation
+           | Input_Output_Error        | Interrupted_Operation
+           | Invalid_Argument          | Invalid_Seek
+           | Is_A_Directory            | No_Child_Process
+           | No_Locks_Available        | No_Space_Left_On_Device
+           | No_Such_Operation_On_Device
+           | No_Such_Device_Or_Address | No_Such_File_Or_Directory
+           | No_Such_Process           | Not_A_Directory
+           | Not_Enough_Space          | Operation_Not_Implemented
+           | Operation_Not_Permitted   | Permission_Denied
+           | Read_Only_File_System     | Resource_Busy
+           | Resource_Deadlock_Avoided | Resource_Temporarily_Unavailable
+           | Too_Many_Links            | Too_Many_Open_Files
+           | Too_Many_Open_Files_In_System
+           =>
+            return True;
+
+         when others =>
+            return False;
+      end case;
+   end Is_POSIX_Error;
+
+   ------------
+   -- Length --
+   ------------
+
+   function Length (List : in POSIX_String_List) return Natural is
+   begin
+      return List.Last;
+   end Length;
+
+   -------------
+   -- Machine --
+   -------------
+
+   function Machine return POSIX_String is
+      SystemInfo : aliased Win32.Winbase.SYSTEM_INFO;
+   begin
+      Win32.Winbase.GetSystemInfo (SystemInfo'Unchecked_Access);
+
+      return Remove_First
+        (Win32.DWORD'Image (SystemInfo.dwProcessorType));
+   end Machine;
+
+   ----------------
+   -- Make_Empty --
+   ----------------
+
+   procedure Make_Empty (List : in out POSIX_String_List) is
+
+      procedure Free is new Ada.Unchecked_Deallocation
+        (POSIX_String, POSIX_String_Ptr);
+
+   begin
+      if List.Strings = null then
+         --  Already empty
+         return;
+      end if;
+
+      --  Free the memory
+
+      for I in List.Strings'First .. List.Last loop
+         Free (List.Strings (I));
+      end loop;
+      Free (List.Strings);
+
+      --  Reinitialize the values
+
+      List.Length := 0;
+      List.Last := 0;
+      List.Strings := null;
+   end Make_Empty;
+
+   ---------------
+   -- Node_Name --
+   ---------------
+
+   function Node_Name return POSIX_String is
+      use type Interfaces.C.size_t;
+      use type Interfaces.C.unsigned_long;
+      use type Win32.BOOL;
+
+      Status : Win32.BOOL;
+      Buffer : aliased Interfaces.C.char_array
+        (1 .. Win32.Winbase.MAX_COMPUTERNAME_LENGTH + 1);
+      Size   : aliased Win32.DWORD := Buffer'Length;
+
+   begin
+      Status := Win32.Winbase.GetComputerName
+        (lpBuffer => Buffer (1)'Unchecked_Access,
+         nSize    => Size'Unchecked_Access);
 
       if Status = 0 then
-         raise POSIX_Error;
+         return To_POSIX_String ("unknown");
       end if;
-   end Get_Version_Info;
+
+      return To_POSIX_String
+        (Interfaces.C.To_Ada (Buffer (1 .. Interfaces.C.size_t (Size + 1))));
+   end Node_Name;
+
+   -------------
+   -- Release --
+   -------------
+
+   function Release return POSIX_String is
+      VersionInformation : Win32.Winbase.OSVERSIONINFOA;
+   begin
+      Get_Version_Info (VersionInformation);
+
+      return Remove_First
+        (Win32.DWORD'Image (VersionInformation.dwMinorVersion));
+
+   exception
+      when others =>
+         return To_POSIX_String ("unknown");
+   end Release;
+
+   ------------------
+   -- Remove_First --
+   ------------------
+
+   function Remove_First (S : in String) return POSIX_String is
+   begin
+      return To_POSIX_String (S (S'First + 1 .. S'Last));
+   end Remove_First;
+
+   --------------------
+   -- Set_Error_Code --
+   --------------------
+
+   procedure Set_Error_Code (Error : in Error_Code) is
+   begin
+      Errno.Set_Value (Error);
+   end Set_Error_Code;
 
    -----------------
    -- System_Name --
@@ -446,58 +471,65 @@ package body POSIX is
          return To_POSIX_String ("unknown");
    end System_Name;
 
-   ---------------
-   -- Node_Name --
-   ---------------
-
-   function Node_Name return POSIX_String is
-      use type Interfaces.C.size_t;
-      use type Interfaces.C.unsigned_long;
-      use type Win32.BOOL;
-
-      Status : Win32.BOOL;
-      Buffer : aliased Interfaces.C.char_array
-        (1 .. Win32.Winbase.MAX_COMPUTERNAME_LENGTH + 1);
-      Size   : aliased Win32.DWORD := Buffer'Length;
-
-   begin
-      Status := Win32.Winbase.GetComputerName
-        (LpBuffer => Buffer (1)'Unchecked_Access,
-         NSize    => Size'Unchecked_Access);
-
-      if Status = 0 then
-         return To_POSIX_String ("unknown");
-      end if;
-
-      return To_POSIX_String
-        (Interfaces.C.To_Ada (Buffer (1 .. Interfaces.C.size_t (Size + 1))));
-   end Node_Name;
-
    ------------------
-   -- Remove_First --
+   -- To_Character --
    ------------------
 
-   function Remove_First (S : in String) return POSIX_String is
+   function To_Character (Char : in POSIX_Character) return Character is
    begin
-      return To_POSIX_String (S (2 .. S'Last));
-   end Remove_First;
-
-   -------------
-   -- Release --
-   -------------
-
-   function Release return POSIX_String is
-      VersionInformation : Win32.Winbase.OSVERSIONINFOA;
-   begin
-      Get_Version_Info (VersionInformation);
-
-      return Remove_First
-        (Win32.DWORD'Image (VersionInformation.dwMinorVersion));
-
+      return Character'Value (POSIX_Character'Image (Char));
    exception
-      when others =>
-         return To_POSIX_String ("unknown");
-   end Release;
+      when Constraint_Error =>
+         return ' ';
+   end To_Character;
+
+   ------------------------
+   -- To_POSIX_Character --
+   ------------------------
+
+   function To_POSIX_Character (Char : in Character) return POSIX_Character is
+   begin
+      return POSIX_Character'Value (Character'Image (Char));
+   exception
+      when Constraint_Error =>
+         return ' ';
+   end To_POSIX_Character;
+
+   ---------------------
+   -- To_POSIX_String --
+   ---------------------
+
+   function To_POSIX_String (Str : in String) return POSIX_String is
+      Posix_Str : POSIX_String (Str'Range);
+   begin
+      for I in Posix_Str'Range loop
+         Posix_Str (I) := To_POSIX_Character (Str (I));
+      end loop;
+      return Posix_Str;
+   end To_POSIX_String;
+
+   ---------------
+   -- To_String --
+   ---------------
+
+   function To_String (Str : in POSIX_String) return String is
+      Sstr : String (Str'Range);
+   begin
+      for I in Sstr'Range loop
+         Sstr (I) := To_Character (Str (I));
+      end loop;
+      return Sstr;
+   end To_String;
+
+   -----------
+   -- Value --
+   -----------
+
+   function Value
+     (List : in POSIX_String_List; Index : in Positive) return POSIX_String is
+   begin
+      return List.Strings (Index).all;
+   end Value;
 
    -------------
    -- Version --
@@ -515,18 +547,5 @@ package body POSIX is
       when others =>
          return To_POSIX_String ("unknown");
    end Version;
-
-   -------------
-   -- Machine --
-   -------------
-
-   function Machine return POSIX_String is
-      SystemInfo : aliased Win32.Winbase.SYSTEM_INFO;
-   begin
-      Win32.Winbase.GetSystemInfo (SystemInfo'Unchecked_Access);
-
-      return Remove_First
-        (Win32.DWORD'Image (SystemInfo.dwProcessorType));
-   end Machine;
 
 end POSIX;

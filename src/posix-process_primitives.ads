@@ -1,7 +1,29 @@
-
---  $Id$
---  Author : Pascal Obry
---  p.obry@wanadoo.fr
+------------------------------------------------------------------------------
+--                                  wPOSIX                                  --
+--                                                                          --
+--                       Copyright (C) 2008, AdaCore                        --
+--                                                                          --
+--  This library is free software; you can redistribute it and/or modify    --
+--  it under the terms of the GNU General Public License as published by    --
+--  the Free Software Foundation; either version 2 of the License, or (at   --
+--  your option) any later version.                                         --
+--                                                                          --
+--  This library is distributed in the hope that it will be useful, but     --
+--  WITHOUT ANY WARRANTY; without even the implied warranty of              --
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU       --
+--  General Public License for more details.                                --
+--                                                                          --
+--  You should have received a copy of the GNU General Public License       --
+--  along with this library; if not, write to the Free Software Foundation, --
+--  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.          --
+--                                                                          --
+--  As a special exception, if other files instantiate generics from this   --
+--  unit, or you link this unit with other files to produce an executable,  --
+--  this  unit  does not  by itself cause  the resulting executable to be   --
+--  covered by the GNU General Public License. This exception does not      --
+--  however invalidate any other reasons why the executable file  might be  --
+--  covered by the  GNU Public License.                                     --
+------------------------------------------------------------------------------
 
 with Ada.Strings.Unbounded;
 
@@ -32,8 +54,7 @@ package POSIX.Process_Primitives is
 
    procedure Set_Creation_Signal_Masking
      (Template       : in out Process_Template;
-      Masked_Signals : in     POSIX.Signal_Masking
-        := POSIX.RTS_Signals);
+      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals);
 
    procedure Set_File_Action_To_Close
      (Template : in out Process_Template;
@@ -43,50 +64,41 @@ package POSIX.Process_Primitives is
      (Template : in out Process_Template;
       File     : in     POSIX.IO.File_Descriptor;
       Name     : in     POSIX.Pathname;
-      Mode     : in     POSIX.IO.File_Mode
-        := POSIX.IO.Read_Only;
-      Options  : in     POSIX.IO.Open_Option_Set
-        := POSIX.IO.Empty_Set);
+      Mode     : in     POSIX.IO.File_Mode := POSIX.IO.Read_Only;
+      Options  : in     POSIX.IO.Open_Option_Set := POSIX.IO.Empty_Set);
 
    procedure Set_File_Action_To_Duplicate
      (Template  : in out Process_Template;
       File      : in     POSIX.IO.File_Descriptor;
       From_File : in     POSIX.IO.File_Descriptor);
 
-
    --  Process Creation
 
    procedure Start_Process
-     (Child    :      out POSIX.Process_Identification.Process_ID;
-      Pathname :   in     POSIX.Pathname;
-      Template :   in     Process_Template;
-      Arg_List :   in     POSIX.POSIX_String_List
-        := POSIX.Empty_String_List);
+     (Child    :    out POSIX.Process_Identification.Process_ID;
+      Pathname : in     POSIX.Pathname;
+      Template : in     Process_Template;
+      Arg_List : in     POSIX.POSIX_String_List := POSIX.Empty_String_List);
 
    procedure Start_Process
-     (Child    :      out POSIX.Process_Identification.Process_ID;
-      Pathname :   in     POSIX.Pathname;
-      Template :   in     Process_Template;
-      Env_List :   in     POSIX.Process_Environment.Environment;
-      Arg_List :   in     POSIX.POSIX_String_List
-        := POSIX.Empty_String_List);
+     (Child    :    out POSIX.Process_Identification.Process_ID;
+      Pathname : in     POSIX.Pathname;
+      Template : in     Process_Template;
+      Env_List : in     POSIX.Process_Environment.Environment;
+      Arg_List : in     POSIX.POSIX_String_List := POSIX.Empty_String_List);
 
    procedure Start_Process_Search
-     (Child    :      out POSIX.Process_Identification.Process_ID;
-      Filename :   in     POSIX.Filename;
-      Template :   in     Process_Template;
-      Arg_List :   in     POSIX.POSIX_String_List
-        := POSIX.Empty_String_List);
+     (Child    :    out POSIX.Process_Identification.Process_ID;
+      Filename : in     POSIX.Filename;
+      Template : in     Process_Template;
+      Arg_List : in     POSIX.POSIX_String_List := POSIX.Empty_String_List);
 
    procedure Start_Process_Search
-     (Child    :      out POSIX.Process_Identification.Process_ID;
-      Filename :   in     POSIX.Filename;
-      Template :   in     Process_Template;
-      Env_List :   in     POSIX.Process_Environment.Environment;
-      Arg_List :   in     POSIX.POSIX_String_List
-        := POSIX.Empty_String_List);
-
-
+     (Child    :    out POSIX.Process_Identification.Process_ID;
+      Filename : in     POSIX.Filename;
+      Template : in     Process_Template;
+      Env_List : in     POSIX.Process_Environment.Environment;
+      Arg_List : in     POSIX.POSIX_String_List := POSIX.Empty_String_List);
 
    --  Process Exit
 
@@ -98,36 +110,27 @@ package POSIX.Process_Primitives is
 
    procedure Exit_Process (Status : in Exit_Status := Normal_Exit);
 
-
-
    --  Termination Status
 
    type Termination_Status is private;
    type Termination_Cause is (Exited, Terminated_By_Signal, Stopped_By_Signal);
 
-   function Status_Available
-     (Status : in Termination_Status)
-     return Boolean;
+   function Status_Available (Status : in Termination_Status) return Boolean;
 
    function Process_ID_Of
-     (Status : in Termination_Status)
-     return POSIX.Process_Identification.Process_ID;
+     (Status : in Termination_Status) return Process_Identification.Process_ID;
 
    function Termination_Cause_Of
-     (Status : in Termination_Status)
-     return Termination_Cause;
+     (Status : in Termination_Status) return Termination_Cause;
 
    function Exit_Status_Of
-     (Status : in Termination_Status)
-     return Exit_Status;
+     (Status : in Termination_Status) return Exit_Status;
 
    function Termination_Signal_Of
-     (Status : in Termination_Status)
-     return POSIX.Signals.Signal;
+     (Status : in Termination_Status) return POSIX.Signals.Signal;
 
    function Stopping_Signal_Of
-     (Status : in Termination_Status)
-     return POSIX.Signals.Signal;
+     (Status : in Termination_Status) return POSIX.Signals.Signal;
 
    --  Wait for Process Termination
 
@@ -136,15 +139,14 @@ package POSIX.Process_Primitives is
       Child          : in     POSIX.Process_Identification.Process_ID;
       Block          : in     Boolean := True;
       Trace_Stopped  : in     Boolean := True;
-      Masked_Signals : in     POSIX.Signal_Masking
-        := POSIX.RTS_Signals);
+      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals);
+
    procedure Wait_For_Child_Process
      (Status         :    out Termination_Status;
       Group          : in     POSIX.Process_Identification.Process_Group_ID;
       Block          : in     Boolean := True;
       Trace_Stopped  : in     Boolean := True;
-      Masked_Signals : in     POSIX.Signal_Masking
-        := POSIX.RTS_Signals);
+      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals);
 
    procedure Wait_For_Child_Process
      (Status         :    out Termination_Status;
@@ -168,7 +170,6 @@ private
       File : POSIX.IO.File_Descriptor;
 
       case Action is
-
          when Open =>
             Name    : Unbounded_String;
             Mode    : POSIX.IO.File_Mode;

@@ -1,7 +1,29 @@
-
---  $Id$
---  Author : Pascal Obry
---  p.obry@wanadoo.fr
+------------------------------------------------------------------------------
+--                                  wPOSIX                                  --
+--                                                                          --
+--                       Copyright (C) 2008, AdaCore                        --
+--                                                                          --
+--  This library is free software; you can redistribute it and/or modify    --
+--  it under the terms of the GNU General Public License as published by    --
+--  the Free Software Foundation; either version 2 of the License, or (at   --
+--  your option) any later version.                                         --
+--                                                                          --
+--  This library is distributed in the hope that it will be useful, but     --
+--  WITHOUT ANY WARRANTY; without even the implied warranty of              --
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU       --
+--  General Public License for more details.                                --
+--                                                                          --
+--  You should have received a copy of the GNU General Public License       --
+--  along with this library; if not, write to the Free Software Foundation, --
+--  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.          --
+--                                                                          --
+--  As a special exception, if other files instantiate generics from this   --
+--  unit, or you link this unit with other files to produce an executable,  --
+--  this  unit  does not  by itself cause  the resulting executable to be   --
+--  covered by the GNU General Public License. This exception does not      --
+--  however invalidate any other reasons why the executable file  might be  --
+--  covered by the  GNU Public License.                                     --
+------------------------------------------------------------------------------
 
 with Win32;
 with Win32.Winerror;
@@ -9,7 +31,6 @@ with Win32.Winerror;
 package POSIX is
 
    --  Symbolic subtypes and constants
-
 
    --  Optional Facilities
 
@@ -25,15 +46,13 @@ package POSIX is
    subtype Filename_Truncation is Boolean
      range False .. True;
 
-   System_POSIX_Version        : constant := 1990_09;
-   POSIX_Ada_Version           : constant := 1996_07;
-
+   System_POSIX_Version : constant := 1990_09;
+   POSIX_Ada_Version    : constant := 1996_07;
 
    --  I/O Count
 
    type IO_Count is new Natural range 0 .. Natural'Last;
    subtype IO_count_Maximum is IO_Count range 32767 .. IO_Count'Last;
-
 
    --  System Limits
 
@@ -55,7 +74,6 @@ package POSIX is
    Portable_Time_Zone_String_Maximum  : constant Natural := 3;
    subtype Time_Zone_String_Maxima is Natural range 10 .. 10;
 
-
    --  Pathname Variable Values
 
    Portable_Link_Limit_Maximum        : constant Natural := 8;
@@ -76,7 +94,6 @@ package POSIX is
    Portable_Pipe_Limit_Maximum        : constant IO_Count := 512;
    subtype Pipe_Limit_Maxima is IO_Count range 512 .. 512;
 
-
    --  Blocking Behavior Values
 
    type Blocking_Behavior is (Tasks, Program);
@@ -90,11 +107,9 @@ package POSIX is
 
    Wait_For_Child_Blocking_Behavior  : constant Blocking_Behavior  := Tasks;
 
-
    --  Signal Masking
 
    type Signal_Masking is (No_Signals, RTS_Signals, All_Signals);
-
 
    --  Characters and Strings
 
@@ -102,10 +117,10 @@ package POSIX is
 
    type POSIX_String is array (Positive range <>) of POSIX_Character;
 
-   function To_POSIX_String (Str : in string) return POSIX_String;
+   function To_POSIX_String (Str : in String) return POSIX_String;
    pragma Inline (To_POSIX_String);
 
-   function To_String (Str : in POSIX_String) return string;
+   function To_String (Str : in POSIX_String) return String;
    pragma Inline (To_String);
 
    subtype Filename is POSIX_String;
@@ -116,7 +131,6 @@ package POSIX is
 
    function Is_Portable_Filename (Str : in POSIX_String) return Boolean;
    function Is_Portable_Pathname (Str : in POSIX_String) return Boolean;
-
 
    --  String Lists
 
@@ -139,21 +153,18 @@ package POSIX is
 
    function Value
      (List  : in POSIX_String_List;
-      Index : in Positive)
-     return POSIX_String;
-
+      Index : in Positive) return POSIX_String;
 
    --  Option Sets
 
    type Option_Set is private;
 
-   function Empty_Set
-     return Option_Set;
+   function Empty_Set return Option_Set;
 
+   pragma Style_Checks (Off);
    function "+" (L, R : in Option_Set) return Option_Set;
 
    function "-" (L, R : in Option_Set) return Option_Set;
-
 
    --  Exceptions and error codes
 
@@ -275,29 +286,22 @@ package POSIX is
    Too_Many_Open_Files_In_System       : constant Error_Code
      := Win32.Winerror.ERROR_NO_MORE_FILES;
 
-
-
    --  System Identification
 
-   function System_Name
-     return POSIX_String;
+   function System_Name return POSIX_String;
 
-   function Node_Name
-     return POSIX_String;
+   function Node_Name return POSIX_String;
 
-   function Release
-     return POSIX_String;
+   function Release return POSIX_String;
 
-   function Version
-     return POSIX_String;
+   function Version return POSIX_String;
 
-   function Machine
-     return POSIX_String;
+   function Machine return POSIX_String;
 
 private
 
    type POSIX_String_Ptr is access POSIX_String;
-   type String_Ptr_Array is array (positive range <>) of POSIX_String_Ptr;
+   type String_Ptr_Array is array (Positive range <>) of POSIX_String_Ptr;
    type String_Ptr_Array_Ptr is access String_Ptr_Array;
 
    type POSIX_String_List is record
@@ -306,8 +310,8 @@ private
       Strings : String_Ptr_Array_Ptr := null;
    end record;
 
-   Empty_String_List : constant POSIX_String_List
-     := POSIX_String_List'(0, 0, null);
+   Empty_String_List : constant POSIX_String_List :=
+                         POSIX_String_List'(0, 0, null);
 
    type Option_Set is new Win32.UINT;
 

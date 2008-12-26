@@ -1,7 +1,29 @@
-
---  $Id$
---  Author : Pascal Obry
---  p.obry@wanadoo.fr
+------------------------------------------------------------------------------
+--                                  wPOSIX                                  --
+--                                                                          --
+--                       Copyright (C) 2008, AdaCore                        --
+--                                                                          --
+--  This library is free software; you can redistribute it and/or modify    --
+--  it under the terms of the GNU General Public License as published by    --
+--  the Free Software Foundation; either version 2 of the License, or (at   --
+--  your option) any later version.                                         --
+--                                                                          --
+--  This library is distributed in the hope that it will be useful, but     --
+--  WITHOUT ANY WARRANTY; without even the implied warranty of              --
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU       --
+--  General Public License for more details.                                --
+--                                                                          --
+--  You should have received a copy of the GNU General Public License       --
+--  along with this library; if not, write to the Free Software Foundation, --
+--  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.          --
+--                                                                          --
+--  As a special exception, if other files instantiate generics from this   --
+--  unit, or you link this unit with other files to produce an executable,  --
+--  this  unit  does not  by itself cause  the resulting executable to be   --
+--  covered by the GNU General Public License. This exception does not      --
+--  however invalidate any other reasons why the executable file  might be  --
+--  covered by the  GNU Public License.                                     --
+------------------------------------------------------------------------------
 
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
@@ -10,132 +32,14 @@ with Interfaces.C;
 
 with Win32.Winbase;
 
-with POSIX;
-
 package body POSIX_Win32 is
-
-   -------------------------------
-   -- Raise_Not_Yet_Implemented --
-   -------------------------------
-
-   procedure Raise_Not_Yet_Implemented (Message : in String) is
-   begin
-      Ada.Exceptions.Raise_Exception
-        (POSIX_Not_Yet_Implemented'Identity,
-         Message => Message);
-   end Raise_Not_Yet_Implemented;
-
-   -------------------
-   -- Check_Retcode --
-   -------------------
-
-   procedure Check_Retcode
-     (RETCODE : in Win32.INT;
-      Fct     : in String)
-   is
-      use type Win32.INT;
-   begin
-      if RETCODE = Retcode_Error then
-         declare
-            Code : constant Win32.DWORD := Win32.Winbase.GetLastError;
-         begin
-            POSIX.Set_Error_Code (POSIX.Error_Code (Code));
-            Ada.Exceptions.Raise_Exception
-              (POSIX.POSIX_Error'Identity,
-               Message => Fct & " : errno = " & Win32.DWORD'Image (Code));
-         end;
-      end if;
-   end Check_Retcode;
-
-   ------------------
-   -- Check_Result --
-   ------------------
-
-   procedure Check_Result
-     (RETCODE : in Win32.BOOL;
-      Fct     : in String)
-   is
-      use type Win32.BOOL;
-   begin
-      if RETCODE = Win32.FALSE then
-         declare
-            Code : constant Win32.DWORD := Win32.Winbase.GetLastError;
-         begin
-            POSIX.Set_Error_Code (POSIX.Error_Code (Code));
-            Ada.Exceptions.Raise_Exception
-              (POSIX.POSIX_Error'Identity,
-               Message => Fct &
-               " : errno = " & Win32.DWORD'Image (Code));
-         end;
-      end if;
-   end Check_Result;
-
-   -----------------
-   -- Raise_Error --
-   -----------------
-
-   procedure Raise_Error
-     (Message    : in String;
-      Error_Code : in POSIX.Error_Code) is
-   begin
-      POSIX.Set_Error_Code (Error_Code);
-      Ada.Exceptions.Raise_Exception
-        (POSIX.POSIX_Error'Identity,
-         Message => Message &
-         " : Error_Code = " & POSIX.Error_Code'Image (Error_Code));
-   end Raise_Error;
-
-   -------------------
-   -- Is_Executable --
-   -------------------
-
-   function Is_Executable
-     (Pathname : in POSIX.POSIX_String)
-     return Boolean
-   is
-      BinaryType : aliased Win32.DWORD;
-   begin
-      if Pathname'Length > 4 then
-         declare
-            Ext : constant String
-              := POSIX.To_String
-              (Pathname (Pathname'Last - 3 .. Pathname'Last));
-         begin
-            if Ext = ".com" then
-               return True;
-
-            elsif Ext = ".exe" then
-               declare
-                  use type Win32.BOOL;
-                  L_Pathname      : constant String
-                    := POSIX.To_String (Pathname) & ASCII.Nul;
-               begin
-                  return Win32.Winbase.GetBinaryType
-                    (Win32.Addr (L_Pathname),
-                     BinaryType'Unchecked_Access) = Win32.TRUE;
-               end;
-
-            elsif Ext = ".bat" then
-               return True;
-
-            else
-               return False;
-            end if;
-         end;
-      else
-         return False;
-      end if;
-   end Is_Executable;
-
-   --  process list
 
    ---------------------------------------
    -- Process_ID_To_PROCESS_INFORMATION --
    ---------------------------------------
 
-   function Process_ID_To_PROCESS_INFORMATION is
-     new Ada.Unchecked_Conversion  (POSIX_Process_Identification.Process_ID,
-                                    Win32.Winbase.PROCESS_INFORMATION);
+   function Process_ID_To_PROCESS_INFORMATION is new Ada.Unchecked_Conversion
+     (PPI.Process_ID, Win32.Winbase.PROCESS_INFORMATION);
 
    type P_List;
    type P_List_Access is access P_List;
@@ -144,10 +48,6 @@ package body POSIX_Win32 is
       Process : PPI.Process_ID;
       Next    : P_List_Access;
    end record;
-
-   ----------
-   -- Free --
-   ----------
 
    procedure Free is new Ada.Unchecked_Deallocation (P_List, P_List_Access);
 
@@ -172,6 +72,123 @@ package body POSIX_Win32 is
       N_Process : Natural := 0;
    end Process_List;
 
+   ---------------
+   -- Add_Child --
+   ---------------
+
+   procedure Add_Child (Child : in PPI.Process_ID) is
+   begin
+      Process_List.Add (Child);
+   end Add_Child;
+
+   ------------------
+   -- Check_Result --
+   ------------------
+
+   procedure Check_Result
+     (RETCODE : in Win32.BOOL;
+      Fct     : in String)
+   is
+      use type Win32.BOOL;
+   begin
+      if RETCODE = Win32.FALSE then
+         declare
+            Code : constant Win32.DWORD := Win32.Winbase.GetLastError;
+         begin
+            POSIX.Set_Error_Code (POSIX.Error_Code (Code));
+            Ada.Exceptions.Raise_Exception
+              (POSIX.POSIX_Error'Identity,
+               Message => Fct &
+               " : errno = " & Win32.DWORD'Image (Code));
+         end;
+      end if;
+   end Check_Result;
+
+   -------------------
+   -- Check_Retcode --
+   -------------------
+
+   procedure Check_Retcode
+     (RETCODE : in Win32.INT;
+      Fct     : in String) is
+   begin
+      if RETCODE = Retcode_Error then
+         declare
+            Code : constant Win32.DWORD := Win32.Winbase.GetLastError;
+         begin
+            POSIX.Set_Error_Code (POSIX.Error_Code (Code));
+            Ada.Exceptions.Raise_Exception
+              (POSIX.POSIX_Error'Identity,
+               Message => Fct & " : errno = " & Win32.DWORD'Image (Code));
+         end;
+      end if;
+   end Check_Retcode;
+
+   -----------
+   -- Exist --
+   -----------
+
+   function  Exist (Child : in PPI.Process_ID) return Boolean is
+   begin
+      return Process_List.Exist (Child);
+   end Exist;
+
+   ------------------------
+   -- Get_Process_Handle --
+   ------------------------
+
+   function Get_Process_Handle
+     (Process : in PPI.Process_ID) return Win32.Winnt.HANDLE
+   is
+      function To_Process_Information is new Ada.Unchecked_Conversion
+        (PPI.Process_ID, Win32.Winbase.PROCESS_INFORMATION);
+   begin
+      return To_Process_Information (Process).hProcess;
+   end Get_Process_Handle;
+
+   -------------------
+   -- Is_Executable --
+   -------------------
+
+   function Is_Executable (Pathname : in POSIX.POSIX_String) return Boolean is
+      BinaryType : aliased Win32.DWORD;
+   begin
+      if Pathname'Length > 4 then
+         declare
+            Ext : constant String
+              := POSIX.To_String
+              (Pathname (Pathname'Last - 3 .. Pathname'Last));
+         begin
+            if Ext = ".com" then
+               return True;
+
+            elsif Ext = ".exe" then
+               declare
+                  use type Win32.BOOL;
+                  L_Pathname      : constant String
+                    := POSIX.To_String (Pathname) & ASCII.NUL;
+               begin
+                  return Win32.Winbase.GetBinaryType
+                    (Win32.Addr (L_Pathname),
+                     BinaryType'Unchecked_Access) = Win32.TRUE;
+               end;
+
+            elsif Ext = ".bat" then
+               return True;
+
+            else
+               return False;
+            end if;
+         end;
+      else
+         return False;
+      end if;
+   end Is_Executable;
+
+   ------------------
+   -- Process_List --
+   ------------------
+
    protected body Process_List is
 
       ---------
@@ -183,6 +200,50 @@ package body POSIX_Win32 is
          Process := new P_List'(Child, Next => Process);
          N_Process := N_Process + 1;
       end Add;
+
+      -----------
+      -- Exist --
+      -----------
+
+      function  Exist  (Child  : in PPI.Process_ID) return Boolean is
+         use type PPI.Process_ID;
+         PLa : P_List_Access := Process;
+      begin
+         Check_Child :
+         while PLa /= null loop
+            if PLa.Process = Child then
+               return True;
+            else
+               PLa := PLa.Next;
+            end if;
+         end loop Check_Child;
+
+         return False;
+      end Exist;
+
+      --------------------
+      -- Get_Process_ID --
+      --------------------
+
+      function Get_Process_ID
+        (H : in Win32.Winnt.HANDLE)
+        return PPI.Process_ID
+      is
+         use type Win32.Winnt.HANDLE;
+         PLa : P_List_Access;
+      begin
+         PLa := Process;
+         while PLa /= null loop
+            if Process_ID_To_PROCESS_INFORMATION
+              (PLa.Process).hProcess = H
+            then
+               return PLa.Process;
+            else
+               PLa := PLa.Next;
+            end if;
+         end loop;
+         return PPI.Null_Process_ID;
+      end Get_Process_ID;
 
       ------------
       -- Remove --
@@ -218,51 +279,6 @@ package body POSIX_Win32 is
          N_Process := N_Process - 1;
       end Remove;
 
-      -----------
-      -- Exist --
-      -----------
-
-      function  Exist  (Child  : in PPI.Process_ID) return Boolean is
-         use type PPI.Process_ID;
-         PLa : P_List_Access := Process;
-      begin
-         Check_Child :
-         while PLa /= null loop
-            if PLa.Process = Child then
-               return True;
-            else
-               PLa := PLa.Next;
-            end if;
-         end loop Check_Child;
-
-         return False;
-      end Exist;
-
-      --------------------
-      -- Get_Process_ID --
-      --------------------
-
-      function Get_Process_ID
-        (H : in Win32.Winnt.HANDLE)
-        return PPI.Process_ID
-      is
-         use type Win32.Winnt.HANDLE;
-         PLa, PLa_Prev : P_List_Access;
-      begin
-         PLa := Process;
-         while PLa /= null loop
-            if Process_ID_To_PROCESS_INFORMATION
-                 (PLa.Process).hProcess = H
-            then
-               return PLa.Process;
-            else
-               PLa_Prev := PLa;
-               PLa := PLa.Next;
-            end if;
-         end loop;
-         return PPI.Null_Process_ID;
-      end Get_Process_ID;
-
       ----------
       -- Wait --
       ----------
@@ -293,6 +309,7 @@ package body POSIX_Win32 is
 
          Retcode   : Win32.DWORD;
          Ok        : Win32.BOOL;
+         pragma Unreferenced (Ok);
          Exit_Code : aliased Win32.DWORD;
          H         : Win32.Winnt.HANDLE;
          Child     : PPI.Process_ID;
@@ -344,14 +361,31 @@ package body POSIX_Win32 is
 
    end Process_List;
 
-   ---------------
-   -- Add_Child --
-   ---------------
+   -----------------
+   -- Raise_Error --
+   -----------------
 
-   procedure Add_Child (Child : in PPI.Process_ID) is
+   procedure Raise_Error
+     (Message    : in String;
+      Error_Code : in POSIX.Error_Code) is
    begin
-      Process_List.Add (Child);
-   end Add_Child;
+      POSIX.Set_Error_Code (Error_Code);
+      Ada.Exceptions.Raise_Exception
+        (POSIX.POSIX_Error'Identity,
+         Message => Message &
+         " : Error_Code = " & POSIX.Error_Code'Image (Error_Code));
+   end Raise_Error;
+
+   -------------------------------
+   -- Raise_Not_Yet_Implemented --
+   -------------------------------
+
+   procedure Raise_Not_Yet_Implemented (Message : in String) is
+   begin
+      Ada.Exceptions.Raise_Exception
+        (POSIX_Not_Yet_Implemented'Identity,
+         Message => Message);
+   end Raise_Not_Yet_Implemented;
 
    ------------------
    -- Remove_Child --
@@ -361,15 +395,6 @@ package body POSIX_Win32 is
    begin
       Process_List.Remove (Child);
    end Remove_Child;
-
-   -----------
-   -- Exist --
-   -----------
-
-   function  Exist (Child : in PPI.Process_ID) return Boolean is
-   begin
-      return Process_List.Exist (Child);
-   end Exist;
 
    ----------
    -- Wait --

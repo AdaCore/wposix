@@ -1,7 +1,29 @@
-
---  $Id$
---  Author : Pascal Obry
---  p.obry@wanadoo.fr
+------------------------------------------------------------------------------
+--                                  wPOSIX                                  --
+--                                                                          --
+--                       Copyright (C) 2008, AdaCore                        --
+--                                                                          --
+--  This library is free software; you can redistribute it and/or modify    --
+--  it under the terms of the GNU General Public License as published by    --
+--  the Free Software Foundation; either version 2 of the License, or (at   --
+--  your option) any later version.                                         --
+--                                                                          --
+--  This library is distributed in the hope that it will be useful, but     --
+--  WITHOUT ANY WARRANTY; without even the implied warranty of              --
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU       --
+--  General Public License for more details.                                --
+--                                                                          --
+--  You should have received a copy of the GNU General Public License       --
+--  along with this library; if not, write to the Free Software Foundation, --
+--  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.          --
+--                                                                          --
+--  As a special exception, if other files instantiate generics from this   --
+--  unit, or you link this unit with other files to produce an executable,  --
+--  this  unit  does not  by itself cause  the resulting executable to be   --
+--  covered by the GNU General Public License. This exception does not      --
+--  however invalidate any other reasons why the executable file  might be  --
+--  covered by the  GNU Public License.                                     --
+------------------------------------------------------------------------------
 
 with POSIX.Process_Identification;
 
@@ -15,108 +37,35 @@ package POSIX.Signals is
 
    function Value (Str : in String) return Signal;
 
-
    --  Standard Signals (required)
 
-   Signal_Null, SIGNULL                           : constant Signal
-     := 0;
+   Signal_Null, SIGNULL                           : constant Signal := 0;
 
-   Signal_Abort, SIGABRT                          : constant Signal
-     := 22;
+   Signal_Abort, SIGABRT                          : constant Signal := 22;
 
-   Signal_Floating_Point_Error, SIGFPE            : constant Signal
-     := 8;
+   Signal_Floating_Point_Error, SIGFPE            : constant Signal := 8;
 
-   Signal_Illegal_Instruction, SIGILL             : constant Signal
-     := 4;
+   Signal_Illegal_Instruction, SIGILL             : constant Signal := 4;
 
-   Signal_Interrupt, SIGINT                       : constant Signal
-     := 2;
+   Signal_Interrupt, SIGINT                       : constant Signal := 2;
 
-   Signal_Segmentation_Violation, SIGSEGV         : constant Signal
-     := 11;
+   Signal_Segmentation_Violation, SIGSEGV         : constant Signal := 11;
 
-   Signal_Terminate, SIGTERM                      : constant Signal
-     := 15;
-
-
-   --  Signal Handler References
-
---   Signal_Abort_Ref                    : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Abort);
-
-
---     --  Signal_Alarm intentionally omitted.
---     --  Signal_Floating_Point_Error intentionally omitted.
-
---   Signal_Hangup_Ref                   : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Hangup);
-
---     --  Signal_Illegal_Instruction intentionally omitted.
-
---   Signal_Interrupt_Ref                : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Interrupt);
-
---     --  Signal_Kill intentionally omitted.
-
---   Signal_Pipe_Write_Ref               : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Pipe_Write);
-
---   Signal_Quit_Ref                     : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Quit);
-
---     --  Signal_Segmentation_Violation intentionally omitted.
-
---   Signal_Terminate_Ref                : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Terminate);
-
---   Signal_User_1_Ref                   : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_User_1);
-
---   Signal_User_2_Ref                   : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_User_2);
-
---   Signal_Child_Ref                    : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Child);
-
---   Signal_Continue_Ref                 : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Continue);
-
---     --  Signal_Stop intentionally omitted.
-
---   Signal_Terminal_Stop_Ref            : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Terminal_Stop);
-
---   Signal_Terminal_Input_Ref           : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Terminal_Input);
-
---   Signal_Terminal_Ouput_Ref           : constant System.Address
---       := System.Address'Ref (C_Signal_Values.Signal_Terminal_Ouput);
-
-
-
+   Signal_Terminate, SIGTERM                      : constant Signal := 15;
 
    --  type Signal Sets
 
    type Signal_Set is private;
 
-   procedure Add_Signal
-     (Set : in out Signal_Set;
-      Sig : in    Signal);
+   procedure Add_Signal (Set : in out Signal_Set; Sig : in Signal);
 
    procedure Add_All_Signals (Set : in out Signal_Set);
 
-   procedure Delete_Signal
-     (Set : in out Signal_Set;
-      Sig : in    Signal);
+   procedure Delete_Signal (Set : in out Signal_Set; Sig : in Signal);
 
    procedure Delete_All_Signals (Set : in out Signal_Set);
 
-   function Is_Member
-     (Set : in Signal_Set;
-      Sig : in Signal)
-      return Boolean;
-
+   function Is_Member (Set : in Signal_Set; Sig : in Signal) return Boolean;
 
    --  Sending a Signal
 
@@ -130,7 +79,6 @@ package POSIX.Signals is
 
    procedure Send_Signal
      (Sig     : in Signal);
-
 
    --  Blocking and Unblocking Signals
 
@@ -146,9 +94,7 @@ package POSIX.Signals is
      (Mask_To_Substract : in     Signal_Set;
       Old_Mask          :    out Signal_Set);
 
-   function Blocked_Signals
-     return Signal_Set;
-
+   function Blocked_Signals return Signal_Set;
 
    --  Ignoring Signals
 
@@ -156,24 +102,17 @@ package POSIX.Signals is
 
    procedure Unignore_Signal (Sig : in Signal);
 
-   function Is_Ignored (Sig : in Signal)
-     return Boolean;
-
+   function Is_Ignored (Sig : in Signal) return Boolean;
 
    --  Controling Delivery of Signal_Child Signal
 
-   procedure Set_Stopped_Child_Signal
-     (Enable : in Boolean := True);
+   procedure Set_Stopped_Child_Signal (Enable : in Boolean := True);
 
-   function Stopped_Child_Signal_Enabled
-     return Boolean;
-
+   function Stopped_Child_Signal_Enabled return Boolean;
 
    --  Examining Pending Signals
 
-   function Pending_Signals
-     return Signal_Set;
-
+   function Pending_Signals return Signal_Set;
 
 private
 

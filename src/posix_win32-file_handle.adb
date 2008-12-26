@@ -1,14 +1,36 @@
-
---  $Id$
---  Author : Pascal Obry
---  p.obry@wanadoo.fr
+------------------------------------------------------------------------------
+--                                  wPOSIX                                  --
+--                                                                          --
+--                       Copyright (C) 2008, AdaCore                        --
+--                                                                          --
+--  This library is free software; you can redistribute it and/or modify    --
+--  it under the terms of the GNU General Public License as published by    --
+--  the Free Software Foundation; either version 2 of the License, or (at   --
+--  your option) any later version.                                         --
+--                                                                          --
+--  This library is distributed in the hope that it will be useful, but     --
+--  WITHOUT ANY WARRANTY; without even the implied warranty of              --
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU       --
+--  General Public License for more details.                                --
+--                                                                          --
+--  You should have received a copy of the GNU General Public License       --
+--  along with this library; if not, write to the Free Software Foundation, --
+--  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.          --
+--                                                                          --
+--  As a special exception, if other files instantiate generics from this   --
+--  unit, or you link this unit with other files to produce an executable,  --
+--  this  unit  does not  by itself cause  the resulting executable to be   --
+--  covered by the GNU General Public License. This exception does not      --
+--  however invalidate any other reasons why the executable file  might be  --
+--  covered by the  GNU Public License.                                     --
+------------------------------------------------------------------------------
 
 with Win32.Winbase;
 
 package body POSIX_Win32.File_Handle is
 
    type Handle_Table_Type is
-     array (POSIX_IO.File_Descriptor) of Win32.Winnt.HANDLE;
+     array (POSIX.IO.File_Descriptor) of Win32.Winnt.HANDLE;
 
    protected Lock is
       entry Get;
@@ -41,7 +63,29 @@ package body POSIX_Win32.File_Handle is
 
    Handle_Table : Handle_Table_Type := (others => Null_Handle);
 
-   Number_File_Open : POSIX_IO.File_Descriptor := 3;
+   Number_File_Open : POSIX.IO.File_Descriptor := 3;
+
+   -----------
+   -- Close --
+   -----------
+
+   procedure Close (F : in POSIX.IO.File_Descriptor) is
+      use type POSIX.IO.File_Descriptor;
+   begin -- Close
+      Lock.Get;
+      Handle_Table (F) := Null_Handle;
+      Number_File_Open := Number_File_Open - 1;
+      Lock.Release;
+   end Close;
+
+   ---------
+   -- Get --
+   ---------
+
+   function Get (F : in POSIX.IO.File_Descriptor) return Win32.Winnt.HANDLE is
+   begin -- Get
+      return Handle_Table (F);
+   end Get;
 
    ----------
    -- Open --
@@ -49,19 +93,20 @@ package body POSIX_Win32.File_Handle is
 
    function Open
      (H : in Win32.Winnt.HANDLE;
-      F : in POSIX_IO.File_Descriptor := 0)
-      return POSIX_IO.File_Descriptor
+      F : in POSIX.IO.File_Descriptor := 0) return POSIX.IO.File_Descriptor
    is
 
-      use type POSIX_IO.File_Descriptor;
+      use type POSIX.IO.File_Descriptor;
       use type Win32.Winnt.HANDLE;
+
+      function Get_New return POSIX.IO.File_Descriptor;
+      --  ???
 
       -------------
       -- Get_New --
       -------------
 
-      function Get_New return POSIX_IO.File_Descriptor is
-         use type Win32.Winnt.HANDLE;
+      function Get_New return POSIX.IO.File_Descriptor is
       begin
          for I in 3 .. Handle_Table'Last loop
             if Handle_Table (I) = Null_Handle then
@@ -71,7 +116,7 @@ package body POSIX_Win32.File_Handle is
          raise POSIX.POSIX_Error;
       end Get_New;
 
-      Result : POSIX_IO.File_Descriptor;
+      Result : POSIX.IO.File_Descriptor;
 
    begin -- Open
       Lock.Get;
@@ -93,32 +138,7 @@ package body POSIX_Win32.File_Handle is
          raise;
    end Open;
 
-   -----------
-   -- Close --
-   -----------
-
-   procedure Close (F : in POSIX_IO.File_Descriptor) is
-      use type POSIX_IO.File_Descriptor;
-   begin -- Close
-      Lock.Get;
-      Handle_Table (F) := Null_Handle;
-      Number_File_Open := Number_File_Open - 1;
-      Lock.Release;
-   end Close;
-
-   ---------
-   -- Get --
-   ---------
-
-   function Get
-     (F : in POSIX_IO.File_Descriptor)
-      return Win32.Winnt.HANDLE is
-   begin -- Get
-      return Handle_Table (F);
-   end Get;
-
 begin
-
    Handle_Table (0) := Win32.Winbase.GetStdHandle
      (Win32.Winbase.STD_INPUT_HANDLE);
 
@@ -127,5 +147,4 @@ begin
 
    Handle_Table (2) := Win32.Winbase.GetStdHandle
      (Win32.Winbase.STD_ERROR_HANDLE);
-
 end POSIX_Win32.File_Handle;
