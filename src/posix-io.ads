@@ -168,8 +168,8 @@ package POSIX.IO is
 
 private
 
-   function UINT_To_Open_Option_Set is new
-     Ada.Unchecked_Conversion (Win32.UINT, Open_Option_Set);
+   function UINT_To_Open_Option_Set is new Ada.Unchecked_Conversion
+     (Win32.UINT, Open_Option_Set);
 
    Non_Blocking             : constant Open_Option_Set :=
                                 UINT_To_Open_Option_Set (1);
