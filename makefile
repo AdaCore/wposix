@@ -1,7 +1,7 @@
 ############################################################################
 #                                 wPOSIX                                   #
 #                                                                          #
-#                       Copyright (C) 2008, AdaCore                        #
+#                    Copyright (C) 2008-2009, AdaCore                      #
 #                                                                          #
 #  This library is free software; you can redistribute it and/or modify    #
 #  it under the terms of the GNU General Public License as published by    #
@@ -29,6 +29,8 @@
 
 ############################################################################
 #  Default configuration
+VERSION		= 1.0
+
 prefix	 	= $(dir $(shell which gnatls))..
 ENABLE_SHARED 	= $(shell $(GNAT) make -c -q -p \
 			-Pconfig/auto/test_shared 2>/dev/null && echo "true")
