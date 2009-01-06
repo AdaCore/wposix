@@ -90,7 +90,8 @@ ifeq (${ENABLE_SHARED}, true)
 	$(MKDIR) -p $(prefix)/lib/wposix/relocatable
 	$(CP) -pr $(BDIR)/relocatable/lib/* $(prefix)/lib/wposix/relocatable/
 endif
-	$(CP) -pr src $(prefix)/include/wposix
+	$(MKDIR) -p $(prefix)/include/wposix
+	$(CP) -p src/*.ad* $(prefix)/include/wposix/
 	$(CP) $(CONFGPR) $(prefix)/lib/gnat/wposix/
 	$(CP) config/projects/wposix.gpr $(prefix)/lib/gnat/
 	$(CP) config/projects/wposix_shared.gpr $(prefix)/lib/gnat/wposix/
