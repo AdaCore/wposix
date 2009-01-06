@@ -49,6 +49,7 @@ MKDIR		= mkdir
 CP		= cp -p
 GNAT		= gnat
 RM		= rm -f
+LN		= ln -s
 
 GMOPTS		= -j$(PROCESSORS)
 
@@ -110,8 +111,15 @@ endif
 	$(RM) -r $(BUILD)
 
 distrib:
-	-rm win32posix.tar.gz
-	tar cf win32posix.tar src/compile.bat src/*.ad[sb] \
-		src/readme.txt test/demo*.adb
-
-	gzip -9 win32posix.tar
+	-$(RM) wposix.tar.gz
+	$(RM) -fr wposix
+	$(MKDIR) -p wposix
+	$(LN) ../src wposix/src
+	$(LN) ../config wposix/config
+	$(LN) ../test wposix/test
+	$(LN) ../makefile wposix/makefile
+	$(LN) ../wposix.gpr wposix/wposix.gpr
+	$(LN) ../shared.gpr wposix/shared.gpr
+	tar --create --dereference --file=wposix.tar wposix
+	$(RM) -fr wposix
+	gzip -9 wposix.tar
