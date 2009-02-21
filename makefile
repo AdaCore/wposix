@@ -106,9 +106,9 @@ ifeq (${ENABLE_SHARED}, true)
 endif
 
 clean:
-	$(GNAT) clean -XLIBRARY_TYPE=static -P wposix
+	$(GNAT) clean $(GMOPTS) -XLIBRARY_TYPE=static -P wposix
 ifeq (${ENABLE_SHARED}, true)
-	$(GNAT) clean -XLIBRARY_TYPE=relocatable -P wposix
+	$(GNAT) clean $(GMOPTS) -XLIBRARY_TYPE=relocatable -P wposix
 endif
 	$(RM) -r $(BUILD)
 
