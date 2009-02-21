@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2009, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -200,10 +200,8 @@ package body POSIX.Calendar is
      (Year    : in Year_Number;
       Month   : in Month_Number;
       Day     : in Day_Number;
-      Seconds : in Day_Duration := 0.0)
-     return POSIX_Time
+      Seconds : in Day_Duration := 0.0) return POSIX_Time
    is
-
       Local_Time : Win32.Winbase.SYSTEMTIME;
 
       Lsec  : Integer := Integer (Seconds);
