@@ -203,21 +203,30 @@ package body POSIX.Calendar is
       Seconds : in Day_Duration := 0.0) return POSIX_Time
    is
       Local_Time : Win32.Winbase.SYSTEMTIME;
-
-      Lsec  : Integer := Integer (Seconds);
+      Lsec       : Integer := Integer (Seconds - 0.5);
 
    begin
       Local_Time.wYear   := Win32.WORD (Year);
       Local_Time.wMonth  := Win32.WORD (Month);
       Local_Time.wDay    := Win32.WORD (Day);
 
-      Local_Time.wHour   := Win32.WORD (Lsec / 3600);
-      Lsec := Lsec rem 3600;
-      Local_Time.wMinute := Win32.WORD (Lsec / 60);
-      Local_Time.wSecond := Win32.WORD (Lsec rem 60);
-      Local_Time.wMilliseconds
-        := Win32.WORD ((Seconds - Day_Duration (Lsec) - 0.5) * 1000);
-      --  Lsec is rounded, not truncated - hence the "-0.5"
+      if Lsec = -1 then
+         --  Special case handling to prevent Constraint_Error due to round
+         --  down to -1 in Lsec.
+         Local_Time.wHour   := 0;
+         Local_Time.wMinute := 0;
+         Local_Time.wSecond := 0;
+         Local_Time.wMilliseconds := 0;
+
+      else
+         Local_Time.wHour   := Win32.WORD (Lsec / 3600);
+         Lsec := Lsec rem 3600;
+         Local_Time.wMinute := Win32.WORD (Lsec / 60);
+         Local_Time.wSecond := Win32.WORD (Lsec rem 60);
+         Local_Time.wMilliseconds := Win32.WORD
+           ((Seconds - Day_Duration (Integer (Seconds - 0.5))) * 1000);
+         --  Lsec is rounded, not truncated - hence the "-0.5"
+      end if;
       return POSIX_Time (Local_Time);
    end Time_Of;
 
