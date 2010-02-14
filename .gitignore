@@ -1,2 +1,5 @@
 .build
 makefile.setup
+*.o
+*.ali
+*.exe
