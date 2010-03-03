@@ -1,7 +1,7 @@
 ############################################################################
 #                                 wPOSIX                                   #
 #                                                                          #
-#                    Copyright (C) 2008-2009, AdaCore                      #
+#                    Copyright (C) 2008-2010, AdaCore                      #
 #                                                                          #
 #  This library is free software; you can redistribute it and/or modify    #
 #  it under the terms of the GNU General Public License as published by    #
@@ -118,7 +118,7 @@ distrib:
 	$(MKDIR) -p wposix
 	$(LN) ../src wposix/src
 	$(LN) ../config wposix/config
-	$(LN) ../test wposix/test
+	$(LN) ../regtests wposix/regtests
 	$(LN) ../makefile wposix/makefile
 	$(LN) ../wposix.gpr wposix/wposix.gpr
 	$(LN) ../shared.gpr wposix/shared.gpr
