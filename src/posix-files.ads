@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -28,7 +28,8 @@
 with POSIX.Permissions;
 with POSIX.Process_Identification;
 with POSIX.Calendar;
-with Win32.Winbase;
+
+private with Win32.Winbase;
 
 package POSIX.Files is
 

@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -32,8 +32,8 @@ with POSIX.Process_Environment;
 with POSIX.Process_Identification;
 with POSIX.Signals;
 
-with Win32.Winbase;
-with Win32.Winnt;
+private with Win32.Winbase;
+private with Win32.Winnt;
 
 package POSIX.Process_Primitives is
 
