@@ -32,15 +32,10 @@
 VERSION		= 1.0
 
 prefix	 	= $(dir $(shell which gnatls))..
-ENABLE_SHARED 	= $(shell $(GNAT) make -c -q -p \
-			-Pconfig/auto/test_shared 2>/dev/null && echo "true")
+ENABLE_SHARED 	= true
 DEFAULT_LIBRARY_TYPE 	= static
 PROCESSORS	= 2
 DEBUG		= false
-
-ifeq  ($(ENABLE_SHARED),)
-ENABLE_SHARED=false
-endif
 
 -include makefile.setup
 
