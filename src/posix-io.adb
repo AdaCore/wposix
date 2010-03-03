@@ -623,9 +623,9 @@ package body POSIX.IO is
    -----------
 
    procedure Write
-     (File       : in     File_Descriptor;
-      Buffer     : in     IO_Buffer;
-      Last       :    out POSIX.IO_Count;
+     (File           : in     File_Descriptor;
+      Buffer         : in     IO_Buffer;
+      Last           :    out POSIX.IO_Count;
       Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       pragma Warnings (Off, Masked_Signals);
