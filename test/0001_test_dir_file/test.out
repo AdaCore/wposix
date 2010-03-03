@@ -1,0 +1,24 @@
+stat : [adirectory]
+adirectory is present
+adirectory is not a regular file
+adirectory is a directory
+
+stat : [adirectory\thisisafile.txt]
+adirectory\thisisafile.txt is present
+adirectory\thisisafile.txt is a regular file
+adirectory\thisisafile.txt is not a directory
+
+stat : [adirectory]
+adirectory is present
+adirectory is not a regular file
+adirectory is a directory
+
+stat : [adirectory\thisisafile.txt]
+adirectory\thisisafile.txt is not present
+
+stat : [adirectory]
+adirectory is not present
+
+stat : [adirectory\thisisafile.txt]
+adirectory\thisisafile.txt is not present
+
