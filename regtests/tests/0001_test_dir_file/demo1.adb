@@ -39,14 +39,14 @@ procedure Demo1 is
    use POSIX.Files;
    use POSIX.File_Status;
 
-   procedure Check (Path : in String);
+   procedure Check (Path : String);
    --  Check path
 
    -----------
    -- Check --
    -----------
 
-   procedure Check (Path : in String) is
+   procedure Check (Path : String) is
    begin
       Text_IO.Put_Line ("stat : [" & Path & "]");
 
