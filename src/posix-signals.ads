@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                    Copyright (C) 2008-2010, AdaCore                      --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -52,6 +52,8 @@ package POSIX.Signals is
    Signal_Segmentation_Violation, SIGSEGV         : constant Signal := 11;
 
    Signal_Terminate, SIGTERM                      : constant Signal := 15;
+
+   Signal_User_1, SIGUSR1                         : constant Signal := 16;
 
    --  type Signal Sets
 
