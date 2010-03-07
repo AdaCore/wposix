@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -43,7 +43,7 @@ package body POSIX.Permissions is
    -------------------------------------
 
    procedure Set_Allowed_Process_Permissions
-     (Permissions : in Permission_Set) is
+     (Permissions : Permission_Set) is
    begin
       Dummy_Process_Permission_Set := Permissions;
    end Set_Allowed_Process_Permissions;
@@ -53,7 +53,7 @@ package body POSIX.Permissions is
    -------------------------------------
 
    procedure Set_Allowed_Process_Permissions
-     (Permissions : in     Permission_Set;
+     (Permissions :        Permission_Set;
       Old_Perms   :    out Permission_Set) is
    begin
       Old_Perms := Dummy_Process_Permission_Set;

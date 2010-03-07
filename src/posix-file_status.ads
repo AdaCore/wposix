@@ -38,9 +38,9 @@ package POSIX.File_Status is
 
    --  Operations to Obtain File Status
 
-   function Get_File_Status (Pathname : in POSIX.Pathname) return Status;
+   function Get_File_Status (Pathname : POSIX.Pathname) return Status;
 
-   function Get_File_Status (File : in POSIX.IO.File_Descriptor) return Status;
+   function Get_File_Status (File : POSIX.IO.File_Descriptor) return Status;
 
    --  Operations to get information from Status
 
@@ -51,46 +51,46 @@ package POSIX.File_Status is
    subtype Links is Natural range 0 .. POSIX.Link_Limit_Maxima'Last;
 
    function Permission_Set_Of
-     (File_Status : in Status) return POSIX.Permissions.Permission_Set;
+     (File_Status : Status) return POSIX.Permissions.Permission_Set;
 
    function File_ID_Of
-     (File_Status : in Status) return File_ID;
+     (File_Status : Status) return File_ID;
 
    function Device_ID_Of
-     (File_Status : in Status) return Device_ID;
+     (File_Status : Status) return Device_ID;
 
    function Link_Count_Of
-     (File_Status : in Status) return Links;
+     (File_Status : Status) return Links;
 
    function Owner_Of
-     (File_Status : in Status) return POSIX.Process_Identification.User_ID;
+     (File_Status : Status) return POSIX.Process_Identification.User_ID;
 
    function Group_Of
-     (File_Status : in Status) return POSIX.Process_Identification.Group_ID;
+     (File_Status : Status) return POSIX.Process_Identification.Group_ID;
 
    function Size_Of
-     (File_Status : in Status) return POSIX.IO_Count;
+     (File_Status : Status) return POSIX.IO_Count;
 
    function Last_Access_Time_Of
-     (File_Status : in Status) return POSIX.Calendar.POSIX_Time;
+     (File_Status : Status) return POSIX.Calendar.POSIX_Time;
 
    function Last_Modification_Time_Of
-     (File_Status : in Status) return POSIX.Calendar.POSIX_Time;
+     (File_Status : Status) return POSIX.Calendar.POSIX_Time;
 
    function Last_Status_Change_Time_Of
-     (File_Status : in Status) return POSIX.Calendar.POSIX_Time;
+     (File_Status : Status) return POSIX.Calendar.POSIX_Time;
 
-   function Is_Directory (File_Status : in Status) return Boolean;
+   function Is_Directory (File_Status : Status) return Boolean;
 
    function Is_Character_Special_File
-     (File_Status : in Status) return Boolean;
+     (File_Status : Status) return Boolean;
 
    function Is_Block_Special_File
-     (File_Status : in Status) return Boolean;
+     (File_Status : Status) return Boolean;
 
-   function Is_Regular_File (File_Status : in Status) return Boolean;
+   function Is_Regular_File (File_Status : Status) return Boolean;
 
-   function Is_FIFO (File_Status : in Status) return Boolean;
+   function Is_FIFO (File_Status : Status) return Boolean;
 
 private
 

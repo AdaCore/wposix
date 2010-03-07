@@ -33,9 +33,9 @@ package POSIX.Signals is
 
    type Signal is new Natural;
 
-   function Image (Sig : in Signal) return String;
+   function Image (Sig : Signal) return String;
 
-   function Value (Str : in String) return Signal;
+   function Value (Str : String) return Signal;
 
    --  Standard Signals (required)
 
@@ -59,56 +59,56 @@ package POSIX.Signals is
 
    type Signal_Set is private;
 
-   procedure Add_Signal (Set : in out Signal_Set; Sig : in Signal);
+   procedure Add_Signal (Set : in out Signal_Set; Sig : Signal);
 
    procedure Add_All_Signals (Set : in out Signal_Set);
 
-   procedure Delete_Signal (Set : in out Signal_Set; Sig : in Signal);
+   procedure Delete_Signal (Set : in out Signal_Set; Sig : Signal);
 
    procedure Delete_All_Signals (Set : in out Signal_Set);
 
-   function Is_Member (Set : in Signal_Set; Sig : in Signal) return Boolean;
+   function Is_Member (Set : Signal_Set; Sig : Signal) return Boolean;
 
    --  Sending a Signal
 
    procedure Send_Signal
-     (Process : in POSIX.Process_Identification.Process_ID;
-      Sig     : in Signal);
+     (Process : POSIX.Process_Identification.Process_ID;
+      Sig     : Signal);
 
    procedure Send_Signal
-     (Process : in POSIX.Process_Identification.Process_Group_ID;
-      Sig     : in Signal);
+     (Process : POSIX.Process_Identification.Process_Group_ID;
+      Sig     : Signal);
 
    procedure Send_Signal
-     (Sig     : in Signal);
+     (Sig     : Signal);
 
    --  Blocking and Unblocking Signals
 
    procedure Set_Blocked_Signals
-     (New_Mask : in     Signal_Set;
+     (New_Mask :        Signal_Set;
       Old_Mask :    out Signal_Set);
 
    procedure Block_Signals
-     (Mask_To_Add : in     Signal_Set;
+     (Mask_To_Add :        Signal_Set;
       Old_Mask    :    out Signal_Set);
 
    procedure Unblock_Signals
-     (Mask_To_Substract : in     Signal_Set;
+     (Mask_To_Substract :        Signal_Set;
       Old_Mask          :    out Signal_Set);
 
    function Blocked_Signals return Signal_Set;
 
    --  Ignoring Signals
 
-   procedure Ignore_Signal (Sig : in Signal);
+   procedure Ignore_Signal (Sig : Signal);
 
-   procedure Unignore_Signal (Sig : in Signal);
+   procedure Unignore_Signal (Sig : Signal);
 
-   function Is_Ignored (Sig : in Signal) return Boolean;
+   function Is_Ignored (Sig : Signal) return Boolean;
 
    --  Controling Delivery of Signal_Child Signal
 
-   procedure Set_Stopped_Child_Signal (Enable : in Boolean := True);
+   procedure Set_Stopped_Child_Signal (Enable : Boolean := True);
 
    function Stopped_Child_Signal_Enabled return Boolean;
 

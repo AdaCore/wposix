@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -44,7 +44,7 @@ package POSIX.Permissions is
       others                                   => False);
 
    Others_Permission_Set : constant Permission_Set := Permission_Set'
-     (Others_Read | Others_Write | Others_Execute => true,
+     (Others_Read | Others_Write | Others_Execute => True,
       others                                      => False);
 
    Access_Permission_Set : constant Permission_Set := Permission_Set'
@@ -66,10 +66,10 @@ package POSIX.Permissions is
    function Get_Allowed_Process_Permissions return Permission_Set;
 
    procedure Set_Allowed_Process_Permissions
-     (Permissions : in Permission_Set);
+     (Permissions : Permission_Set);
 
    procedure Set_Allowed_Process_Permissions
-     (Permissions : in     Permission_Set;
+     (Permissions :        Permission_Set;
       Old_Perms   :    out Permission_Set);
 
 end POSIX.Permissions;

@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -57,15 +57,15 @@ package body POSIX_Win32 is
 
    protected Process_List is
 
-      procedure Add    (Child  : in     PPI.Process_ID);
+      procedure Add    (Child  : PPI.Process_ID);
 
-      procedure Remove (Child  : in     PPI.Process_ID);
+      procedure Remove (Child  : PPI.Process_ID);
 
-      function  Exist  (Child  : in     PPI.Process_ID) return Boolean;
+      function  Exist  (Child  : PPI.Process_ID) return Boolean;
 
       procedure Wait
         (Status :    out PPP.Termination_Status;
-         Block  : in     Boolean);
+         Block  :        Boolean);
 
    private
       Process   : P_List_Access := null;
@@ -76,7 +76,7 @@ package body POSIX_Win32 is
    -- Add_Child --
    ---------------
 
-   procedure Add_Child (Child : in PPI.Process_ID) is
+   procedure Add_Child (Child : PPI.Process_ID) is
    begin
       Process_List.Add (Child);
    end Add_Child;
@@ -86,8 +86,8 @@ package body POSIX_Win32 is
    ------------------
 
    procedure Check_Result
-     (RETCODE : in Win32.BOOL;
-      Fct     : in String)
+     (RETCODE : Win32.BOOL;
+      Fct     : String)
    is
       use type Win32.BOOL;
    begin
@@ -109,8 +109,8 @@ package body POSIX_Win32 is
    -------------------
 
    procedure Check_Retcode
-     (RETCODE : in Win32.INT;
-      Fct     : in String) is
+     (RETCODE : Win32.INT;
+      Fct     : String) is
    begin
       if RETCODE = Retcode_Error then
          declare
@@ -128,7 +128,7 @@ package body POSIX_Win32 is
    -- Exist --
    -----------
 
-   function  Exist (Child : in PPI.Process_ID) return Boolean is
+   function  Exist (Child : PPI.Process_ID) return Boolean is
    begin
       return Process_List.Exist (Child);
    end Exist;
@@ -138,7 +138,7 @@ package body POSIX_Win32 is
    ------------------------
 
    function Get_Process_Handle
-     (Process : in PPI.Process_ID) return Win32.Winnt.HANDLE
+     (Process : PPI.Process_ID) return Win32.Winnt.HANDLE
    is
       function To_Process_Information is new Ada.Unchecked_Conversion
         (PPI.Process_ID, Win32.Winbase.PROCESS_INFORMATION);
@@ -150,7 +150,7 @@ package body POSIX_Win32 is
    -- Is_Executable --
    -------------------
 
-   function Is_Executable (Pathname : in POSIX.POSIX_String) return Boolean is
+   function Is_Executable (Pathname : POSIX.POSIX_String) return Boolean is
       BinaryType : aliased Win32.DWORD;
    begin
       if Pathname'Length > 4 then
@@ -195,7 +195,7 @@ package body POSIX_Win32 is
       -- Add --
       ---------
 
-      procedure Add    (Child  : in PPI.Process_ID) is
+      procedure Add    (Child : PPI.Process_ID) is
       begin
          Process := new P_List'(Child, Next => Process);
          N_Process := N_Process + 1;
@@ -205,7 +205,7 @@ package body POSIX_Win32 is
       -- Exist --
       -----------
 
-      function  Exist  (Child  : in PPI.Process_ID) return Boolean is
+      function  Exist  (Child : PPI.Process_ID) return Boolean is
          use type PPI.Process_ID;
          PLa : P_List_Access := Process;
       begin
@@ -225,10 +225,7 @@ package body POSIX_Win32 is
       -- Get_Process_ID --
       --------------------
 
-      function Get_Process_ID
-        (H : in Win32.Winnt.HANDLE)
-        return PPI.Process_ID
-      is
+      function Get_Process_ID (H : Win32.Winnt.HANDLE) return PPI.Process_ID is
          use type Win32.Winnt.HANDLE;
          PLa : P_List_Access;
       begin
@@ -249,7 +246,7 @@ package body POSIX_Win32 is
       -- Remove --
       ------------
 
-      procedure Remove (Child  : in PPI.Process_ID) is
+      procedure Remove (Child  : PPI.Process_ID) is
          use type PPI.Process_ID;
          PLa, PLa_Prev : P_List_Access;
          pragma Warnings (Off, PLa_Prev);
@@ -285,7 +282,7 @@ package body POSIX_Win32 is
 
       procedure Wait
         (Status :    out PPP.Termination_Status;
-         Block  : in     Boolean)
+         Block  :        Boolean)
       is
 
          use type Interfaces.C.unsigned_long;
@@ -297,12 +294,11 @@ package body POSIX_Win32 is
             Exit_Status :  Exit_Stat;
          end record;
 
-         function Termination_Status_Conv is
-           new Ada.Unchecked_Conversion
+         function Termination_Status_Conv is new Ada.Unchecked_Conversion
            (Termination_Status, PPP.Termination_Status);
 
-         type Handle_Set is array (1 .. N_Process) of
-           aliased Win32.Winnt.HANDLE;
+         type Handle_Set is
+           array (1 .. N_Process) of aliased Win32.Winnt.HANDLE;
 
          Handles : aliased Handle_Set;
          PLa     : P_List_Access := Process;
@@ -366,8 +362,8 @@ package body POSIX_Win32 is
    -----------------
 
    procedure Raise_Error
-     (Message    : in String;
-      Error_Code : in POSIX.Error_Code) is
+     (Message    : String;
+      Error_Code : POSIX.Error_Code) is
    begin
       POSIX.Set_Error_Code (Error_Code);
       Ada.Exceptions.Raise_Exception
@@ -380,7 +376,7 @@ package body POSIX_Win32 is
    -- Raise_Not_Yet_Implemented --
    -------------------------------
 
-   procedure Raise_Not_Yet_Implemented (Message : in String) is
+   procedure Raise_Not_Yet_Implemented (Message : String) is
    begin
       Ada.Exceptions.Raise_Exception
         (POSIX_Not_Yet_Implemented'Identity,
@@ -391,7 +387,7 @@ package body POSIX_Win32 is
    -- Remove_Child --
    ------------------
 
-   procedure Remove_Child (Child : in PPI.Process_ID) is
+   procedure Remove_Child (Child : PPI.Process_ID) is
    begin
       Process_List.Remove (Child);
    end Remove_Child;
@@ -402,7 +398,7 @@ package body POSIX_Win32 is
 
    procedure Wait
      (Status :    out PPP.Termination_Status;
-      Block  : in     Boolean) is
+      Block  :        Boolean) is
    begin
       Process_List.Wait (Status, Block);
    end Wait;

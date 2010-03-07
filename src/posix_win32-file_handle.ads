@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -33,11 +33,11 @@ package POSIX_Win32.File_Handle is
    pragma Elaborate_Body;
 
    function Open
-     (H : in Win32.Winnt.HANDLE;
-      F : in POSIX.IO.File_Descriptor := 0) return POSIX.IO.File_Descriptor;
+     (H : Win32.Winnt.HANDLE;
+      F : POSIX.IO.File_Descriptor := 0) return POSIX.IO.File_Descriptor;
 
-   procedure Close (F : in POSIX.IO.File_Descriptor);
+   procedure Close (F : POSIX.IO.File_Descriptor);
 
-   function Get (F : in POSIX.IO.File_Descriptor) return Win32.Winnt.HANDLE;
+   function Get (F : POSIX.IO.File_Descriptor) return Win32.Winnt.HANDLE;
 
 end POSIX_Win32.File_Handle;

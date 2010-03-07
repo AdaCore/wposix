@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -41,15 +41,15 @@ package body POSIX is
    procedure Free is new Ada.Unchecked_Deallocation
      (String_Ptr_Array, String_Ptr_Array_Ptr);
 
-   function To_POSIX_Character (Char : in Character) return POSIX_Character;
+   function To_POSIX_Character (Char : Character) return POSIX_Character;
    pragma Inline (To_POSIX_Character);
    --  ???
 
-   function To_Character (Char : in POSIX_Character) return Character;
+   function To_Character (Char : POSIX_Character) return Character;
    pragma Inline (To_Character);
    --  ???
 
-   function Remove_First (S : in String) return POSIX_String;
+   function Remove_First (S : String) return POSIX_String;
    pragma Inline (Remove_First);
    --  ???
 
@@ -61,7 +61,7 @@ package body POSIX is
    -- "+" --
    ---------
 
-   overriding function "+" (L, R : in Option_Set) return Option_Set is
+   overriding function "+" (L, R : Option_Set) return Option_Set is
       use type Win32.UINT;
    begin
       return Option_Set (L or R);
@@ -71,7 +71,7 @@ package body POSIX is
    -- "-" --
    ---------
 
-   overriding function "-" (L, R : in Option_Set) return Option_Set is
+   overriding function "-" (L, R : Option_Set) return Option_Set is
       use type Win32.UINT;
    begin
       return Option_Set (L xor (L and R));
@@ -83,7 +83,7 @@ package body POSIX is
 
    procedure Append
      (List : in out POSIX_String_List;
-      Str  : in     POSIX_String)
+      Str  :        POSIX_String)
    is
       Strings : String_Ptr_Array_Ptr;
    begin
@@ -121,7 +121,7 @@ package body POSIX is
    -- For_Every_Item --
    --------------------
 
-   procedure For_Every_Item (List : in POSIX_String_List) is
+   procedure For_Every_Item (List : POSIX_String_List) is
       Quit : Boolean := False;
    begin
       --  Returns if list empty
@@ -172,7 +172,7 @@ package body POSIX is
    -- Image --
    -----------
 
-   function Image (Error : in Error_Code) return String is
+   function Image (Error : Error_Code) return String is
    begin
       case Error is
          when No_Error =>
@@ -254,7 +254,7 @@ package body POSIX is
    -- Is_Filename --
    -----------------
 
-   function Is_Filename (Str : in POSIX_String) return Boolean is
+   function Is_Filename (Str : POSIX_String) return Boolean is
    begin
       if Str = (Str'Range => ' ') or else Str = "." or else Str = ".." then
          return False;
@@ -267,7 +267,7 @@ package body POSIX is
    -- Is_Pathname --
    -----------------
 
-   function Is_Pathname (Str : in POSIX_String) return Boolean is
+   function Is_Pathname (Str : POSIX_String) return Boolean is
    begin
       if Str = (Str'Range => ' ') then
          return False;
@@ -280,7 +280,7 @@ package body POSIX is
    -- Is_Portable_Filename --
    --------------------------
 
-   function Is_Portable_Filename (Str : in POSIX_String) return Boolean is
+   function Is_Portable_Filename (Str : POSIX_String) return Boolean is
    begin
       return Is_Filename (Str)
         and then Str'Length <= POSIX.Portable_Filename_Limit_Maximum;
@@ -290,7 +290,7 @@ package body POSIX is
    -- Is_Portable_Pathname --
    --------------------------
 
-   function Is_Portable_Pathname (Str : in POSIX_String) return Boolean is
+   function Is_Portable_Pathname (Str : POSIX_String) return Boolean is
    begin
       return Is_Pathname (Str)
         and then Str'Length <= POSIX.Portable_Pathname_Limit_Maximum;
@@ -300,7 +300,7 @@ package body POSIX is
    -- Is_POSIX_Error --
    --------------------
 
-   function Is_POSIX_Error (Error : in Error_Code) return Boolean is
+   function Is_POSIX_Error (Error : Error_Code) return Boolean is
    begin
       case Error is
          when
@@ -335,7 +335,7 @@ package body POSIX is
    -- Length --
    ------------
 
-   function Length (List : in POSIX_String_List) return Natural is
+   function Length (List : POSIX_String_List) return Natural is
    begin
       return List.Last;
    end Length;
@@ -430,7 +430,7 @@ package body POSIX is
    -- Remove_First --
    ------------------
 
-   function Remove_First (S : in String) return POSIX_String is
+   function Remove_First (S : String) return POSIX_String is
    begin
       return To_POSIX_String (S (S'First + 1 .. S'Last));
    end Remove_First;
@@ -439,7 +439,7 @@ package body POSIX is
    -- Set_Error_Code --
    --------------------
 
-   procedure Set_Error_Code (Error : in Error_Code) is
+   procedure Set_Error_Code (Error : Error_Code) is
    begin
       Errno.Set_Value (Error);
    end Set_Error_Code;
@@ -475,7 +475,7 @@ package body POSIX is
    -- To_Character --
    ------------------
 
-   function To_Character (Char : in POSIX_Character) return Character is
+   function To_Character (Char : POSIX_Character) return Character is
    begin
       return Character'Value (POSIX_Character'Image (Char));
    exception
@@ -487,7 +487,7 @@ package body POSIX is
    -- To_POSIX_Character --
    ------------------------
 
-   function To_POSIX_Character (Char : in Character) return POSIX_Character is
+   function To_POSIX_Character (Char : Character) return POSIX_Character is
    begin
       return POSIX_Character'Value (Character'Image (Char));
    exception
@@ -499,7 +499,7 @@ package body POSIX is
    -- To_POSIX_String --
    ---------------------
 
-   function To_POSIX_String (Str : in String) return POSIX_String is
+   function To_POSIX_String (Str : String) return POSIX_String is
       Posix_Str : POSIX_String (Str'Range);
    begin
       for I in Posix_Str'Range loop
@@ -512,7 +512,7 @@ package body POSIX is
    -- To_String --
    ---------------
 
-   function To_String (Str : in POSIX_String) return String is
+   function To_String (Str : POSIX_String) return String is
       Sstr : String (Str'Range);
    begin
       for I in Sstr'Range loop
@@ -526,7 +526,7 @@ package body POSIX is
    -----------
 
    function Value
-     (List : in POSIX_String_List; Index : in Positive) return POSIX_String is
+     (List : POSIX_String_List; Index : Positive) return POSIX_String is
    begin
       return List.Strings (Index).all;
    end Value;

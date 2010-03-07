@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -45,8 +45,8 @@ package body POSIX.Files is
    -------------------
 
    function Accessibility
-     (Pathname    : in POSIX.Pathname;
-      Access_Mode : in Access_Mode_Set) return POSIX.Error_Code
+     (Pathname    : POSIX.Pathname;
+      Access_Mode : Access_Mode_Set) return POSIX.Error_Code
    is
       use POSIX.Permissions;
       F_Perms : POSIX.Permissions.Permission_Set;
@@ -76,9 +76,9 @@ package body POSIX.Files is
    ----------------------------
 
    procedure Change_Owner_And_Group
-     (Pathname : in POSIX.Pathname;
-      Owner    : in POSIX.Process_Identification.User_ID;
-      Group    : in POSIX.Process_Identification.Group_ID)
+     (Pathname : POSIX.Pathname;
+      Owner    : POSIX.Process_Identification.User_ID;
+      Group    : POSIX.Process_Identification.Group_ID)
    is
       pragma Warnings (Off, Pathname);
       pragma Warnings (Off, Owner);
@@ -92,8 +92,8 @@ package body POSIX.Files is
    ------------------------
 
    procedure Change_Permissions
-     (Pathname   : in POSIX.Pathname;
-      Permission : in POSIX.Permissions.Permission_Set)
+     (Pathname   : POSIX.Pathname;
+      Permission : POSIX.Permissions.Permission_Set)
    is
       use type Win32.DWORD;
       use POSIX.Permissions;
@@ -124,8 +124,8 @@ package body POSIX.Files is
    ----------------------
 
    procedure Create_Directory
-     (Pathname   : in POSIX.Pathname;
-      Permission : in POSIX.Permissions.Permission_Set)
+     (Pathname   : POSIX.Pathname;
+      Permission : POSIX.Permissions.Permission_Set)
    is
       pragma Warnings (Off, Permission);
 
@@ -144,8 +144,8 @@ package body POSIX.Files is
    -----------------
 
    procedure Create_FIFO
-     (Pathname   : in POSIX.Pathname;
-      Permission : in POSIX.Permissions.Permission_Set)
+     (Pathname   : POSIX.Pathname;
+      Permission : POSIX.Permissions.Permission_Set)
    is
       pragma Warnings (Off, Pathname);
       pragma Warnings (Off, Permission);
@@ -157,7 +157,7 @@ package body POSIX.Files is
    -- Existence --
    ---------------
 
-   function Existence (Pathname : in POSIX.Pathname) return POSIX.Error_Code is
+   function Existence (Pathname : POSIX.Pathname) return POSIX.Error_Code is
    begin
       if Is_File_Present (Pathname) then
          return POSIX.No_Error;
@@ -172,8 +172,7 @@ package body POSIX.Files is
    -----------------
 
    function Filename_Of
-     (D_Entry : in Directory_Entry)
-     return POSIX.Filename is
+     (D_Entry : Directory_Entry) return POSIX.Filename is
    begin
       return POSIX.To_POSIX_String
         (Interfaces.C.To_Ada (Win32.To_C (D_Entry.cFileName)));
@@ -184,7 +183,7 @@ package body POSIX.Files is
    -------------------------------
 
    procedure For_Every_Directory_Entry
-     (Pathname : in POSIX.Pathname)
+     (Pathname : POSIX.Pathname)
    is
       use type Win32.INT;
       use type Win32.DWORD;
@@ -246,8 +245,8 @@ package body POSIX.Files is
    -------------------
 
    function Is_Accessible
-     (Pathname    : in POSIX.Pathname;
-      Access_Mode : in Access_Mode_Set) return Boolean
+     (Pathname    : POSIX.Pathname;
+      Access_Mode : Access_Mode_Set) return Boolean
    is
       use type POSIX.Error_Code;
    begin
@@ -259,7 +258,7 @@ package body POSIX.Files is
    ---------------------------
 
    function Is_Block_Special_File
-     (Pathname : in POSIX.Pathname) return Boolean
+     (Pathname : POSIX.Pathname) return Boolean
    is
       use POSIX.File_Status;
    begin
@@ -275,7 +274,7 @@ package body POSIX.Files is
    -------------------------------
 
    function Is_Character_Special_File
-     (Pathname : in POSIX.Pathname) return Boolean
+     (Pathname : POSIX.Pathname) return Boolean
    is
       use POSIX.File_Status;
    begin
@@ -290,7 +289,7 @@ package body POSIX.Files is
    -- Is_Directory --
    ------------------
 
-   function Is_Directory (Pathname : in POSIX.Pathname) return Boolean is
+   function Is_Directory (Pathname : POSIX.Pathname) return Boolean is
       use POSIX.File_Status;
    begin
       return Is_Directory (Get_File_Status (Pathname));
@@ -304,7 +303,7 @@ package body POSIX.Files is
    -- Is_FIFO --
    -------------
 
-   function Is_FIFO (Pathname : in POSIX.Pathname) return Boolean is
+   function Is_FIFO (Pathname : POSIX.Pathname) return Boolean is
       use POSIX.File_Status;
    begin
       return Is_FIFO (Get_File_Status (Pathname));
@@ -318,7 +317,7 @@ package body POSIX.Files is
    -- Is_File --
    -------------
 
-   function Is_File (Pathname : in POSIX.Pathname) return Boolean is
+   function Is_File (Pathname : POSIX.Pathname) return Boolean is
       use POSIX.File_Status;
    begin
       return Is_Regular_File (Get_File_Status (Pathname));
@@ -332,7 +331,7 @@ package body POSIX.Files is
    -- Is_File_Present --
    ---------------------
 
-   function Is_File_Present (Pathname : in POSIX.Pathname) return Boolean is
+   function Is_File_Present (Pathname : POSIX.Pathname) return Boolean is
       use type Win32.DWORD;
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.NUL;
       Retcode    : Win32.DWORD;
@@ -346,7 +345,7 @@ package body POSIX.Files is
    -- Is_Socket --
    ---------------
 
-   function Is_Socket (Pathname : in POSIX.Pathname) return Boolean is
+   function Is_Socket (Pathname : POSIX.Pathname) return Boolean is
       pragma Warnings (Off, Pathname);
    begin
       --  No such thing on Windows
@@ -357,7 +356,7 @@ package body POSIX.Files is
    -- Is_Symbolic_Link --
    ----------------------
 
-   function Is_Symbolic_Link (Pathname : in POSIX.Pathname) return Boolean is
+   function Is_Symbolic_Link (Pathname : POSIX.Pathname) return Boolean is
       pragma Warnings (Off, Pathname);
    begin
       --  No such thing on Windows
@@ -369,8 +368,8 @@ package body POSIX.Files is
    ----------
 
    procedure Link
-     (Old_Pathname : in POSIX.Pathname;
-      New_Pathname : in POSIX.Pathname)
+     (Old_Pathname : POSIX.Pathname;
+      New_Pathname : POSIX.Pathname)
    is
       Result         : Win32.BOOL;
       L_Old_Pathname : constant String :=
@@ -388,7 +387,7 @@ package body POSIX.Files is
    -- Remove_Directory --
    ----------------------
 
-   procedure Remove_Directory (Pathname : in POSIX.Pathname) is
+   procedure Remove_Directory (Pathname : POSIX.Pathname) is
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.NUL;
       Result     : Win32.BOOL;
    begin
@@ -401,8 +400,8 @@ package body POSIX.Files is
    ------------
 
    procedure Rename
-     (Old_Pathname : in POSIX.Pathname;
-      New_Pathname : in POSIX.Pathname)
+     (Old_Pathname : POSIX.Pathname;
+      New_Pathname : POSIX.Pathname)
    is
       Result         : Win32.BOOL;
       L_Old_Pathname : constant String :=
@@ -421,9 +420,9 @@ package body POSIX.Files is
    --------------------
 
    procedure Set_File_Times
-     (Pathname          : in POSIX.Pathname;
-      Access_Time       : in POSIX.Calendar.POSIX_Time;
-      Modification_Time : in POSIX.Calendar.POSIX_Time)
+     (Pathname          : POSIX.Pathname;
+      Access_Time       : POSIX.Calendar.POSIX_Time;
+      Modification_Time : POSIX.Calendar.POSIX_Time)
    is
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.NUL;
       Handle : Win32.Winnt.HANDLE;
@@ -490,7 +489,7 @@ package body POSIX.Files is
    -- Set_File_Times --
    --------------------
 
-   procedure Set_File_Times (Pathname : in POSIX.Pathname) is
+   procedure Set_File_Times (Pathname : POSIX.Pathname) is
       Current_Time : POSIX.Calendar.POSIX_Time;
    begin
       Current_Time := POSIX.Calendar.Clock;
@@ -501,7 +500,7 @@ package body POSIX.Files is
    -- Unlink --
    ------------
 
-   procedure Unlink (Pathname : in POSIX.Pathname) is
+   procedure Unlink (Pathname : POSIX.Pathname) is
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.NUL;
       Result     : Win32.BOOL;
    begin

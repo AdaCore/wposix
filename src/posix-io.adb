@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -43,26 +43,26 @@ package body POSIX.IO is
    type Files_Data_Set is array (File_Descriptor'Range) of IO_Data;
 
    protected IO_Info is
-      function  Get (FD : in File_Descriptor) return IO_Data;
-      procedure Set (FD : in File_Descriptor; IOD     : in IO_Data);
-      procedure Set (FD : in File_Descriptor; Options : in Open_Option_Set);
-      procedure Set (FD : in File_Descriptor; COE     : in Boolean);
+      function  Get (FD : File_Descriptor) return IO_Data;
+      procedure Set (FD : File_Descriptor; IOD     : IO_Data);
+      procedure Set (FD : File_Descriptor; Options : Open_Option_Set);
+      procedure Set (FD : File_Descriptor; COE     : Boolean);
    private
       Files_Data : Files_Data_Set;
    end IO_Info;
 
-   function Mode_To_Access (Mode : in File_Mode) return Win32.DWORD;
+   function Mode_To_Access (Mode : File_Mode) return Win32.DWORD;
    --  ???
 
    function Is_Set
-     (Options : in Open_Option_Set;
-      V       : in Open_Option_Set) return Boolean;
+     (Options : Open_Option_Set;
+      V       : Open_Option_Set) return Boolean;
    --  ???
 
-   function Shared (Options : in Open_Option_Set) return Win32.DWORD;
+   function Shared (Options : Open_Option_Set) return Win32.DWORD;
    --  ???
 
-   function To_Origin (SP : in Position) return Win32.DWORD;
+   function To_Origin (SP : Position) return Win32.DWORD;
    --  ???
 
    -------------
@@ -71,22 +71,22 @@ package body POSIX.IO is
 
    protected body IO_Info is
 
-      function  Get (FD : in File_Descriptor) return IO_Data is
+      function  Get (FD : File_Descriptor) return IO_Data is
       begin
          return Files_Data (FD);
       end Get;
 
-      procedure Set (FD : in File_Descriptor; IOD : in IO_Data) is
+      procedure Set (FD : File_Descriptor; IOD : IO_Data) is
       begin
          Files_Data (FD) := IOD;
       end Set;
 
-      procedure Set (FD : in File_Descriptor; Options : in Open_Option_Set) is
+      procedure Set (FD : File_Descriptor; Options : Open_Option_Set) is
       begin
          Files_Data (FD).Options := Options;
       end Set;
 
-      procedure Set (FD : in File_Descriptor; COE     : in Boolean) is
+      procedure Set (FD : File_Descriptor; COE : Boolean) is
       begin
          Files_Data (FD).Close_On_Exec := COE;
       end Set;
@@ -98,8 +98,8 @@ package body POSIX.IO is
    -----------
 
    procedure Close
-     (File           : in File_Descriptor;
-      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
+     (File           : File_Descriptor;
+      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       pragma Warnings (Off, Masked_Signals);
 
@@ -138,16 +138,15 @@ package body POSIX.IO is
    ---------------
 
    function Duplicate
-     (File   : in File_Descriptor;
-      Target : in File_Descriptor := 0)
-     return File_Descriptor
+     (File   : File_Descriptor;
+      Target : File_Descriptor := 0) return File_Descriptor
    is
       pragma Warnings (Off, Target);
 
       use type Win32.DWORD;
       New_File : File_Descriptor;
       Result   : Win32.BOOL;
-      Handle : aliased Win32.Winnt.HANDLE;
+      Handle   : aliased Win32.Winnt.HANDLE;
    begin
       Result := Win32.Winbase.DuplicateHandle
         (Win32.Winbase.GetCurrentProcess,
@@ -168,10 +167,10 @@ package body POSIX.IO is
    -------------------------
 
    function Duplicate_And_Close
-     (File           : in File_Descriptor;
-      Target         : in File_Descriptor := 0;
-      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
-     return File_Descriptor
+     (File           : File_Descriptor;
+      Target         : File_Descriptor := 0;
+      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
+      return File_Descriptor
    is
       pragma Warnings (Off, Target);
       pragma Warnings (Off, Masked_Signals);
@@ -200,7 +199,7 @@ package body POSIX.IO is
    -- File_Position --
    -------------------
 
-   function File_Position (File : in File_Descriptor) return IO_Offset is
+   function File_Position (File : File_Descriptor) return IO_Offset is
       use type Win32.DWORD;
       DistanceToMoveHigh : aliased Win32.LONG := 0;
       Low_Position       : Win32.DWORD;
@@ -223,7 +222,7 @@ package body POSIX.IO is
    -- File_Size --
    ---------------
 
-   function File_Size (File : in File_Descriptor) return POSIX.IO_Count is
+   function File_Size (File : File_Descriptor) return POSIX.IO_Count is
       use type Win32.DWORD;
       File_Size_High : aliased Win32.DWORD;
       File_Size_Low  : Win32.DWORD;
@@ -244,9 +243,9 @@ package body POSIX.IO is
    ------------------
 
    procedure Generic_Read
-     (File           : in     File_Descriptor;
+     (File           :        File_Descriptor;
       Item           :    out T;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
+      Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       pragma Unreferenced (Masked_Signals);
       Number_Of_Bytes : Positive;
@@ -270,9 +269,9 @@ package body POSIX.IO is
    -------------------
 
    procedure Generic_Write
-     (File           : in File_Descriptor;
-      Item           : in T;
-      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
+     (File           : File_Descriptor;
+      Item           : T;
+      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       pragma Unreferenced (Masked_Signals);
       Number_Of_Bytes : Positive;
@@ -295,7 +294,7 @@ package body POSIX.IO is
    -- Get_Close_On_Exec --
    -----------------------
 
-   function Get_Close_On_Exec (File : in File_Descriptor) return Boolean is
+   function Get_Close_On_Exec (File : File_Descriptor) return Boolean is
       IOD : constant IO_Data := IO_Info.Get (File);
    begin
       return IOD.Close_On_Exec;
@@ -306,7 +305,7 @@ package body POSIX.IO is
    ----------------------
 
    procedure Get_File_Control
-     (File    : in     File_Descriptor;
+     (File    :        File_Descriptor;
       Mode    :    out File_Mode;
       Options :    out Open_Option_Set)
    is
@@ -321,7 +320,7 @@ package body POSIX.IO is
    -----------------------
 
    function Get_Terminal_Name
-     (File : in File_Descriptor) return POSIX.Pathname
+     (File : File_Descriptor) return POSIX.Pathname
    is
       pragma Warnings (Off, File);
    begin
@@ -332,7 +331,7 @@ package body POSIX.IO is
    -- Is_A_Terminal --
    -------------------
 
-   function Is_A_Terminal (File : in File_Descriptor) return Boolean is
+   function Is_A_Terminal (File : File_Descriptor) return Boolean is
    begin
       return POSIX.File_Status.Is_Character_Special_File
         (POSIX.File_Status.Get_File_Status (File));
@@ -342,7 +341,7 @@ package body POSIX.IO is
    -- Is_Open --
    -------------
 
-   function Is_Open (File : in File_Descriptor) return Boolean is
+   function Is_Open (File : File_Descriptor) return Boolean is
       use type Win32.Winnt.HANDLE;
    begin
       return POSIX_Win32.File_Handle.Get (File) /= POSIX_Win32.Null_Handle;
@@ -353,8 +352,8 @@ package body POSIX.IO is
    ------------
 
    function Is_Set
-     (Options : in Open_Option_Set;
-      V       : in Open_Option_Set) return Boolean is
+     (Options : Open_Option_Set;
+      V       : Open_Option_Set) return Boolean is
    begin
       if (Options - V) = Options then
          return False;
@@ -367,7 +366,7 @@ package body POSIX.IO is
    -- Mode_To_Access --
    --------------------
 
-   function Mode_To_Access (Mode : in File_Mode) return Win32.DWORD is
+   function Mode_To_Access (Mode : File_Mode) return Win32.DWORD is
    begin
       case Mode is
          when Read_Only =>
@@ -384,10 +383,10 @@ package body POSIX.IO is
    ----------
 
    function Open
-     (Name           : in POSIX.Pathname;
-      Mode           : in File_Mode;
-      Options        : in Open_Option_Set := Empty_Set;
-      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
+     (Name           : POSIX.Pathname;
+      Mode           : File_Mode;
+      Options        : Open_Option_Set := Empty_Set;
+      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor
    is
       pragma Warnings (Off, Masked_Signals);
@@ -396,14 +395,14 @@ package body POSIX.IO is
       Handle : Win32.Winnt.HANDLE;
       L_Name : constant String := POSIX.To_String (Name) & ASCII.NUL;
 
-      function Truncated (Options : in Open_Option_Set) return Win32.DWORD;
+      function Truncated (Options : Open_Option_Set) return Win32.DWORD;
       --  ???
 
       ---------------
       -- Truncated --
       ---------------
 
-      function Truncated (Options : in Open_Option_Set) return Win32.DWORD is
+      function Truncated (Options : Open_Option_Set) return Win32.DWORD is
       begin
          if Is_Set (Options, Truncate) then
             return Win32.Winbase.TRUNCATE_EXISTING;
@@ -439,11 +438,11 @@ package body POSIX.IO is
    --------------------
 
    function Open_Or_Create
-     (Name           : in POSIX.Pathname;
-      Mode           : in File_Mode;
-      Permissions    : in POSIX.Permissions.Permission_Set;
-      Options        : in Open_Option_Set := Empty_Set;
-      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
+     (Name           : POSIX.Pathname;
+      Mode           : File_Mode;
+      Permissions    : POSIX.Permissions.Permission_Set;
+      Options        : Open_Option_Set := Empty_Set;
+      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor
    is
       pragma Warnings (Off, Masked_Signals);
@@ -452,11 +451,11 @@ package body POSIX.IO is
       Handle : Win32.Winnt.HANDLE;
       L_Name : constant String := POSIX.To_String (Name) & ASCII.NUL;
 
-      function Truncated (Options : in Open_Option_Set) return Win32.DWORD;
+      function Truncated (Options : Open_Option_Set) return Win32.DWORD;
       --  ???
 
       function Permission_Set_To_Attributes
-        (Permissions : in POSIX.Permissions.Permission_Set) return Win32.DWORD;
+        (Permissions : POSIX.Permissions.Permission_Set) return Win32.DWORD;
       --  ???
 
       ----------------------------------
@@ -464,7 +463,7 @@ package body POSIX.IO is
       ----------------------------------
 
       function Permission_Set_To_Attributes
-        (Permissions : in POSIX.Permissions.Permission_Set) return Win32.DWORD
+        (Permissions : POSIX.Permissions.Permission_Set) return Win32.DWORD
       is
          use POSIX.Permissions;
       begin
@@ -479,7 +478,7 @@ package body POSIX.IO is
       -- Truncated --
       ---------------
 
-      function Truncated (Options : in Open_Option_Set) return Win32.DWORD is
+      function Truncated (Options : Open_Option_Set) return Win32.DWORD is
       begin
          if Is_Set (Options, Truncate) then
             return Win32.Winbase.CREATE_ALWAYS;
@@ -517,10 +516,10 @@ package body POSIX.IO is
    ----------
 
    procedure Read
-     (File           : in     File_Descriptor;
+     (File           :        File_Descriptor;
       Buffer         :    out IO_Buffer;
       Last           :    out POSIX.IO_Count;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
+      Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       pragma Warnings (Off, Masked_Signals);
 
@@ -544,10 +543,10 @@ package body POSIX.IO is
    ----------
 
    procedure Seek
-     (File           : in     File_Descriptor;
-      Offset         : in     IO_Offset;
+     (File           :        File_Descriptor;
+      Offset         :        IO_Offset;
       Result         :    out IO_Offset;
-      Starting_Point : in     Position := From_Beginning)
+      Starting_Point :        Position := From_Beginning)
    is
       use type Win32.DWORD;
       DistanceToMoveHigh : aliased Win32.LONG := 0;
@@ -571,8 +570,8 @@ package body POSIX.IO is
    -----------------------
 
    procedure Set_Close_On_Exec
-     (File : in File_Descriptor;
-      To   : in Boolean         := True) is
+     (File : File_Descriptor;
+      To   : Boolean         := True) is
    begin
       IO_Info.Set (File, COE => To);
    end Set_Close_On_Exec;
@@ -582,8 +581,8 @@ package body POSIX.IO is
    ----------------------
 
    procedure Set_File_Control
-     (File    : in File_Descriptor;
-      Options : in Open_Option_Set) is
+     (File    : File_Descriptor;
+      Options : Open_Option_Set) is
    begin
       IO_Info.Set (File, Options);
    end Set_File_Control;
@@ -592,7 +591,7 @@ package body POSIX.IO is
    -- Shared --
    ------------
 
-   function Shared (Options : in Open_Option_Set) return Win32.DWORD is
+   function Shared (Options : Open_Option_Set) return Win32.DWORD is
       use type Win32.DWORD;
    begin
       if Is_Set (Options, Exclusive) then
@@ -606,7 +605,7 @@ package body POSIX.IO is
    -- To_Origin --
    ---------------
 
-   function To_Origin (SP : in Position) return Win32.DWORD is
+   function To_Origin (SP : Position) return Win32.DWORD is
    begin
       case SP is
          when From_Beginning =>
@@ -623,10 +622,10 @@ package body POSIX.IO is
    -----------
 
    procedure Write
-     (File           : in     File_Descriptor;
-      Buffer         : in     IO_Buffer;
+     (File           :        File_Descriptor;
+      Buffer         :        IO_Buffer;
       Last           :    out POSIX.IO_Count;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
+      Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       pragma Warnings (Off, Masked_Signals);
 

@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -117,20 +117,20 @@ package POSIX is
 
    type POSIX_String is array (Positive range <>) of POSIX_Character;
 
-   function To_POSIX_String (Str : in String) return POSIX_String;
+   function To_POSIX_String (Str : String) return POSIX_String;
    pragma Inline (To_POSIX_String);
 
-   function To_String (Str : in POSIX_String) return String;
+   function To_String (Str : POSIX_String) return String;
    pragma Inline (To_String);
 
    subtype Filename is POSIX_String;
    subtype Pathname is POSIX_String;
 
-   function Is_Filename (Str : in POSIX_String) return Boolean;
-   function Is_Pathname (Str : in POSIX_String) return Boolean;
+   function Is_Filename (Str : POSIX_String) return Boolean;
+   function Is_Pathname (Str : POSIX_String) return Boolean;
 
-   function Is_Portable_Filename (Str : in POSIX_String) return Boolean;
-   function Is_Portable_Pathname (Str : in POSIX_String) return Boolean;
+   function Is_Portable_Filename (Str : POSIX_String) return Boolean;
+   function Is_Portable_Pathname (Str : POSIX_String) return Boolean;
 
    --  String Lists
 
@@ -141,19 +141,19 @@ package POSIX is
 
    procedure Append
      (List : in out POSIX_String_List;
-      Str  : in     POSIX_String);
+      Str  :        POSIX_String);
 
    generic
       with procedure Action
-        (Item : in      POSIX_String;
+        (Item :         POSIX_String;
          Quit : in out Boolean);
-   procedure For_Every_Item (List : in POSIX_String_List);
+   procedure For_Every_Item (List : POSIX_String_List);
 
-   function Length (List : in POSIX_String_List) return Natural;
+   function Length (List : POSIX_String_List) return Natural;
 
    function Value
-     (List  : in POSIX_String_List;
-      Index : in Positive) return POSIX_String;
+     (List  : POSIX_String_List;
+      Index : Positive) return POSIX_String;
 
    --  Option Sets
 
@@ -162,9 +162,9 @@ package POSIX is
    function Empty_Set return Option_Set;
 
    pragma Style_Checks (Off);
-   function "+" (L, R : in Option_Set) return Option_Set;
+   function "+" (L, R : Option_Set) return Option_Set;
 
-   function "-" (L, R : in Option_Set) return Option_Set;
+   function "-" (L, R : Option_Set) return Option_Set;
 
    --  Exceptions and error codes
 
@@ -172,14 +172,13 @@ package POSIX is
 
    type Error_Code is new Win32.DWORD;
 
-   function Get_Error_Code
-     return Error_Code;
+   function Get_Error_Code return Error_Code;
 
-   procedure Set_Error_Code (Error : in Error_Code);
+   procedure Set_Error_Code (Error : Error_Code);
 
-   function Is_POSIX_Error (Error : in Error_Code) return Boolean;
+   function Is_POSIX_Error (Error : Error_Code) return Boolean;
 
-   function Image (Error : in Error_Code) return String;
+   function Image (Error : Error_Code) return String;
 
    No_Error                            : constant Error_Code
      := Win32.Winerror.NO_ERROR;

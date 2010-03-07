@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -30,7 +30,7 @@ with POSIX_Win32;
 package body POSIX.Process_Times is
 
    function Filetime_To_Tick
-     (Filetime : in Win32.Winbase.FILETIME) return Tick_Count;
+     (Filetime : Win32.Winbase.FILETIME) return Tick_Count;
    --  ???
 
    ------------------------------------
@@ -38,7 +38,7 @@ package body POSIX.Process_Times is
    ------------------------------------
 
    function Descendants_System_CPU_Time_Of
-     (Times : in Process_Times) return Tick_Count is
+     (Times : Process_Times) return Tick_Count is
    begin
       return Times.Children_System_Time;
    end Descendants_System_CPU_Time_Of;
@@ -48,7 +48,7 @@ package body POSIX.Process_Times is
    ----------------------------------
 
    function Descendants_User_CPU_Time_Of
-     (Times : in Process_Times) return Tick_Count is
+     (Times : Process_Times) return Tick_Count is
    begin
       return Times.Children_User_Time;
    end Descendants_User_CPU_Time_Of;
@@ -67,7 +67,7 @@ package body POSIX.Process_Times is
    --------------------------
 
    function Elapsed_Real_Time_Of
-     (Times : in Process_Times) return Tick_Count
+     (Times : Process_Times) return Tick_Count
    is
       use type Win32.DWORD;
 
@@ -98,7 +98,7 @@ package body POSIX.Process_Times is
    ----------------------
 
    function Filetime_To_Tick
-     (Filetime : in Win32.Winbase.FILETIME) return Tick_Count
+     (Filetime : Win32.Winbase.FILETIME) return Tick_Count
    is
       use type Win32.ULONG;
       Hundred_Nano_To_Tick : constant := 1E7 / Ticks_Per_Second;
@@ -138,7 +138,7 @@ package body POSIX.Process_Times is
    -- System_CPU_Time_Of --
    ------------------------
 
-   function System_CPU_Time_Of (Times : in Process_Times) return Tick_Count is
+   function System_CPU_Time_Of (Times : Process_Times) return Tick_Count is
    begin
       return Times.System_Time;
    end System_CPU_Time_Of;
@@ -147,7 +147,7 @@ package body POSIX.Process_Times is
    -- User_CPU_Time_Of --
    ----------------------
 
-   function User_CPU_Time_Of (Times : in Process_Times) return Tick_Count is
+   function User_CPU_Time_Of (Times : Process_Times) return Tick_Count is
    begin
       return Times.User_Time;
    end User_CPU_Time_Of;

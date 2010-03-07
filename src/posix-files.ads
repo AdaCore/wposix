@@ -36,46 +36,46 @@ package POSIX.Files is
    --  Operations to create files in the File System
 
    procedure Create_Directory
-     (Pathname   : in POSIX.Pathname;
-      Permission : in POSIX.Permissions.Permission_Set);
+     (Pathname   : POSIX.Pathname;
+      Permission : POSIX.Permissions.Permission_Set);
 
    procedure Create_FIFO
-     (Pathname   : in POSIX.Pathname;
-      Permission : in POSIX.Permissions.Permission_Set);
+     (Pathname   : POSIX.Pathname;
+      Permission : POSIX.Permissions.Permission_Set);
 
    --  Operations to remove files from the File System
 
-   procedure Unlink (Pathname : in POSIX.Pathname);
+   procedure Unlink (Pathname : POSIX.Pathname);
 
-   procedure Remove_Directory (Pathname : in POSIX.Pathname);
+   procedure Remove_Directory (Pathname : POSIX.Pathname);
 
    --  Predicates on files in the File System
 
-   function Is_File (Pathname : in POSIX.Pathname) return Boolean;
+   function Is_File (Pathname : POSIX.Pathname) return Boolean;
 
-   function Is_Directory (Pathname : in POSIX.Pathname) return Boolean;
+   function Is_Directory (Pathname : POSIX.Pathname) return Boolean;
 
-   function Is_FIFO (Pathname : in POSIX.Pathname) return Boolean;
+   function Is_FIFO (Pathname : POSIX.Pathname) return Boolean;
 
    function Is_Character_Special_File
-     (Pathname : in POSIX.Pathname) return Boolean;
+     (Pathname : POSIX.Pathname) return Boolean;
 
    function Is_Block_Special_File
-     (Pathname : in POSIX.Pathname) return Boolean;
+     (Pathname : POSIX.Pathname) return Boolean;
 
-   function Is_Symbolic_Link (Pathname : in POSIX.Pathname) return Boolean;
+   function Is_Symbolic_Link (Pathname : POSIX.Pathname) return Boolean;
 
-   function Is_Socket (Pathname : in POSIX.Pathname) return Boolean;
+   function Is_Socket (Pathname : POSIX.Pathname) return Boolean;
 
    --  Operations to modify File Pathnames
 
    procedure Link
-     (Old_Pathname : in POSIX.Pathname;
-      New_Pathname : in POSIX.Pathname);
+     (Old_Pathname : POSIX.Pathname;
+      New_Pathname : POSIX.Pathname);
 
    procedure Rename
-     (Old_Pathname : in POSIX.Pathname;
-      New_Pathname : in POSIX.Pathname);
+     (Old_Pathname : POSIX.Pathname;
+      New_Pathname : POSIX.Pathname);
 
    --  Iterating over files within a directory
 
@@ -85,27 +85,27 @@ package POSIX.Files is
 
    generic
       with procedure Action
-        (D_Entry : in     Directory_Entry;
+        (D_Entry :        Directory_Entry;
          Quit    : in out Boolean);
-   procedure For_Every_Directory_Entry (Pathname : in POSIX.Pathname);
+   procedure For_Every_Directory_Entry (Pathname : POSIX.Pathname);
 
    --  Operations to Update File Status Information
 
    procedure Change_Owner_And_Group
-     (Pathname : in POSIX.Pathname;
-      Owner    : in POSIX.Process_Identification.User_ID;
-      Group    : in POSIX.Process_Identification.Group_ID);
+     (Pathname : POSIX.Pathname;
+      Owner    : POSIX.Process_Identification.User_ID;
+      Group    : POSIX.Process_Identification.Group_ID);
 
    procedure Change_Permissions
-     (Pathname   : in POSIX.Pathname;
-      Permission : in POSIX.Permissions.Permission_Set);
+     (Pathname   : POSIX.Pathname;
+      Permission : POSIX.Permissions.Permission_Set);
 
    procedure Set_File_Times
-     (Pathname          : in POSIX.Pathname;
-      Access_Time       : in POSIX.Calendar.POSIX_Time;
-      Modification_Time : in POSIX.Calendar.POSIX_Time);
+     (Pathname          : POSIX.Pathname;
+      Access_Time       : POSIX.Calendar.POSIX_Time;
+      Modification_Time : POSIX.Calendar.POSIX_Time);
 
-   procedure Set_File_Times (Pathname : in POSIX.Pathname);
+   procedure Set_File_Times (Pathname : POSIX.Pathname);
 
    --  Operations to Determine File Accessibility
 
@@ -113,16 +113,16 @@ package POSIX.Files is
    type Access_Mode_Set is array (Access_Mode) of Boolean;
 
    function Is_Accessible
-     (Pathname    : in POSIX.Pathname;
-      Access_Mode : in Access_Mode_Set) return Boolean;
+     (Pathname    : POSIX.Pathname;
+      Access_Mode : Access_Mode_Set) return Boolean;
 
    function Accessibility
-     (Pathname    : in POSIX.Pathname;
-      Access_Mode : in Access_Mode_Set) return POSIX.Error_Code;
+     (Pathname    : POSIX.Pathname;
+      Access_Mode : Access_Mode_Set) return POSIX.Error_Code;
 
-   function Is_File_Present (Pathname : in POSIX.Pathname) return Boolean;
+   function Is_File_Present (Pathname : POSIX.Pathname) return Boolean;
 
-   function Existence (Pathname : in POSIX.Pathname) return POSIX.Error_Code;
+   function Existence (Pathname : POSIX.Pathname) return POSIX.Error_Code;
 
 private
 

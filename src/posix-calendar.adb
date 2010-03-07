@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2009, AdaCore                     --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -31,7 +31,7 @@ package body POSIX.Calendar is
    -- "+" --
    ---------
 
-   function "+" (L : in POSIX_Time; R : in Duration) return POSIX_Time is
+   function "+" (L : POSIX_Time; R : Duration) return POSIX_Time is
       use type Ada.Calendar.Time;
    begin
       return To_POSIX_Time (To_Time (L) + R);
@@ -44,7 +44,7 @@ package body POSIX.Calendar is
    -- "+" --
    ---------
 
-   function "+" (L : in Duration; R : in POSIX_Time) return POSIX_Time is
+   function "+" (L : Duration; R : POSIX_Time) return POSIX_Time is
       use type Ada.Calendar.Time;
    begin
       return To_POSIX_Time (L + To_Time (R));
@@ -57,7 +57,7 @@ package body POSIX.Calendar is
    -- "-" --
    ---------
 
-   function "-" (L : in POSIX_Time; R : in Duration) return POSIX_Time is
+   function "-" (L : POSIX_Time; R : Duration) return POSIX_Time is
       use type Ada.Calendar.Time;
    begin
       return To_POSIX_Time (To_Time (L) - R);
@@ -70,7 +70,7 @@ package body POSIX.Calendar is
    -- "-" --
    ---------
 
-   function "-" (L : in POSIX_Time; R : in POSIX_Time) return Duration is
+   function "-" (L : POSIX_Time; R : POSIX_Time) return Duration is
       use type Ada.Calendar.Time;
    begin
       return Duration (To_Time (L) - To_Time (R));
@@ -83,7 +83,7 @@ package body POSIX.Calendar is
    -- "<" --
    ---------
 
-   function "<" (L, R : in POSIX_Time) return Boolean is
+   function "<" (L, R : POSIX_Time) return Boolean is
       use type Ada.Calendar.Time;
    begin
       return To_Time (L) < To_Time (R);
@@ -93,7 +93,7 @@ package body POSIX.Calendar is
    -- "<=" --
    ----------
 
-   function "<=" (L, R : in POSIX_Time) return Boolean is
+   function "<=" (L, R : POSIX_Time) return Boolean is
       use type Ada.Calendar.Time;
    begin
       return To_Time (L) <= To_Time (R);
@@ -103,7 +103,7 @@ package body POSIX.Calendar is
    -- ">" --
    ---------
 
-   function ">" (L, R : in POSIX_Time) return Boolean is
+   function ">" (L, R : POSIX_Time) return Boolean is
       use type Ada.Calendar.Time;
    begin
       return To_Time (L) > To_Time (R);
@@ -113,7 +113,7 @@ package body POSIX.Calendar is
    -- ">=" --
    ----------
 
-   function ">=" (L, R : in POSIX_Time) return Boolean is
+   function ">=" (L, R : POSIX_Time) return Boolean is
       use type Ada.Calendar.Time;
    begin
       return To_Time (L) >= To_Time (R);
@@ -134,7 +134,7 @@ package body POSIX.Calendar is
    -- Day --
    ---------
 
-   function Day (Date : in POSIX_Time) return Day_Number is
+   function Day (Date : POSIX_Time) return Day_Number is
       Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
@@ -148,7 +148,7 @@ package body POSIX.Calendar is
    -- Month --
    -----------
 
-   function Month (Date : in POSIX_Time) return Month_Number is
+   function Month (Date : POSIX_Time) return Month_Number is
       Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
@@ -162,7 +162,7 @@ package body POSIX.Calendar is
    -- Seconds --
    -------------
 
-   function Seconds (Date : in POSIX_Time) return Day_Duration is
+   function Seconds (Date : POSIX_Time) return Day_Duration is
       Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
@@ -177,7 +177,7 @@ package body POSIX.Calendar is
    -----------
 
    procedure Split
-     (Date    : in     POSIX_Time;
+     (Date    :        POSIX_Time;
       Year    :    out Year_Number;
       Month   :    out Month_Number;
       Day     :    out Day_Number;
@@ -197,10 +197,10 @@ package body POSIX.Calendar is
    -------------
 
    function Time_Of
-     (Year    : in Year_Number;
-      Month   : in Month_Number;
-      Day     : in Day_Number;
-      Seconds : in Day_Duration := 0.0) return POSIX_Time
+     (Year    : Year_Number;
+      Month   : Month_Number;
+      Day     : Day_Number;
+      Seconds : Day_Duration := 0.0) return POSIX_Time
    is
       Local_Time : Win32.Winbase.SYSTEMTIME;
       Lsec       : Integer := Integer (Seconds - 0.5);
@@ -234,7 +234,7 @@ package body POSIX.Calendar is
    -- To_POSIX_Time --
    -------------------
 
-   function To_POSIX_Time (Date : in Ada.Calendar.Time) return POSIX_Time is
+   function To_POSIX_Time (Date : Ada.Calendar.Time) return POSIX_Time is
       Year    : Ada.Calendar.Year_Number;
       Month   : Ada.Calendar.Month_Number;
       Day     : Ada.Calendar.Day_Number;
@@ -248,7 +248,7 @@ package body POSIX.Calendar is
    -- To_Time --
    -------------
 
-   function To_Time (Date : in POSIX_Time) return Ada.Calendar.Time is
+   function To_Time (Date : POSIX_Time) return Ada.Calendar.Time is
       Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
@@ -266,7 +266,7 @@ package body POSIX.Calendar is
    -- Year --
    ----------
 
-   function Year (Date : in POSIX_Time) return Year_Number is
+   function Year (Date : POSIX_Time) return Year_Number is
       Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;

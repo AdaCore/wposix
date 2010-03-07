@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -55,37 +55,37 @@ package body POSIX.Process_Primitives is
                                    System.Null_Address, Win32.TRUE);
 
    procedure Check_Open
-     (Template : in Process_Template;
-      Message  : in String);
+     (Template : Process_Template;
+      Message  : String);
    --  ???
 
-   procedure Check_File (File : in POSIX.IO.File_Descriptor);
+   procedure Check_File (File : POSIX.IO.File_Descriptor);
    --  ???
 
    procedure Insert
-     (Request_Access : in     File_Request_Access;
+     (Request_Access :        File_Request_Access;
       Into           : in out Process_Template);
    --  ???
 
    procedure Execute_Template
-     (Template : in     Process_Template;
+     (Template :        Process_Template;
       SI       : in out Win32.Winbase.STARTUPINFO);
    --  ???
 
    procedure Start_Process
      (Child       :    out POSIX.Process_Identification.Process_ID;
-      Pathname    : in     POSIX.Pathname;
-      Template    : in     Process_Template;
-      Env_List    : in     POSIX.Process_Environment.Environment;
-      Arg_List    : in     POSIX.POSIX_String_List := POSIX.Empty_String_List;
-      Environment : in Boolean);
+      Pathname    :        POSIX.Pathname;
+      Template    :        Process_Template;
+      Env_List    :        POSIX.Process_Environment.Environment;
+      Arg_List    :        POSIX.POSIX_String_List := POSIX.Empty_String_List;
+      Environment :        Boolean);
    --  ???
 
    ----------------
    -- Check_File --
    ----------------
 
-   procedure Check_File (File : in POSIX.IO.File_Descriptor) is
+   procedure Check_File (File : POSIX.IO.File_Descriptor) is
    begin
       case File is
          when POSIX.IO.Standard_Input |
@@ -104,8 +104,8 @@ package body POSIX.Process_Primitives is
    ----------------
 
    procedure Check_Open
-     (Template : in Process_Template;
-      Message  : in String) is
+     (Template : Process_Template;
+      Message  : String) is
    begin
       if not Template.Is_Open then
          POSIX_Win32.Raise_Error (Message, Invalid_Argument);
@@ -183,7 +183,7 @@ package body POSIX.Process_Primitives is
    ----------------------
 
    procedure Execute_Template
-     (Template : in     Process_Template;
+     (Template :        Process_Template;
       SI       : in out Win32.Winbase.STARTUPINFO)
    is
 
@@ -192,17 +192,17 @@ package body POSIX.Process_Primitives is
       P             : File_Request_Access;
 
       function Mode_To_File_Access
-        (Mode : in POSIX.IO.File_Mode) return Win32.DWORD;
+        (Mode : POSIX.IO.File_Mode) return Win32.DWORD;
       --  ???
 
       function Create_File
-        (Name : in String;
-         Mode : in POSIX.IO.File_Mode) return Win32.Winnt.HANDLE;
+        (Name : String;
+         Mode : POSIX.IO.File_Mode) return Win32.Winnt.HANDLE;
       --  ???
 
       function Open_File
-        (Name : in String;
-         Mode : in POSIX.IO.File_Mode) return Win32.Winnt.HANDLE;
+        (Name : String;
+         Mode : POSIX.IO.File_Mode) return Win32.Winnt.HANDLE;
       --  ???
 
       -----------------
@@ -210,8 +210,8 @@ package body POSIX.Process_Primitives is
       -----------------
 
       function Create_File
-        (Name : in String;
-         Mode : in POSIX.IO.File_Mode) return Win32.Winnt.HANDLE
+        (Name : String;
+         Mode : POSIX.IO.File_Mode) return Win32.Winnt.HANDLE
       is
          use type Win32.INT;
          use type System.Address;
@@ -239,7 +239,7 @@ package body POSIX.Process_Primitives is
       -------------------------
 
       function Mode_To_File_Access
-        (Mode : in POSIX.IO.File_Mode) return Win32.DWORD is
+        (Mode : POSIX.IO.File_Mode) return Win32.DWORD is
       begin
          case Mode is
             when POSIX.IO.Read_Only =>
@@ -254,8 +254,8 @@ package body POSIX.Process_Primitives is
       ---------------
 
       function Open_File
-        (Name : in String;
-         Mode : in POSIX.IO.File_Mode) return Win32.Winnt.HANDLE
+        (Name : String;
+         Mode : POSIX.IO.File_Mode) return Win32.Winnt.HANDLE
       is
          use type Win32.INT;
          use type System.Address;
@@ -358,7 +358,7 @@ package body POSIX.Process_Primitives is
    -- Exit_Process --
    ------------------
 
-   procedure Exit_Process (Status : in Exit_Status := Normal_Exit) is
+   procedure Exit_Process (Status : Exit_Status := Normal_Exit) is
    begin
       Win32.Winbase.ExitProcess (Win32.UINT (Status));
    end Exit_Process;
@@ -368,7 +368,7 @@ package body POSIX.Process_Primitives is
    --------------------
 
    function Exit_Status_Of
-     (Status : in Termination_Status) return Exit_Status is
+     (Status : Termination_Status) return Exit_Status is
    begin
       if not Status_Available (Status)
         or else Termination_Cause_Of (Status) /= Exited
@@ -384,7 +384,7 @@ package body POSIX.Process_Primitives is
    ------------
 
    procedure Insert
-     (Request_Access : in     File_Request_Access;
+     (Request_Access :        File_Request_Access;
       Into           : in out Process_Template) is
    begin
       if Into.File_Request_List = null then
@@ -419,7 +419,7 @@ package body POSIX.Process_Primitives is
    -- Process_ID_Of --
    -------------------
 
-   function Process_ID_Of (Status : in Termination_Status) return Process_ID is
+   function Process_ID_Of (Status : Termination_Status) return Process_ID is
    begin
       if not Status_Available (Status) then
          Set_Error_Code (Invalid_Argument);
@@ -434,7 +434,7 @@ package body POSIX.Process_Primitives is
 
    procedure Set_Creation_Signal_Masking
      (Template       : in out Process_Template;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals) is
+      Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals) is
    begin
       Check_Open (Template, "Set_Creation_Signal_Masking");
       Template.Signal_Creation_Masking := Masked_Signals;
@@ -446,7 +446,7 @@ package body POSIX.Process_Primitives is
 
    procedure Set_File_Action_To_Close
      (Template : in out Process_Template;
-      File     : in     POSIX.IO.File_Descriptor)
+      File     :        POSIX.IO.File_Descriptor)
    is
       New_Action : File_Request_Access;
    begin
@@ -465,8 +465,8 @@ package body POSIX.Process_Primitives is
 
    procedure Set_File_Action_To_Duplicate
      (Template  : in out Process_Template;
-      File      : in     POSIX.IO.File_Descriptor;
-      From_File : in     POSIX.IO.File_Descriptor)
+      File      :        POSIX.IO.File_Descriptor;
+      From_File :        POSIX.IO.File_Descriptor)
    is
       New_Action : File_Request_Access;
    begin
@@ -485,10 +485,10 @@ package body POSIX.Process_Primitives is
 
    procedure Set_File_Action_To_Open
      (Template : in out Process_Template;
-      File     : in     POSIX.IO.File_Descriptor;
-      Name     : in     POSIX.Pathname;
-      Mode     : in     POSIX.IO.File_Mode       := POSIX.IO.Read_Only;
-      Options  : in     POSIX.IO.Open_Option_Set := POSIX.IO.Empty_Set)
+      File     :        POSIX.IO.File_Descriptor;
+      Name     :        POSIX.Pathname;
+      Mode     :        POSIX.IO.File_Mode       := POSIX.IO.Read_Only;
+      Options  :        POSIX.IO.Open_Option_Set := POSIX.IO.Empty_Set)
    is
       New_Action : File_Request_Access;
    begin
@@ -521,7 +521,7 @@ package body POSIX.Process_Primitives is
 
    procedure Set_Signal_Mask
      (Template : in out Process_Template;
-      Mask     : in     POSIX.Signals.Signal_Set) is
+      Mask     :        POSIX.Signals.Signal_Set) is
    begin
       Check_Open (Template, "Set_Signal_Mask");
       Template.Signal_Mask := Mask;
@@ -533,11 +533,11 @@ package body POSIX.Process_Primitives is
 
    procedure Start_Process
      (Child       :    out POSIX.Process_Identification.Process_ID;
-      Pathname    : in     POSIX.Pathname;
-      Template    : in     Process_Template;
-      Env_List    : in     POSIX.Process_Environment.Environment;
-      Arg_List    : in     POSIX.POSIX_String_List := POSIX.Empty_String_List;
-      Environment : in Boolean)
+      Pathname    :        POSIX.Pathname;
+      Template    :        Process_Template;
+      Env_List    :        POSIX.Process_Environment.Environment;
+      Arg_List    :        POSIX.POSIX_String_List := POSIX.Empty_String_List;
+      Environment :        Boolean)
    is
       use type Win32.BOOL;
 
@@ -550,7 +550,7 @@ package body POSIX.Process_Primitives is
       Argument_Count : Natural := 0;
 
       procedure Concat
-        (Item : in POSIX_String;
+        (Item :        POSIX_String;
          Quit : in out Boolean);
       --  ???
 
@@ -559,7 +559,7 @@ package body POSIX.Process_Primitives is
       ------------
 
       procedure Concat
-        (Item : in POSIX_String;
+        (Item :        POSIX_String;
          Quit : in out Boolean) is
       begin
          --  the first argument is by convention the program name and we don't
@@ -656,9 +656,9 @@ package body POSIX.Process_Primitives is
 
    procedure Start_Process
      (Child    :    out POSIX.Process_Identification.Process_ID;
-      Pathname : in     POSIX.Pathname;
-      Template : in     Process_Template;
-      Arg_List : in     POSIX.POSIX_String_List := POSIX.Empty_String_List)
+      Pathname :        POSIX.Pathname;
+      Template :        Process_Template;
+      Arg_List :        POSIX.POSIX_String_List := POSIX.Empty_String_List)
    is
       Null_Environment : POSIX.Process_Environment.Environment;
    begin
@@ -673,10 +673,10 @@ package body POSIX.Process_Primitives is
 
    procedure Start_Process
      (Child    :    out POSIX.Process_Identification.Process_ID;
-      Pathname : in     POSIX.Pathname;
-      Template : in     Process_Template;
-      Env_List : in     POSIX.Process_Environment.Environment;
-      Arg_List : in     POSIX.POSIX_String_List := POSIX.Empty_String_List) is
+      Pathname :        POSIX.Pathname;
+      Template :        Process_Template;
+      Env_List :        POSIX.Process_Environment.Environment;
+      Arg_List :        POSIX.POSIX_String_List := POSIX.Empty_String_List) is
    begin
       Start_Process
         (Child, Pathname, Template, Env_List, Arg_List, Environment => True);
@@ -688,9 +688,9 @@ package body POSIX.Process_Primitives is
 
    procedure Start_Process_Search
      (Child    :    out POSIX.Process_Identification.Process_ID;
-      Filename : in     POSIX.Filename;
-      Template : in     Process_Template;
-      Arg_List : in     POSIX.POSIX_String_List := POSIX.Empty_String_List)
+      Filename :        POSIX.Filename;
+      Template :        Process_Template;
+      Arg_List :        POSIX.POSIX_String_List := POSIX.Empty_String_List)
    is
       Null_Environment : POSIX.Process_Environment.Environment;
       Max_Len    : constant := 500;
@@ -732,10 +732,10 @@ package body POSIX.Process_Primitives is
 
    procedure Start_Process_Search
      (Child    :    out POSIX.Process_Identification.Process_ID;
-      Filename : in     POSIX.Filename;
-      Template : in     Process_Template;
-      Env_List : in     POSIX.Process_Environment.Environment;
-      Arg_List : in     POSIX.POSIX_String_List := POSIX.Empty_String_List)
+      Filename :        POSIX.Filename;
+      Template :        Process_Template;
+      Env_List :        POSIX.Process_Environment.Environment;
+      Arg_List :        POSIX.POSIX_String_List := POSIX.Empty_String_List)
    is
       Max_Len    : constant := 500;
       Pathname   : String (1 .. Max_Len);
@@ -786,7 +786,7 @@ package body POSIX.Process_Primitives is
    -- Status_Available --
    ----------------------
 
-   function Status_Available (Status : in Termination_Status) return Boolean is
+   function Status_Available (Status : Termination_Status) return Boolean is
    begin
       return Status.Pid /= Null_Process_ID;
    end Status_Available;
@@ -796,7 +796,7 @@ package body POSIX.Process_Primitives is
    ------------------------
 
    function Stopping_Signal_Of
-     (Status : in Termination_Status) return POSIX.Signals.Signal is
+     (Status : Termination_Status) return POSIX.Signals.Signal is
    begin
       if not Status_Available (Status)
         or else Termination_Cause_Of (Status) /= Stopped_By_Signal
@@ -812,7 +812,7 @@ package body POSIX.Process_Primitives is
    --------------------------
 
    function Termination_Cause_Of
-     (Status : in Termination_Status) return Termination_Cause is
+     (Status : Termination_Status) return Termination_Cause is
    begin
       if not Status_Available (Status) then
          Set_Error_Code (Invalid_Argument);
@@ -826,7 +826,7 @@ package body POSIX.Process_Primitives is
    ---------------------------
 
    function Termination_Signal_Of
-     (Status : in Termination_Status) return POSIX.Signals.Signal is
+     (Status : Termination_Status) return POSIX.Signals.Signal is
    begin
       if not Status_Available (Status)
         or else Termination_Cause_Of (Status) /= Terminated_By_Signal
@@ -843,10 +843,10 @@ package body POSIX.Process_Primitives is
 
    procedure Wait_For_Child_Process
      (Status         :    out Termination_Status;
-      Child          : in     POSIX.Process_Identification.Process_ID;
-      Block          : in     Boolean := True;
-      Trace_Stopped  : in     Boolean := True;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
+      Child          :        POSIX.Process_Identification.Process_ID;
+      Block          :        Boolean := True;
+      Trace_Stopped  :        Boolean := True;
+      Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       pragma Warnings (Off, Trace_Stopped);
       pragma Warnings (Off, Masked_Signals);
@@ -902,10 +902,10 @@ package body POSIX.Process_Primitives is
 
    procedure Wait_For_Child_Process
      (Status         :    out Termination_Status;
-      Group          : in     POSIX.Process_Identification.Process_Group_ID;
-      Block          : in     Boolean := True;
-      Trace_Stopped  : in     Boolean := True;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
+      Group          :        POSIX.Process_Identification.Process_Group_ID;
+      Block          :        Boolean := True;
+      Trace_Stopped  :        Boolean := True;
+      Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       pragma Warnings (Off, Group);
       pragma Warnings (Off, Trace_Stopped);
@@ -920,9 +920,9 @@ package body POSIX.Process_Primitives is
 
    procedure Wait_For_Child_Process
      (Status         :    out Termination_Status;
-      Block          : in     Boolean := True;
-      Trace_Stopped  : in     Boolean := True;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals)
+      Block          :        Boolean := True;
+      Trace_Stopped  :        Boolean := True;
+      Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
       pragma Warnings (Off, Trace_Stopped);
       pragma Warnings (Off, Masked_Signals);

@@ -39,17 +39,17 @@ package POSIX.Process_Times is
 
    function Get_Process_Times return Process_Times;
 
-   function Elapsed_Real_Time_Of (Times : in Process_Times) return Tick_Count;
+   function Elapsed_Real_Time_Of (Times : Process_Times) return Tick_Count;
 
-   function User_CPU_Time_Of (Times : in Process_Times) return Tick_Count;
+   function User_CPU_Time_Of (Times : Process_Times) return Tick_Count;
 
-   function System_CPU_Time_Of (Times : in Process_Times) return Tick_Count;
+   function System_CPU_Time_Of (Times : Process_Times) return Tick_Count;
 
    function Descendants_User_CPU_Time_Of
-     (Times : in Process_Times) return Tick_Count;
+     (Times : Process_Times) return Tick_Count;
 
    function Descendants_System_CPU_Time_Of
-     (Times : in Process_Times) return Tick_Count;
+     (Times : Process_Times) return Tick_Count;
 
 private
 

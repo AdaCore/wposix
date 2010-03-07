@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -45,17 +45,17 @@ package body POSIX.File_Status is
      (Win32.Winbase.SYSTEMTIME, POSIX.Calendar.POSIX_Time);
 
    Epoch_System_Time : aliased Win32.Winbase.SYSTEMTIME :=
-                         (WYear      => 1980,
-                          WMonth     => 01,
-                          WDayOfWeek => 03, -- Tuesday
-                          WDay       => 01,
+                         (wYear      => 1980,
+                          wMonth     => 01,
+                          wDayOfWeek => 03, -- Tuesday
+                          wDay       => 01,
                           others     => 0); -- Time
 
    ------------------
    -- Device_ID_Of --
    ------------------
 
-   function Device_ID_Of (File_Status : in Status) return Device_ID is
+   function Device_ID_Of (File_Status : Status) return Device_ID is
       pragma Warnings (Off, File_Status);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("File_ID_Of");
@@ -66,7 +66,7 @@ package body POSIX.File_Status is
    -- File_ID_Of --
    ----------------
 
-   function File_ID_Of (File_Status : in Status) return File_ID is
+   function File_ID_Of (File_Status : Status) return File_ID is
       pragma Warnings (Off, File_Status);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("File_ID_Of");
@@ -77,7 +77,7 @@ package body POSIX.File_Status is
    -- Get_File_Status --
    ---------------------
 
-   function Get_File_Status (Pathname : in POSIX.Pathname) return Status is
+   function Get_File_Status (Pathname : POSIX.Pathname) return Status is
       use type Win32.DWORD, Win32.Winnt.HANDLE;
 
       Result          : Win32.BOOL;
@@ -166,7 +166,7 @@ package body POSIX.File_Status is
    ---------------------
 
    function Get_File_Status
-     (File : in POSIX.IO.File_Descriptor) return Status
+     (File : POSIX.IO.File_Descriptor) return Status
    is
       Handle           : Win32.Winnt.HANDLE;
       Result           : Win32.BOOL;
@@ -193,7 +193,7 @@ package body POSIX.File_Status is
    --------------
 
    function Group_Of
-     (File_Status : in Status) return POSIX.Process_Identification.Group_ID
+     (File_Status : Status) return POSIX.Process_Identification.Group_ID
    is
       pragma Warnings (Off, File_Status);
    begin
@@ -204,7 +204,7 @@ package body POSIX.File_Status is
    -- Is_Block_Special_File --
    ---------------------------
 
-   function Is_Block_Special_File (File_Status : in Status) return Boolean is
+   function Is_Block_Special_File (File_Status : Status) return Boolean is
       pragma Warnings (Off, File_Status);
    begin
       return False;
@@ -215,7 +215,7 @@ package body POSIX.File_Status is
    -------------------------------
 
    function Is_Character_Special_File
-     (File_Status : in Status) return Boolean
+     (File_Status : Status) return Boolean
    is
       use type Win32.DWORD;
    begin
@@ -226,7 +226,7 @@ package body POSIX.File_Status is
    -- Is_Directory --
    ------------------
 
-   function Is_Directory (File_Status : in Status) return Boolean is
+   function Is_Directory (File_Status : Status) return Boolean is
       use type Win32.DWORD;
    begin
       return (File_Status.File_Attributes and
@@ -237,7 +237,7 @@ package body POSIX.File_Status is
    -- Is_FIFO --
    -------------
 
-   function Is_FIFO (File_Status : in Status) return Boolean is
+   function Is_FIFO (File_Status : Status) return Boolean is
       pragma Warnings (Off, File_Status);
    begin
       return False;
@@ -247,7 +247,7 @@ package body POSIX.File_Status is
    -- Is_Regular_File --
    ---------------------
 
-   function Is_Regular_File (File_Status : in Status) return Boolean is
+   function Is_Regular_File (File_Status : Status) return Boolean is
       use type Win32.DWORD;
       --  There seem to be incompatibilities in the various FILE_ATTRIBUTES
       --  between versions of Windows. It seems simpler to assume that a
@@ -262,7 +262,7 @@ package body POSIX.File_Status is
    -------------------------
 
    function Last_Access_Time_Of
-     (File_Status : in Status) return POSIX.Calendar.POSIX_Time
+     (File_Status : Status) return POSIX.Calendar.POSIX_Time
    is
       Result           : Win32.BOOL;
       pragma Unreferenced (Result);
@@ -283,7 +283,7 @@ package body POSIX.File_Status is
    -------------------------------
 
    function Last_Modification_Time_Of
-     (File_Status : in Status) return POSIX.Calendar.POSIX_Time
+     (File_Status : Status) return POSIX.Calendar.POSIX_Time
    is
       use type Win32.BOOL;
       Result          : Win32.BOOL;
@@ -310,7 +310,7 @@ package body POSIX.File_Status is
    --------------------------------
 
    function Last_Status_Change_Time_Of
-     (File_Status : in Status) return POSIX.Calendar.POSIX_Time is
+     (File_Status : Status) return POSIX.Calendar.POSIX_Time is
    begin
       return Last_Modification_Time_Of (File_Status);
    end Last_Status_Change_Time_Of;
@@ -319,7 +319,7 @@ package body POSIX.File_Status is
    -- Link_Count_Of --
    -------------------
 
-   function Link_Count_Of (File_Status : in Status) return Links is
+   function Link_Count_Of (File_Status : Status) return Links is
    begin
       return Links (File_Status.File_Links);
    end Link_Count_Of;
@@ -329,7 +329,7 @@ package body POSIX.File_Status is
    --------------
 
    function Owner_Of
-     (File_Status : in Status) return POSIX.Process_Identification.User_ID
+     (File_Status : Status) return POSIX.Process_Identification.User_ID
    is
       pragma Warnings (Off, File_Status);
    begin
@@ -341,7 +341,7 @@ package body POSIX.File_Status is
    -----------------------
 
    function Permission_Set_Of
-     (File_Status : in Status) return POSIX.Permissions.Permission_Set
+     (File_Status : Status) return POSIX.Permissions.Permission_Set
    is
       use POSIX.Permissions;
       use type Win32.DWORD;
@@ -371,7 +371,7 @@ package body POSIX.File_Status is
    -- Size_Of --
    -------------
 
-   function Size_Of (File_Status : in Status) return POSIX.IO_Count is
+   function Size_Of (File_Status : Status) return POSIX.IO_Count is
    begin
       return POSIX.IO_Count (File_Status.File_Size_Low);
    end Size_Of;

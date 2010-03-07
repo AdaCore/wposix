@@ -42,9 +42,9 @@ package POSIX.Process_Identification is
 
    function Get_Parent_Process_ID return Process_ID;
 
-   function Image (ID : in Process_ID) return String;
+   function Image (ID : Process_ID) return String;
 
-   function Value (Str : in String) return Process_ID;
+   function Value (Str : String) return Process_ID;
 
    --  Process Group Identification
 
@@ -53,18 +53,18 @@ package POSIX.Process_Identification is
    function Get_Process_Group_ID return Process_Group_ID;
 
    procedure Set_Process_Group_ID
-     (Process       : in Process_ID := Get_Process_ID;
-      Process_Group : in Process_Group_ID := Get_Process_Group_ID);
+     (Process       : Process_ID := Get_Process_ID;
+      Process_Group : Process_Group_ID := Get_Process_Group_ID);
 
    procedure Create_Process_Group
-     (Process       : in     Process_ID;
+     (Process       :        Process_ID;
       Process_Group :    out Process_Group_ID);
 
    procedure Create_Session (Session_Leader : out Process_Group_ID);
 
-   function Image (ID : in Process_Group_ID) return Standard.String;
+   function Image (ID : Process_Group_ID) return Standard.String;
 
-   function Value (Str : in Standard.String) return Process_Group_ID;
+   function Value (Str : Standard.String) return Process_Group_ID;
 
    --  User Identification
 
@@ -74,13 +74,13 @@ package POSIX.Process_Identification is
 
    function Get_Effective_User_ID return User_ID;
 
-   procedure Set_User_ID (ID : in User_ID);
+   procedure Set_User_ID (ID : User_ID);
 
    function Get_Login_Name return POSIX_String;
 
-   function Image (ID : in User_ID) return String;
+   function Image (ID : User_ID) return String;
 
-   function Value (Str : in String) return User_ID;
+   function Value (Str : String) return User_ID;
 
    --  User Group Identification
 
@@ -90,7 +90,7 @@ package POSIX.Process_Identification is
 
    function Get_Effective_Group_ID return Group_ID;
 
-   procedure Set_Group_ID (ID : in Group_ID);
+   procedure Set_Group_ID (ID : Group_ID);
 
    subtype Group_List_Index is Positive range 1 .. POSIX.Groups_Maxima'Last;
 
@@ -98,9 +98,9 @@ package POSIX.Process_Identification is
 
    function Get_Groups return Group_List;
 
-   function Image (ID : in Group_ID) return String;
+   function Image (ID : Group_ID) return String;
 
-   function Value (Str : in String) return Group_ID;
+   function Value (Str : String) return Group_ID;
 
 private
 

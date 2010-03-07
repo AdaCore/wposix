@@ -63,35 +63,35 @@ package POSIX.IO is
    --  Operations to open or close file descriptors
 
    function Open
-     (Name           : in POSIX.Pathname;
-      Mode           : in File_Mode;
-      Options        : in Open_Option_Set := Empty_Set;
-      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
+     (Name           : POSIX.Pathname;
+      Mode           : File_Mode;
+      Options        : Open_Option_Set := Empty_Set;
+      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor;
 
    function Open_Or_Create
-     (Name           : in POSIX.Pathname;
-      Mode           : in File_Mode;
-      Permissions    : in POSIX.Permissions.Permission_Set;
-      Options        : in Open_Option_Set := Empty_Set;
-      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
+     (Name           : POSIX.Pathname;
+      Mode           : File_Mode;
+      Permissions    : POSIX.Permissions.Permission_Set;
+      Options        : Open_Option_Set := Empty_Set;
+      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor;
 
-   function Is_Open (File : in File_Descriptor) return Boolean;
+   function Is_Open (File : File_Descriptor) return Boolean;
 
    procedure Close
-     (File           : in File_Descriptor;
-      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals);
+     (File           : File_Descriptor;
+      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals);
 
    function Duplicate
-     (File   : in File_Descriptor;
-      Target : in File_Descriptor := 0)
+     (File   : File_Descriptor;
+      Target : File_Descriptor := 0)
       return File_Descriptor;
 
    function Duplicate_And_Close
-     (File           : in File_Descriptor;
-      Target         : in File_Descriptor := 0;
-      Masked_Signals : in POSIX.Signal_Masking := POSIX.RTS_Signals)
+     (File           : File_Descriptor;
+      Target         : File_Descriptor := 0;
+      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor;
 
    procedure Create_Pipe
@@ -103,68 +103,68 @@ package POSIX.IO is
    subtype IO_Buffer is POSIX.POSIX_String;
 
    procedure Read
-     (File           : in     File_Descriptor;
+     (File           :        File_Descriptor;
       Buffer         :    out IO_Buffer;
       Last           :    out POSIX.IO_Count;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals);
+      Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals);
 
    procedure Write
-     (File           : in     File_Descriptor;
-      Buffer         : in     IO_Buffer;
+     (File           :        File_Descriptor;
+      Buffer         :        IO_Buffer;
       Last           :    out POSIX.IO_Count;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals);
+      Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals);
 
    generic
       type T is private;
    procedure Generic_Read
-     (File           : in     File_Descriptor;
+     (File           :        File_Descriptor;
       Item           :    out T;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals);
+      Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals);
 
    generic
       type T is private;
    procedure Generic_Write
-     (File           : in     File_Descriptor;
-      Item           : in     T;
-      Masked_Signals : in     POSIX.Signal_Masking := POSIX.RTS_Signals);
+     (File           : File_Descriptor;
+      Item           : T;
+      Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals);
 
    --  File position operations
 
    type Position is (From_Beginning, From_Current_Position, From_End_Of_File);
 
    procedure Seek
-     (File           : in     File_Descriptor;
-      Offset         : in     IO_Offset;
+     (File           :        File_Descriptor;
+      Offset         :        IO_Offset;
       Result         :    out IO_Offset;
-      Starting_Point : in     Position := From_Beginning);
+      Starting_Point :        Position := From_Beginning);
 
-   function File_Size (File : in File_Descriptor) return POSIX.IO_Count;
+   function File_Size (File : File_Descriptor) return POSIX.IO_Count;
 
-   function File_Position (File : in File_Descriptor) return IO_Offset;
+   function File_Position (File : File_Descriptor) return IO_Offset;
 
    --  Terminal operations
 
-   function Is_A_Terminal (File : in File_Descriptor) return Boolean;
+   function Is_A_Terminal (File : File_Descriptor) return Boolean;
 
    function Get_Terminal_Name
-     (File : in File_Descriptor) return POSIX.Pathname;
+     (File : File_Descriptor) return POSIX.Pathname;
 
    --  File Control operations
 
    procedure Get_File_Control
-     (File    : in     File_Descriptor;
+     (File    :        File_Descriptor;
       Mode    :    out File_Mode;
       Options :    out Open_Option_Set);
 
    procedure Set_File_Control
-     (File    : in     File_Descriptor;
-      Options : in     Open_Option_Set);
+     (File    : File_Descriptor;
+      Options : Open_Option_Set);
 
-   function Get_Close_On_Exec (File : in File_Descriptor) return Boolean;
+   function Get_Close_On_Exec (File : File_Descriptor) return Boolean;
 
    procedure Set_Close_On_Exec
-     (File : in     File_Descriptor;
-      To   : in     Boolean := True);
+     (File : File_Descriptor;
+      To   : Boolean := True);
 
 private
 

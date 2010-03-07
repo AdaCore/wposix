@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -69,7 +69,7 @@ package body POSIX_Win32.File_Handle is
    -- Close --
    -----------
 
-   procedure Close (F : in POSIX.IO.File_Descriptor) is
+   procedure Close (F : POSIX.IO.File_Descriptor) is
       use type POSIX.IO.File_Descriptor;
    begin -- Close
       Lock.Get;
@@ -82,7 +82,7 @@ package body POSIX_Win32.File_Handle is
    -- Get --
    ---------
 
-   function Get (F : in POSIX.IO.File_Descriptor) return Win32.Winnt.HANDLE is
+   function Get (F : POSIX.IO.File_Descriptor) return Win32.Winnt.HANDLE is
    begin -- Get
       return Handle_Table (F);
    end Get;
@@ -92,8 +92,8 @@ package body POSIX_Win32.File_Handle is
    ----------
 
    function Open
-     (H : in Win32.Winnt.HANDLE;
-      F : in POSIX.IO.File_Descriptor := 0) return POSIX.IO.File_Descriptor
+     (H : Win32.Winnt.HANDLE;
+      F : POSIX.IO.File_Descriptor := 0) return POSIX.IO.File_Descriptor
    is
 
       use type POSIX.IO.File_Descriptor;

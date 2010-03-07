@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -43,14 +43,14 @@ package body POSIX.Process_Environment is
    type Char_Array_Access is access Win32.CHAR_Array;
 
    procedure Check_Name
-     (Name    : in POSIX.POSIX_String;
-      Message : in String);
+     (Name    : POSIX.POSIX_String;
+      Message : String);
    --  ???
 
-   function New_Environment (Size : in Positive := 2) return Environment;
+   function New_Environment (Size : Positive := 2) return Environment;
    --  ???
 
-   procedure Free_Environment (Env : in Environment);
+   procedure Free_Environment (Env : Environment);
    --  ???
 
    ---------------
@@ -94,9 +94,9 @@ package body POSIX.Process_Environment is
    -- Change_Working_Directory --
    ------------------------------
 
-   procedure Change_Working_Directory (Directory_Name : in POSIX.Pathname) is
-      L_Directory_Name : constant String
-        := POSIX.To_String (Directory_Name) & ASCII.NUL;
+   procedure Change_Working_Directory (Directory_Name : POSIX.Pathname) is
+      L_Directory_Name : constant String :=
+                           POSIX.To_String (Directory_Name) & ASCII.NUL;
       Result           : Win32.BOOL;
    begin
       Result := Win32.Winbase.SetCurrentDirectory
@@ -109,8 +109,8 @@ package body POSIX.Process_Environment is
    ----------------
 
    procedure Check_Name
-     (Name    : in POSIX.POSIX_String;
-      Message : in String)
+     (Name    : POSIX.POSIX_String;
+      Message : String)
    is
       L_Name : constant String := POSIX.To_String (Name);
    begin
@@ -140,7 +140,7 @@ package body POSIX.Process_Environment is
    procedure Clear_Environment is
 
       procedure Delete
-        (Name, Value : in     POSIX.POSIX_String;
+        (Name, Value :        POSIX.POSIX_String;
          Quit        : in out Boolean);
       --  ???
 
@@ -149,7 +149,7 @@ package body POSIX.Process_Environment is
       ------------
 
       procedure Delete
-        (Name, Value : in     POSIX.POSIX_String;
+        (Name, Value :        POSIX.POSIX_String;
          Quit        : in out Boolean)
       is
          pragma Warnings (Off, Value);
@@ -174,7 +174,7 @@ package body POSIX.Process_Environment is
    ----------------------
 
    procedure Copy_Environment
-     (Source : in     Environment;
+     (Source :        Environment;
       Target : in out Environment)
    is
       Length_Source  : constant Natural := Length (Source);
@@ -211,10 +211,10 @@ package body POSIX.Process_Environment is
    -- Copy_To_Current_Environment --
    ---------------------------------
 
-   procedure Copy_To_Current_Environment (Env : in Environment) is
+   procedure Copy_To_Current_Environment (Env : Environment) is
 
       procedure Set
-        (Name, Value : in     POSIX.POSIX_String;
+        (Name, Value :        POSIX.POSIX_String;
          Quit        : in out Boolean);
       --  ???
 
@@ -223,7 +223,7 @@ package body POSIX.Process_Environment is
       ---------
 
       procedure Set
-        (Name, Value : in     POSIX.POSIX_String;
+        (Name, Value :        POSIX.POSIX_String;
          Quit        : in out Boolean) is
       begin
          Set_Environment_Variable (Name, Value);
@@ -247,7 +247,7 @@ package body POSIX.Process_Environment is
    ---------------------------------
 
    procedure Delete_Environment_Variable
-     (Name : in     POSIX.POSIX_String;
+     (Name :        POSIX.POSIX_String;
       Env  : in out Environment)
    is
       Current_Environment : Environment;
@@ -265,7 +265,7 @@ package body POSIX.Process_Environment is
    -- Delete_Environment_Variable --
    ---------------------------------
 
-   procedure Delete_Environment_Variable (Name : in POSIX.POSIX_String) is
+   procedure Delete_Environment_Variable (Name : POSIX.POSIX_String) is
       use type Win32.BOOL;
       use type Win32.DWORD;
       L_Name : constant String := POSIX.To_String (Name) & ASCII.NUL;
@@ -288,9 +288,9 @@ package body POSIX.Process_Environment is
    --------------------------
 
    function Environment_Value_Of
-     (Name       : in POSIX.POSIX_String;
-      Env        : in Environment;
-      Undefined  : in POSIX.POSIX_String := "") return POSIX.POSIX_String
+     (Name       : POSIX.POSIX_String;
+      Env        : Environment;
+      Undefined  : POSIX.POSIX_String := "") return POSIX.POSIX_String
    is
       use Ada.Strings.Unbounded;
 
@@ -298,7 +298,7 @@ package body POSIX.Process_Environment is
       Found : Boolean := False;
 
       procedure Equal
-        (N, V : in     POSIX.POSIX_String;
+        (N, V :        POSIX.POSIX_String;
          Quit : in out Boolean);
       --  ???
 
@@ -307,7 +307,7 @@ package body POSIX.Process_Environment is
       -----------
 
       procedure Equal
-        (N, V : in     POSIX.POSIX_String;
+        (N, V :        POSIX.POSIX_String;
          Quit : in out Boolean) is
       begin
          if N = Name then
@@ -343,8 +343,8 @@ package body POSIX.Process_Environment is
    --------------------------
 
    function Environment_Value_Of
-     (Name      : in POSIX.POSIX_String;
-      Undefined : in POSIX.POSIX_String := "") return POSIX.POSIX_String
+     (Name      : POSIX.POSIX_String;
+      Undefined : POSIX.POSIX_String := "") return POSIX.POSIX_String
    is
       Current_Environment : Environment;
    begin
@@ -378,7 +378,7 @@ package body POSIX.Process_Environment is
    -- For_Every_Environment_Variable --
    ------------------------------------
 
-   procedure For_Every_Environment_Variable (Env : in Environment) is
+   procedure For_Every_Environment_Variable (Env : Environment) is
 
       use type Chars_Ptr.Pointer;
       use type Win32.CHAR_Array;
@@ -388,7 +388,7 @@ package body POSIX.Process_Environment is
       Start   : Chars_Ptr.Pointer;
 
       function To_POSIX_String
-        (CA : in Win32.CHAR_Array) return POSIX_String;
+        (CA : Win32.CHAR_Array) return POSIX_String;
       --  ???
 
       ---------------------
@@ -396,7 +396,7 @@ package body POSIX.Process_Environment is
       ---------------------
 
       function To_POSIX_String
-        (CA : in Win32.CHAR_Array) return POSIX_String is
+        (CA : Win32.CHAR_Array) return POSIX_String is
       begin
          return POSIX.To_POSIX_String
            (Interfaces.C.To_Ada (Win32.To_C (CA & Win32.Nul)));
@@ -456,7 +456,7 @@ package body POSIX.Process_Environment is
    -- Free_Environment --
    ----------------------
 
-   procedure Free_Environment (Env : in Environment) is
+   procedure Free_Environment (Env : Environment) is
       Result : Win32.BOOL;
       pragma Unreferenced (Result);
    begin
@@ -498,14 +498,14 @@ package body POSIX.Process_Environment is
    -----------------------------
 
    function Is_Environment_Variable
-     (Name : in POSIX.POSIX_String;
-      Env  : in Environment) return Boolean
+     (Name : POSIX.POSIX_String;
+      Env  : Environment) return Boolean
    is
 
       Found : Boolean := False;
 
       procedure Equal
-        (N, V : in     POSIX.POSIX_String;
+        (N, V :        POSIX.POSIX_String;
          Quit : in out Boolean);
       --  ???
 
@@ -514,7 +514,7 @@ package body POSIX.Process_Environment is
       -----------
 
       procedure Equal
-        (N, V : in     POSIX.POSIX_String;
+        (N, V :        POSIX.POSIX_String;
          Quit : in out Boolean)
       is
          pragma Warnings (Off, V);
@@ -544,7 +544,7 @@ package body POSIX.Process_Environment is
    -----------------------------
 
    function Is_Environment_Variable
-     (Name : in POSIX.POSIX_String) return Boolean
+     (Name : POSIX.POSIX_String) return Boolean
    is
       Current_Environment : Environment;
       Result              : Boolean;
@@ -559,7 +559,7 @@ package body POSIX.Process_Environment is
    -- Length --
    ------------
 
-   function Length (Env : in Environment) return Natural is
+   function Length (Env : Environment) return Natural is
       Pointer : Chars_Ptr.Pointer := Chars_Ptr.Pointer (Env);
       I       : Natural := 0;
    begin
@@ -594,7 +594,7 @@ package body POSIX.Process_Environment is
    -- New_Environment --
    ---------------------
 
-   function New_Environment (Size : in Positive := 2) return Environment is
+   function New_Environment (Size : Positive := 2) return Environment is
       Char_Array : Char_Array_Access := new Win32.CHAR_Array (1 .. Size);
    begin
       Char_Array.all := (others => Win32.Nul);
@@ -606,8 +606,8 @@ package body POSIX.Process_Environment is
    ------------------------------
 
    procedure Set_Environment_Variable
-     (Name  : in     POSIX.POSIX_String;
-      Value : in     POSIX.POSIX_String;
+     (Name  :        POSIX.POSIX_String;
+      Value :        POSIX.POSIX_String;
       Env   : in out Environment)
    is
       Current_Environment : Environment;
@@ -626,8 +626,8 @@ package body POSIX.Process_Environment is
    ------------------------------
 
    procedure Set_Environment_Variable
-     (Name  : in POSIX.POSIX_String;
-      Value : in POSIX.POSIX_String)
+     (Name  : POSIX.POSIX_String;
+      Value : POSIX.POSIX_String)
    is
       L_Name  : constant String := POSIX.To_String (Name) & ASCII.NUL;
       L_Value : constant String := POSIX.To_String (Value) & ASCII.NUL;

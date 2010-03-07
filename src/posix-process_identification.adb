@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -41,7 +41,7 @@ package body POSIX.Process_Identification is
    --------------------------
 
    procedure Create_Process_Group
-     (Process       : in     Process_ID;
+     (Process       :        Process_ID;
       Process_Group :    out Process_Group_ID)
    is
       pragma Warnings (Off, Process);
@@ -154,26 +154,26 @@ package body POSIX.Process_Identification is
    -- Image --
    -----------
 
-   function Image (ID : in Process_ID) return Standard.String is
+   function Image (ID : Process_ID) return Standard.String is
       use Ada;
    begin
       return Strings.Fixed.Trim
         (Win32.DWORD'Image (ID.dwProcessId), Strings.Left);
    end Image;
 
-   function Image (ID : in Process_Group_ID) return String is
+   function Image (ID : Process_Group_ID) return String is
       use Ada;
    begin
       return Strings.Fixed.Trim (Process_Group_ID'Image (ID), Strings.Left);
    end Image;
 
-   function Image (ID : in Group_ID) return String is
+   function Image (ID : Group_ID) return String is
       use Ada;
    begin
       return Strings.Fixed.Trim (Group_ID'Image (ID), Strings.Left);
    end Image;
 
-   function Image (ID : in User_ID) return String is
+   function Image (ID : User_ID) return String is
       use Ada;
    begin
       return Strings.Fixed.Trim (User_ID'Image (ID), Strings.Left);
@@ -183,7 +183,7 @@ package body POSIX.Process_Identification is
    -- Set_Group_ID --
    ------------------
 
-   procedure Set_Group_ID (ID : in Group_ID) is
+   procedure Set_Group_ID (ID : Group_ID) is
       pragma Warnings (Off, ID);
    begin
       null;
@@ -194,8 +194,8 @@ package body POSIX.Process_Identification is
    --------------------------
 
    procedure Set_Process_Group_ID
-     (Process       : in Process_ID       := Get_Process_ID;
-      Process_Group : in Process_Group_ID := Get_Process_Group_ID)
+     (Process       : Process_ID       := Get_Process_ID;
+      Process_Group : Process_Group_ID := Get_Process_Group_ID)
    is
       pragma Warnings (Off, Process);
       pragma Warnings (Off, Process_Group);
@@ -207,7 +207,7 @@ package body POSIX.Process_Identification is
    -- Set_User_ID --
    -----------------
 
-   procedure Set_User_ID (ID : in User_ID) is
+   procedure Set_User_ID (ID : User_ID) is
       pragma Warnings (Off, ID);
    begin
       null;
@@ -217,23 +217,23 @@ package body POSIX.Process_Identification is
    -- Value --
    -----------
 
-   function Value (Str : in String) return Group_ID is
+   function Value (Str : String) return Group_ID is
    begin
       return Group_ID'Value (Str);
    end Value;
 
-   function Value (Str : in String) return Process_Group_ID is
+   function Value (Str : String) return Process_Group_ID is
    begin
       return Process_Group_ID'Value (Str);
    end Value;
 
-   function Value (Str : in Standard.String) return Process_ID is
+   function Value (Str : Standard.String) return Process_ID is
    begin
       return Process_ID'
         (System.Null_Address, System.Null_Address, Win32.DWORD'Value (Str), 0);
    end Value;
 
-   function Value (Str : in String) return User_ID is
+   function Value (Str : String) return User_ID is
    begin
       return User_ID'Value (Str);
    end Value;
