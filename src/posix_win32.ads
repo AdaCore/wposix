@@ -33,7 +33,7 @@ with POSIX;
 with POSIX.Process_Identification;
 with POSIX.Process_Primitives;
 
-package POSIX_Win32 is
+private package POSIX_Win32 is
 
    package PPP renames POSIX.Process_Primitives;
    package PPI renames POSIX.Process_Identification;
