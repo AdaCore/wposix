@@ -86,7 +86,7 @@ def __parse_options():
     m.parse_args()
 
     if m.args:
-        m.options.run_test = os.path.sep + m.args[0] + os.path.sep
+        m.options.run_test = m.args[0]
         # User want to run only one test
         print "Running only test '%s'" % m.options.run_test
     else:
