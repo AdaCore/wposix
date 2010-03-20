@@ -16,7 +16,6 @@ from glob import glob
 import os
 import sys
 
-
 def main():
     """Run the testsuite"""
     options = __parse_options()
@@ -60,7 +59,6 @@ def main():
 
     MainLoop(test_list, test_build_cmd, collect_result, options.mainloop_jobs)
 
-
 def filter_list(pattern, run_test=""):
     """Compute the list of test matching pattern
 
@@ -71,7 +69,6 @@ def filter_list(pattern, run_test=""):
         return test_list
     else:
         return [test for test in test_list if run_test in test]
-
 
 def __parse_options():
     """Parse command lines options"""
