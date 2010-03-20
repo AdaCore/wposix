@@ -1,0 +1,16 @@
+List directory dir
+.
+..
+file.txt
+README
+toto
+List directory .
+.
+..
+file.txt
+README
+toto
+List directory /tmp-does-not-exists
+POSIX.POSIX_ERROR - For_Every_Directory_Entry : Error_Code =  2 : NO_SUCH_FILE_OR_DIRECTORY
+List directory /tmp/toto
+POSIX.POSIX_ERROR - For_Every_Directory_Entry : Error_Code =  2 : NO_SUCH_FILE_OR_DIRECTORY
