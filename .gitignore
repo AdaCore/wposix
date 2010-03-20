@@ -1,5 +1,7 @@
-.build
-makefile.setup
-*.o
 *.ali
 *.exe
+*.o
+.build
+makefile.setup
+regtests/*.pyc
+regtests/out
