@@ -1,0 +1,24 @@
+HOME = <home>
+HOST = <host>
+LOGNAME = <logname>
+OS = Windows_NT
+PWD = <pwd>
+USER = <user>
+1 ----------
+HOME = <home>
+HOST = <host>
+LOGNAME = <logname>
+OS = Windows_NT
+PWD = <pwd>
+USER = <user>
+2 ----------
+HOME = <home>
+HOST = <host>
+OS = Windows_NT
+PWD = <pwd>
+USER = <user>
+ada = this is ada
+3 ----------
+4 ----------
+5 ----------
+Only = one
