@@ -58,6 +58,8 @@ BDIR		= $(BUILD)/release
 GMOPTS		:= $(GMOPTS) -XPRJ_BUILD=Release
 endif
 
+PYTHON		= python
+
 ############################################################################
 
 all: build
@@ -106,6 +108,9 @@ ifeq (${ENABLE_SHARED}, true)
 	$(GNAT) clean $(GMOPTS) -XLIBRARY_TYPE=relocatable -P wposix
 endif
 	$(RM) -r $(BUILD)
+
+run_regtests:
+	(cd regtests; $(PYTHON) ./testsuite.py)
 
 distrib:
 	-$(RM) wposix.tar.gz
