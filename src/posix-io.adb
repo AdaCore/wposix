@@ -420,6 +420,7 @@ package body POSIX.IO is
          Truncated (Options),
          Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
          POSIX_Win32.Null_Handle);
+
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
          POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error, "Open");
       end if;
@@ -503,8 +504,8 @@ package body POSIX.IO is
       end if;
 
       declare
-         FD : constant File_Descriptor
-           := POSIX_Win32.File_Handle.Open (Handle);
+         FD : constant File_Descriptor :=
+                POSIX_Win32.File_Handle.Open (Handle);
       begin
          IO_Info.Set (FD, (Mode, Options, False));
          return FD;
