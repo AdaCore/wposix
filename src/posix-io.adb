@@ -65,6 +65,11 @@ package body POSIX.IO is
    function To_Origin (SP : Position) return Win32.DWORD;
    --  POSIX origin definition to Win32
 
+   procedure Check_Append
+     (Handle : Win32.Winnt.HANDLE; Options : Open_Option_Set);
+   pragma Inline (Check_Append);
+   --  Move to end of file if Append set in Options
+
    -------------
    -- IO_Info --
    -------------
@@ -92,6 +97,31 @@ package body POSIX.IO is
       end Set;
 
    end IO_Info;
+
+   ------------------
+   -- Check_Append --
+   ------------------
+
+   procedure Check_Append
+     (Handle : Win32.Winnt.HANDLE; Options : Open_Option_Set)
+   is
+      use type Win32.DWORD;
+      DistanceToMoveHigh : aliased Win32.LONG := 0;
+      Low_Position       : Win32.DWORD;
+   begin
+      if Is_Set (Options, Append) then
+         Low_Position := Win32.Winbase.SetFilePointer
+           (Handle,
+            0,
+            DistanceToMoveHigh'Unchecked_Access,
+            Win32.Winbase.FILE_END);
+
+         if Low_Position = 16#FFFF_FFFF# then
+            POSIX_Win32.Check_Retcode
+              (POSIX_Win32.Retcode_Error, "Check_Append");
+         end if;
+      end if;
+   end Check_Append;
 
    -----------
    -- Close --
@@ -425,6 +455,8 @@ package body POSIX.IO is
          POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error, "Open");
       end if;
 
+      Check_Append (Handle, Options);
+
       declare
          FD : constant File_Descriptor :=
                 POSIX_Win32.File_Handle.Open (Handle);
@@ -502,6 +534,8 @@ package body POSIX.IO is
          POSIX_Win32.Check_Retcode
            (POSIX_Win32.Retcode_Error, "Open_Or_Create");
       end if;
+
+      Check_Append (Handle, Options);
 
       declare
          FD : constant File_Descriptor :=
