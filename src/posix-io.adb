@@ -52,7 +52,7 @@ package body POSIX.IO is
    end IO_Info;
 
    function Mode_To_Access (Mode : File_Mode) return Win32.DWORD;
-   --  ???
+   --  POSIX file mode definition to Win32
 
    function Is_Set
      (Options : Open_Option_Set;
@@ -60,10 +60,10 @@ package body POSIX.IO is
    --  ???
 
    function Shared (Options : Open_Option_Set) return Win32.DWORD;
-   --  ???
+   --  POSIX shared definition to Win32
 
    function To_Origin (SP : Position) return Win32.DWORD;
-   --  ???
+   --  POSIX origin definition to Win32
 
    -------------
    -- IO_Info --
