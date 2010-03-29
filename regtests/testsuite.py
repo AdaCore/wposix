@@ -10,6 +10,8 @@ from gnatpython.fileutils import mkdir, rm
 from gnatpython.main import Main
 from gnatpython.mainloop import (MainLoop, add_mainloop_options,
                                  generate_collect_result)
+from gnatpython.testdriver import add_run_test_options
+from gnatpython.reports import ReportDiff
 
 from glob import glob
 
@@ -32,10 +34,7 @@ def main():
     rm(result_dir, True)
     mkdir(result_dir)
 
-    discs = ['ALL']
-    discs.append('ALL')
-    discs.append(env.target.platform)
-    discs.append(env.target.triplet)
+    discs = env.discriminants
 
     if options.discs:
         discs += options.discs
@@ -58,6 +57,11 @@ def main():
         result_dir, results_file, options.view_diffs)
 
     MainLoop(test_list, test_build_cmd, collect_result, options.mainloop_jobs)
+    # Write report
+    with open(result_dir + '/discs', 'w') as discs_f:
+        discs_f.write(" ".join(discs))
+    ReportDiff(result_dir, options.old_result_dir).txt_image(
+        result_dir + '/report')
 
 def filter_list(pattern, run_test=""):
     """Compute the list of test matching pattern
@@ -72,17 +76,13 @@ def filter_list(pattern, run_test=""):
 
 def __parse_options():
     """Parse command lines options"""
-    m = Main()
+    m = Main(add_targets_options=True)
     add_mainloop_options(m)
+    add_run_test_options(m)
     m.add_option("--diffs", dest="view_diffs", action="store_true",
                  default=False, help="Print .diff content")
-    m.add_option('--discs', type="string", default="",
-                 help="Additional discriminants")
-    m.add_option("-o", "--output-dir",
-                 dest="output_dir",
-                 metavar="DIR",
-                 default="./out",
-                 help="select output dir")
+    m.add_option("--old-result-dir", type="string", default=None,
+                 help="Old result dir")
     m.parse_args()
 
     if m.args:
@@ -91,6 +91,9 @@ def __parse_options():
         print "Running only test '%s'" % m.options.run_test
     else:
         m.options.run_test = ""
+
+    if m.options.discs:
+        m.options.discs = m.options.discs.split(',')
 
     return m.options
 
