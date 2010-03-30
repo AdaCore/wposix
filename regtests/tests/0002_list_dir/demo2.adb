@@ -102,8 +102,8 @@ begin
 
    begin
       New_Line;
-      Put_Line ("List directory /tmp/toto");
-      Display_Directory (To_POSIX_String ("/tmp/toto"));
+      Put_Line ("List directory /tmp/toto-does-not-exists");
+      Display_Directory (To_POSIX_String ("/tmp/toto-does-not-exists"));
    exception
       when E : others =>
          Put_Line (Exceptions.Exception_Name (E) & " - " &
