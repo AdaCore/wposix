@@ -1,19 +1,19 @@
 HOME = <home>
-HOST = <host>
-LOGNAME = <logname>
+HOMEDRIVE = <homedrive>
+MYENV = val
 OS = Windows_NT
 PWD = <pwd>
 USER = <user>
 1 ----------
 HOME = <home>
-HOST = <host>
-LOGNAME = <logname>
+HOMEDRIVE = <homedrive>
+MYENV = val
 OS = Windows_NT
 PWD = <pwd>
 USER = <user>
 2 ----------
 HOME = <home>
-HOST = <host>
+HOMEDRIVE = <homedrive>
 OS = Windows_NT
 PWD = <pwd>
 USER = <user>

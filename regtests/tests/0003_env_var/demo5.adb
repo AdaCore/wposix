@@ -53,17 +53,19 @@ procedure Demo5 is
    is
       use type POSIX.POSIX_String;
    begin
-      if Name = "HOST"
-        or else Name = "HOME"
+      if Name = "HOME"
+        or else Name = "HOMEDRIVE"
         or else Name = "PWD"
         or else Name = "USER"
-        or else Name = "COMPUTERNMAE"
-        or else Name = "LOGNAME"
       then
          Vars.Include (POSIX.To_String (Name) & " = <" &
                        To_Lower (POSIX.To_String (Name)) & ">");
 
-      elsif Name = "OS" or else Name = "ada" or else Name = "Only" then
+      elsif Name = "OS"
+        or else Name = "ada"
+        or else Name = "Only"
+        or else Name = "MYENV"
+      then
          Vars.Include
            (POSIX.To_String (Name) & " = " & POSIX.To_String (Value));
       end if;
@@ -97,13 +99,14 @@ procedure Demo5 is
    Current_Env : PPE.Environment;
 
 begin
+   PPE.Set_Environment_Variable ("MYENV", "val");
    Display_Env;
    Dump;
 
    Text_IO.Put_Line ("1 ----------");
    PPE.Copy_From_Current_Environment (Current_Env);
    PPE.Set_Environment_Variable ("ada", "this is ada");
-   PPE.Delete_Environment_Variable ("LOGNAME");
+   PPE.Delete_Environment_Variable ("MYENV");
    Display_Env (Current_Env);
    Dump;
 
