@@ -5,9 +5,9 @@ import time
 import calendar
 import datetime
 
-def check_n(name, current, expected):
+def check_n(name, current, expected, error=0):
     v = int (current)
-    if v == expected or v == expected - 1 or v == expected + 1:
+    if abs (v - expected) <= error:
         print "OK " + name
     else:
         print "NOK " + name + ": '" + str(expected) + "' != '" + current + "'"
@@ -16,7 +16,7 @@ def check_date(name, lines, index, day, month, year, hour, minute, second=0):
     check_n(name+"-"+str(index), lines[index][:-1], day)
     check_n(name+"-"+str(index+1), lines[index+1][:-1], month)
     check_n(name+"-"+str(index+2), lines[index+2][:-1], year)
-    check_n(name+"-"+str(index+3), lines[index+3][:-1], hour)
+    check_n(name+"-"+str(index+3), lines[index+3][:-1], hour, error=2)
     check_n(name+"-"+str(index+4), lines[index+4][:-1], minute)
     if second != 0:
         check_n(name+"-"+str(index+5), lines[index+5][:-1], second)
