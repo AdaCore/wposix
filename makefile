@@ -48,7 +48,7 @@ GNAT		= gnat
 RM		= rm -f
 LN		= ln -s
 
-GMOPTS		=
+GMOPTS		= -XPROCESSORS=$(PROCESSORS)
 
 ifeq ($(DEBUG), true)
 BDIR		= $(BUILD)/debug
