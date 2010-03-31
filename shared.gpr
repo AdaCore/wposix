@@ -32,7 +32,7 @@ project Shared is
    type Build_Type is ("Debug", "Release");
    Build : Build_Type := external ("PRJ_BUILD", "Debug");
 
-   Processors := External ("PROCESSORS", "1");
+   Processors := External ("PROCESSORS", "2");
 
    --------------------------
    -- Static / Relocatable --
