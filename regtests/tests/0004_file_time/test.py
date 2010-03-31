@@ -19,7 +19,7 @@ def check_date(name, lines, index, day, month, year, hour, minute, second=0):
     check_n(name+"-"+str(index+3), lines[index+3][:-1], hour, error=2)
     check_n(name+"-"+str(index+4), lines[index+4][:-1], minute)
     if second != 0:
-        check_n(name+"-"+str(index+5), lines[index+5][:-1], second)
+        check_n(name+"-"+str(index+5), lines[index+5][:-1], second, error=5)
 
 ts_access=time.strptime('03 Feb 2001 04:05', '%d %b %Y %H:%M')
 ts_mod=time.strptime('9 Sep 1967 10:33:01', '%d %b %Y %H:%M:%S')
