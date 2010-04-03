@@ -1,20 +1,20 @@
 HOME = <home>
-HOMEDRIVE = <homedrive>
 MYENV = val
 OS = Windows_NT
+PATH = <path>
 PWD = <pwd>
 USER = <user>
 1 ----------
 HOME = <home>
-HOMEDRIVE = <homedrive>
 MYENV = val
 OS = Windows_NT
+PATH = <path>
 PWD = <pwd>
 USER = <user>
 2 ----------
 HOME = <home>
-HOMEDRIVE = <homedrive>
 OS = Windows_NT
+PATH = <path>
 PWD = <pwd>
 USER = <user>
 ada = this is ada

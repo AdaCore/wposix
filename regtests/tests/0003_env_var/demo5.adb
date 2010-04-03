@@ -54,7 +54,7 @@ procedure Demo5 is
       use type POSIX.POSIX_String;
    begin
       if Name = "HOME"
-        or else Name = "HOMEDRIVE"
+        or else Name = "PATH"
         or else Name = "PWD"
         or else Name = "USER"
       then
