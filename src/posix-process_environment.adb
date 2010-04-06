@@ -456,7 +456,8 @@ package body POSIX.Process_Environment is
            Start.all = Win32.Nul and then Pointer.all = Win32.Nul;
 
          Search_Name_End : loop
-            exit Search_Name_End when Pointer.all = '=';
+            exit Search_Name_End when
+              Pointer.all = Win32.Nul or else Pointer.all = '=';
             Chars_Ptr.Increment (Pointer);
          end loop Search_Name_End;
 
@@ -464,25 +465,35 @@ package body POSIX.Process_Environment is
             Name : constant POSIX.POSIX_String :=
                      To_POSIX_String
                        (Chars_Ptr.Value (Start, Pointer - Start));
+            Quit : Boolean := False;
          begin
-            Chars_Ptr.Increment (Pointer);
-            Start := Pointer;
-
-            Search_Value_End : loop
-               exit Search_Value_End when Pointer.all = Win32.Nul;
-               Chars_Ptr.Increment (Pointer);
-            end loop Search_Value_End;
-
-            declare
-               Value : constant POSIX.POSIX_String := To_POSIX_String
-                 (Chars_Ptr.Value (Start, Pointer - Start));
-               Quit : Boolean := False;
-            begin
+            if Pointer.all = Win32.Nul then
+               --  No value (empty value)
                if Name (Name'First) /= '=' then
-                  Action (Name, Value, Quit);
+                  Action (Name, "", Quit);
                end if;
                exit For_All_Variable when Quit;
-            end;
+
+            else
+               Chars_Ptr.Increment (Pointer);
+               Start := Pointer;
+
+               Search_Value_End : loop
+                  exit Search_Value_End when Pointer.all = Win32.Nul;
+                  Chars_Ptr.Increment (Pointer);
+               end loop Search_Value_End;
+
+               declare
+                  Value : constant POSIX.POSIX_String :=
+                            To_POSIX_String
+                              (Chars_Ptr.Value (Start, Pointer - Start));
+               begin
+                  if Name (Name'First) /= '=' then
+                     Action (Name, Value, Quit);
+                  end if;
+                  exit For_All_Variable when Quit;
+               end;
+            end if;
          end;
 
          Chars_Ptr.Increment (Pointer);
