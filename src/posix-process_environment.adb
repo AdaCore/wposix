@@ -111,7 +111,10 @@ package body POSIX.Process_Environment is
    is
       L_Name : constant String := POSIX.To_String (Name);
    begin
-      if L_Name = "" or else Strings.Fixed.Index (L_Name, "=") /= 0 then
+      if L_Name = ""
+        or else Strings.Fixed.Index (L_Name, "=") /= 0
+        or else Strings.Fixed.Index (L_Name, String'(1 => ASCII.NUL)) /= 0
+      then
          POSIX.Set_Error_Code (POSIX.Invalid_Argument);
          Exceptions.Raise_Exception (POSIX.POSIX_Error'Identity, Message);
       end if;
