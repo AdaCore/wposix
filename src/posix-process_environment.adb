@@ -487,7 +487,6 @@ package body POSIX.Process_Environment is
 
          Chars_Ptr.Increment (Pointer);
          exit For_All_Variable when Pointer.all = Win32.Nul;
-
       end loop For_All_Variable;
    end For_Every_Environment_Variable;
 
