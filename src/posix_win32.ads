@@ -49,10 +49,12 @@ private package POSIX_Win32 is
    --  Raise POSIX_Not_Yet_Implemented exception with Message
 
    procedure Check_Retcode (RETCODE : Win32.INT; Fct : String);
+   pragma Inline (Check_Retcode);
    --  Call Raise_Error with current error code if RETCODE is set to
    --  Retcode_Error.
 
    procedure Check_Result (RETCODE : Win32.BOOL; Fct : String);
+   pragma Inline (Check_Result);
    --  Call Raise_Error with current error code if RETCODE is False
 
    procedure Raise_Error (Message : String; Error_Code : POSIX.Error_Code);
