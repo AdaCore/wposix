@@ -72,6 +72,19 @@ procedure Demo5 is
       Quit := False;
    end Action;
 
+   --------
+   -- Ok --
+   --------
+
+   procedure Ok (Name, Value :        POSIX.POSIX_String;
+                 Quit        : in out Boolean)
+   is
+      use type POSIX.POSIX_String;
+   begin
+      Text_IO.Put_Line ("Should not be called");
+      Quit := True;
+   end Ok;
+
    ------------
    -- Output --
    ------------
@@ -93,12 +106,18 @@ procedure Demo5 is
 
    procedure Display_Env is new PPE.For_Every_Environment_Variable (Action);
 
+   procedure Check_Env is new PPE.For_Every_Environment_Variable (Ok);
+
    procedure Display_Env is new
      PPE.For_Every_Current_Environment_Variable (Action);
 
    Current_Env : PPE.Environment;
+   Env2        : PPE.Environment;
 
 begin
+   Check_Env (Current_Env);
+   PPE.Copy_Environment (Current_Env, Env2);
+
    PPE.Set_Environment_Variable ("MYENV", "val");
    Display_Env;
    Dump;

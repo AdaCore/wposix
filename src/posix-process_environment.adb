@@ -401,7 +401,8 @@ package body POSIX.Process_Environment is
 
    begin
       --  if first character is 'nul' then the environment is empty
-      if Pointer.all = Win32.Nul then
+
+      if Env = null or else Pointer.all = Win32.Nul then
          return;
       end if;
 
@@ -458,7 +459,9 @@ package body POSIX.Process_Environment is
       Result : Win32.BOOL;
       pragma Unreferenced (Result);
    begin
-      Result := Win32.Winbase.FreeEnvironmentStrings (Win32.PCHAR (Env));
+      if Env /= null then
+         Result := Win32.Winbase.FreeEnvironmentStrings (Win32.PCHAR (Env));
+      end if;
    end Free_Environment;
 
    ---------------------------
