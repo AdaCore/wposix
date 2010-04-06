@@ -48,25 +48,18 @@ private package POSIX_Win32 is
    pragma No_Return (Raise_Not_Yet_Implemented);
    --  Raise POSIX_Not_Yet_Implemented exception with Message
 
-   procedure Check_Retcode
-     (RETCODE : Win32.INT;
-      Fct     : String);
+   procedure Check_Retcode (RETCODE : Win32.INT; Fct : String);
    --  Call Raise_Error with current error code if RETCODE is set to
    --  Retcode_Error.
 
-   procedure Check_Result
-     (RETCODE : Win32.BOOL;
-      Fct     : String);
+   procedure Check_Result (RETCODE : Win32.BOOL; Fct : String);
    --  Call Raise_Error with current error code if RETCODE is False
 
-   procedure Raise_Error
-     (Message    : String;
-      Error_Code : POSIX.Error_Code);
+   procedure Raise_Error (Message : String; Error_Code : POSIX.Error_Code);
    pragma No_Return (Raise_Error);
    --  Raises POSIX_Error with Message and Error_Code
 
-   function Is_Executable
-     (Pathname : POSIX.POSIX_String) return Boolean;
+   function Is_Executable (Pathname : POSIX.POSIX_String) return Boolean;
    --  Returns true is Pathname is terminated by .com, .exe and .bat
 
    Null_Handle : constant Win32.Winnt.HANDLE :=
@@ -74,12 +67,10 @@ private package POSIX_Win32 is
 
    --  helper functions for POSIX_Process_Primitives Wait_For_Child_Process
 
-   procedure Add_Child
-     (Child : PPI.Process_ID);
+   procedure Add_Child (Child : PPI.Process_ID);
    --  Add Child into the list of processes
 
-   procedure Remove_Child
-     (Child : PPI.Process_ID);
+   procedure Remove_Child (Child : PPI.Process_ID);
    --  Removes Child from the list of processes
 
    function Exist (Child : PPI.Process_ID) return Boolean;
