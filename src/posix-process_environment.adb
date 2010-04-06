@@ -176,18 +176,55 @@ package body POSIX.Process_Environment is
      (Source :        Environment;
       Target : in out Environment)
    is
-      Length_Source  : constant Natural := Length (Source);
+      function Size (Env : Environment) return Natural;
+      --  Size (in bytes) used by the environment string
+
+      ----------
+      -- Size --
+      ----------
+
+      function Size (Env : Environment) return Natural is
+         Pointer : Chars_Ptr.Pointer := Chars_Ptr.Pointer (Env);
+         I       : Natural := 0;
+         Prev    : Win32.CHAR := ' ';
+      begin
+         if Env /= null then
+            loop
+               I := I + 1;
+               Prev := Pointer.all;
+               Chars_Ptr.Increment (Pointer);
+
+               --  On Windows the environment variable terminate with two null
+               --  characters.
+               exit when Prev = Win32.Nul and then Pointer.all = Win32.Nul;
+            end loop;
+
+            return I;
+
+         else
+            return 0;
+         end if;
+      end Size;
+
+      Size_Source    : constant Natural := Size (Source);
       Pointer_Source : Chars_Ptr.Pointer := Chars_Ptr.Pointer (Source);
       Pointer_Target : Chars_Ptr.Pointer;
+
    begin
       if Target /= null then
          Free_Environment (Target);
       end if;
 
-      Target := New_Environment (Length_Source + 1);
+      Target := New_Environment (Size_Source + 1);
+
+      if Size_Source = 0 then
+         --  This is an empty environment, nothing to copy
+         return;
+      end if;
+
       Pointer_Target := Chars_Ptr.Pointer (Target);
 
-      for I in 1 .. Length_Source + 1 loop
+      for I in 1 .. Size_Source + 1 loop
          Pointer_Target.all := Pointer_Source.all;
          Chars_Ptr.Increment (Pointer_Source);
          Chars_Ptr.Increment (Pointer_Target);
@@ -567,18 +604,27 @@ package body POSIX.Process_Environment is
    function Length (Env : Environment) return Natural is
       Pointer : Chars_Ptr.Pointer := Chars_Ptr.Pointer (Env);
       I       : Natural := 0;
+      Prev    : Win32.CHAR := ' ';
    begin
-      loop
-         I := I + 1;
-         if Pointer.all = Win32.Nul then
-            Chars_Ptr.Increment (Pointer);
-            exit when Pointer.all = Win32.Nul;
-         else
-            Chars_Ptr.Increment (Pointer);
-         end if;
-      end loop;
+      if Env /= null then
+         loop
+            Prev := Pointer.all;
+            if Prev = '=' then
+               I := I + 1;
+            end if;
 
-      return I;
+            Chars_Ptr.Increment (Pointer);
+
+            --  On Windows the environment variable terminate with two null
+            --  characters.
+            exit when Prev = Win32.Nul and then Pointer.all = Win32.Nul;
+         end loop;
+
+         return I;
+
+      else
+         return 0;
+      end if;
    end Length;
 
    ------------

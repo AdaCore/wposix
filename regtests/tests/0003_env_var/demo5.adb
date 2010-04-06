@@ -146,5 +146,6 @@ begin
    Text_IO.Put_Line ("5 ----------");
    PPE.Set_Environment_Variable ("Only", "one", Current_Env);
    Display_Env (Current_Env);
+   Text_IO.Put_Line ("length " & PPE.Length (Current_Env)'Img);
    Dump;
 end Demo5;
