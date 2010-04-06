@@ -46,7 +46,7 @@ package body POSIX.Process_Environment is
    --  Check that the environment variable is well formed (not empty and does
    --  not contains an equal or NULL character).
 
-   function New_Environment (Size : Positive := 2) return Environment;
+   function New_Environment (Size : Natural := 2) return Environment;
    --  Create a new Win32 environment
 
    procedure Free_Environment (Env : Environment);
@@ -596,8 +596,9 @@ package body POSIX.Process_Environment is
    -- New_Environment --
    ---------------------
 
-   function New_Environment (Size : Positive := 2) return Environment is
-      Char_Array : Char_Array_Access := new Win32.CHAR_Array (1 .. Size);
+   function New_Environment (Size : Natural := 2) return Environment is
+      Char_Array : Char_Array_Access :=
+                     new Win32.CHAR_Array (1 .. Natural'Max (Size, 2));
    begin
       Char_Array.all := (others => Win32.Nul);
       return Char_Array (1)'Access;
