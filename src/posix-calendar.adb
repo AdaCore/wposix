@@ -73,7 +73,7 @@ package body POSIX.Calendar is
    function "-" (L : POSIX_Time; R : POSIX_Time) return Duration is
       use type Ada.Calendar.Time;
    begin
-      return Duration (To_Time (L) - To_Time (R));
+      return To_Time (L) - To_Time (R);
    exception
       when others =>
          raise Time_Error;
