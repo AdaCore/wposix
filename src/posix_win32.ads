@@ -45,6 +45,12 @@ private package POSIX_Win32 is
 
    Retcode_Error : Win32.DWORD := -1;
 
+   Users_SID : constant String := "S-1-5-32-545";
+   --  This is the well-known "users" group which is available everywhere
+
+   Everyone_SID : constant String := "S-1-1-0";
+   --  This is the well-known "everyone" group which is available everywhere
+
    procedure Raise_Not_Yet_Implemented (Message : String);
    pragma No_Return (Raise_Not_Yet_Implemented);
    --  Raise POSIX_Not_Yet_Implemented exception with Message

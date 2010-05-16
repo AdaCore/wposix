@@ -36,10 +36,9 @@ package body POSIX.Process_Identification is
 
    use Ada.Streams;
 
-   Default_GID : constant Group_ID := To_Bounded_String ("S-1-5-32-545");
-   --  This is the well-known "users" group which is available everywhere
-
    --  Process Identification
+
+   Users_GID : constant Group_ID := To_Bounded_String (POSIX_Win32.Users_SID);
 
    --------------------------
    -- Create_Process_Group --
@@ -51,7 +50,7 @@ package body POSIX.Process_Identification is
    is
       pragma Warnings (Off, Process);
    begin
-      Process_Group := Process_Group_ID (Default_GID);
+      Process_Group := Process_Group_ID (Users_GID);
    end Create_Process_Group;
 
    --------------------
@@ -60,7 +59,7 @@ package body POSIX.Process_Identification is
 
    procedure Create_Session (Session_Leader : out Process_Group_ID) is
    begin
-      Session_Leader := Process_Group_ID (Default_GID);
+      Session_Leader := Process_Group_ID (Users_GID);
    end Create_Session;
 
    ----------------------------
@@ -87,7 +86,7 @@ package body POSIX.Process_Identification is
 
    function Get_Groups return Group_List is
    begin
-      return Group_List'(1 .. 0 => Default_GID);
+      return Group_List'(1 .. 0 => Users_GID);
    end Get_Groups;
 
    --------------------
