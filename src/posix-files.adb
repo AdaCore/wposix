@@ -29,6 +29,9 @@ with Ada.Unchecked_Conversion;
 with System;
 with Interfaces.C;
 
+with Win32.AccCtrl;
+with Win32.Aclapi;
+with Win32.Sddl;
 with Win32.Winnt;
 with Win32.Winerror;
 
@@ -80,11 +83,39 @@ package body POSIX.Files is
       Owner    : POSIX.Process_Identification.User_ID;
       Group    : POSIX.Process_Identification.Group_ID)
    is
-      pragma Warnings (Off, Pathname);
-      pragma Warnings (Off, Owner);
-      pragma Warnings (Off, Group);
+      use type Win32.Winnt.SECURITY_INFORMATION;
+
+      C_Pathname :  constant String := To_String (Pathname) & ASCII.NUL;
+      SUSID      : constant String :=
+                     Process_Identification.Image (Owner) & ASCII.NUL;
+      SGSID      : constant String :=
+                     Process_Identification.Image (Group) & ASCII.NUL;
+      USID       : aliased Win32.Winnt.PSID;
+      GSID       : aliased Win32.Winnt.PSID;
+      Res        : Win32.BOOL;
+      Ret        : Win32.DWORD;
    begin
-      null;
+      Res := Win32.Sddl.ConvertStringSidToSid
+        (Win32.Addr (SUSID), USID'Access);
+      POSIX_Win32.Check_Result
+        (Res, "Change_Owner_And_Group.ConvertStringSidToSid (Owner)");
+
+      Res := Win32.Sddl.ConvertStringSidToSid
+        (Win32.Addr (SGSID), GSID'Access);
+      POSIX_Win32.Check_Result
+        (Res, "Change_Owner_And_Group.ConvertStringSidToSid (Group)");
+
+      Ret := Win32.Aclapi.SetNamedSecurityInfo
+        (Win32.Addr (C_Pathname),
+         Win32.AccCtrl.SE_FILE_OBJECT,
+         Win32.Winnt.OWNER_SECURITY_INFORMATION +
+           Win32.Winnt.GROUP_SECURITY_INFORMATION,
+         USID,
+         GSID,
+         null,
+         null);
+
+      POSIX_Win32.Check_Retcode (Ret, "Change_Owner_And_Group");
    end Change_Owner_And_Group;
 
    ------------------------
