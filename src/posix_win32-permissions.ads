@@ -85,4 +85,22 @@ package POSIX_Win32.Permissions is
                     W => (PP.Others_Write, Winnt.FILE_WRITE_DATA),
                     X => (PP.Others_Execute, Winnt.FILE_EXECUTE)));
 
+   type GM is record
+      Group : UGO;
+      Mask  : Win32.DWORD;
+   end record;
+
+   Masks_P2W : constant array (PP.Permission) of GM :=
+             (PP.Owner_Read     => (U, Winnt.FILE_READ_DATA),
+              PP.Owner_Write    => (U, Winnt.FILE_WRITE_DATA),
+              PP.Owner_Execute  => (U, Winnt.FILE_EXECUTE),
+              PP.Group_Read     => (G, Winnt.FILE_READ_DATA),
+              PP.Group_Write    => (G, Winnt.FILE_WRITE_DATA),
+              PP.Group_Execute  => (G, Winnt.FILE_EXECUTE),
+              PP.Others_Read    => (O, Winnt.FILE_READ_DATA),
+              PP.Others_Write   => (O, Winnt.FILE_WRITE_DATA),
+              PP.Others_Execute => (O, Winnt.FILE_EXECUTE),
+              PP.Set_User_ID    => (U, 0),
+              PP.Set_Group_ID   => (U, 0));
+
 end POSIX_Win32.Permissions;

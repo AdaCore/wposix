@@ -27,6 +27,7 @@
 
 with Ada.Unchecked_Conversion;
 with Interfaces.C;
+with System;
 
 with Win32.AccCtrl;
 with Win32.Aclapi;
@@ -35,6 +36,8 @@ with Win32.Winnt;
 with Win32.Winerror;
 
 with POSIX_Win32;
+with POSIX_Win32.Permissions;
+
 with POSIX.File_Status;
 
 package body POSIX.Files is
@@ -126,26 +129,112 @@ package body POSIX.Files is
       Permission : POSIX.Permissions.Permission_Set)
    is
       use type Win32.DWORD;
+      use type Win32.Winnt.SECURITY_INFORMATION;
       use POSIX.Permissions;
+
+      package PWP renames POSIX_Win32.Permissions;
+
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.NUL;
-      Result     : Win32.BOOL;
-      Attributes : Win32.DWORD;
+      CESID      : constant String := POSIX_Win32.Everyone_SID & ASCII.NUL;
+      ESID       : aliased Win32.Winnt.PSID;
+      OSID, GSID : aliased Win32.Winnt.PSID;
+      DACL       : aliased Win32.Winnt.PACL;
+      SD         : Win32.Winnt.SECURITY_DESCRIPTOR;
+      EA         : array (POSIX_Win32.Permissions.UGO) of
+                     aliased Win32.AccCtrl.EXPLICIT_ACCESS;
+      Ret        : Win32.DWORD;
+      Res        : Win32.BOOL;
    begin
-      Attributes := Win32.Winbase.GetFileAttributes (Win32.Addr (L_Pathname));
-      if Attributes = 16#FFFF_FFFF# then
-         POSIX_Win32.Raise_Last_Error ("Change_Permissions");
-      end if;
+      --  Create well-known group for everyone
 
-      if Permission (Owner_Read) and then Permission (Owner_Write) then
-         Attributes := Attributes
-           and (not Win32.Winnt.FILE_ATTRIBUTE_READONLY);
-      else
-         Attributes := Attributes or Win32.Winnt.FILE_ATTRIBUTE_READONLY;
-      end if;
+      Res := Win32.Sddl.ConvertStringSidToSid
+        (Win32.Addr (CESID), ESID'Access);
 
-      Result := Win32.Winbase.SetFileAttributes
-        (Win32.Addr (L_Pathname), Attributes);
-      POSIX_Win32.Check_Result (Result, "Change_Permissions");
+      POSIX_Win32.Check_Result
+        (Res, "Change_Permissions.ConvertStringSidToSid");
+
+      --  Get owner and primary group SID
+
+      Ret := Win32.Aclapi.GetNamedSecurityInfo
+        (Win32.Addr (L_Pathname),
+         Win32.AccCtrl.SE_FILE_OBJECT,
+         Win32.Winnt.OWNER_SECURITY_INFORMATION +
+           Win32.Winnt.GROUP_SECURITY_INFORMATION,
+         OSID'Access,
+         GSID'Access,
+         null,
+         null,
+         SD'Address);
+
+      POSIX_Win32.Check_Retcode
+        (Ret, "Change_Permissions.GetNamedSecurityInfo");
+
+      --  Create the explict access set
+
+      EA :=
+        (PWP.U =>
+           (grfAccessPermissions => 0,
+            grfAccessMode        => Win32.AccCtrl.SET_ACCESS,
+            grfInheritance       => Win32.AccCtrl.NO_INHERITANCE,
+            vTrustee             =>
+              (pMultipleTrustee         => null,
+               MultipleTrusteeOperation => Win32.AccCtrl.NO_MULTIPLE_TRUSTEE,
+               TrusteeForm              => Win32.AccCtrl.TRUSTEE_IS_SID,
+               TrusteeType              => Win32.AccCtrl.TRUSTEE_IS_USER,
+               ptstrName                => Win32.AccCtrl.To_LPSTR (OSID))),
+         PWP.G =>
+           (grfAccessPermissions => 0,
+            grfAccessMode        => Win32.AccCtrl.SET_ACCESS,
+            grfInheritance       => Win32.AccCtrl.NO_INHERITANCE,
+            vTrustee             =>
+              (pMultipleTrustee         => null,
+               MultipleTrusteeOperation => Win32.AccCtrl.NO_MULTIPLE_TRUSTEE,
+               TrusteeForm              => Win32.AccCtrl.TRUSTEE_IS_SID,
+               TrusteeType              => Win32.AccCtrl.TRUSTEE_IS_GROUP,
+               ptstrName                => Win32.AccCtrl.To_LPSTR (GSID))),
+         PWP.O =>
+           (grfAccessPermissions => 0,
+            grfAccessMode        => Win32.AccCtrl.SET_ACCESS,
+            grfInheritance       => Win32.AccCtrl.NO_INHERITANCE,
+            vTrustee             =>
+              (pMultipleTrustee         => null,
+               MultipleTrusteeOperation => Win32.AccCtrl.NO_MULTIPLE_TRUSTEE,
+               TrusteeForm              => Win32.AccCtrl.TRUSTEE_IS_SID,
+               TrusteeType              =>
+                 Win32.AccCtrl.TRUSTEE_IS_WELL_KNOWN_GROUP,
+               ptstrName                => Win32.AccCtrl.To_LPSTR (ESID))));
+
+      --  Add the permissons in corresponding grfAccessPermissions
+
+      for P in Permission'Range  loop
+         if Permission (P) then
+            EA (PWP.Masks_P2W (P).Group).grfAccessPermissions :=
+              EA (PWP.Masks_P2W (P).Group).grfAccessPermissions
+              or PWP.Masks_P2W (P).Mask;
+         end if;
+      end loop;
+
+      --  Set back the explicit access
+
+      Ret := Win32.Aclapi.SetEntriesInAcl
+        (cCountOfExplicitEntries => EA'Length,
+         pListOfExplicitEntries  => EA (EA'First)'Unchecked_Access,
+         OldAcl                  => null,
+         NewAcl                  => DACL'Access);
+
+      POSIX_Win32.Check_Retcode (Ret, "Change_Permissions.SetEntriesInAcl");
+
+      Ret := Win32.Aclapi.SetNamedSecurityInfo
+        (Win32.Addr (L_Pathname),
+         Win32.AccCtrl.SE_FILE_OBJECT,
+         Win32.Winnt.DACL_SECURITY_INFORMATION,
+         System.Null_Address,
+         System.Null_Address,
+         DACL,
+         null);
+
+      POSIX_Win32.Check_Retcode
+        (Ret, "Change_Permissions.SetNamedSecurityInfo");
    end Change_Permissions;
 
    ----------------------
