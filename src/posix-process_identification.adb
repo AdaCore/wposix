@@ -25,14 +25,19 @@
 --  covered by the  GNU Public License.                                     --
 ------------------------------------------------------------------------------
 
+with Ada.Streams;
 with Ada.Strings.Fixed;
 
 with POSIX_Win32;
+with Win32.Winnt;
+with Win32.Winternl;
 
 package body POSIX.Process_Identification is
 
-   Default_UID : constant := 500;
-   Default_GID : constant := 100;
+   use Ada.Streams;
+
+   Default_GID : constant Group_ID := To_Bounded_String ("S-1-5-32-545");
+   --  This is the well-known "users" group which is available everywhere
 
    --  Process Identification
 
@@ -46,7 +51,7 @@ package body POSIX.Process_Identification is
    is
       pragma Warnings (Off, Process);
    begin
-      Process_Group := Default_GID;
+      Process_Group := Process_Group_ID (Default_GID);
    end Create_Process_Group;
 
    --------------------
@@ -55,7 +60,7 @@ package body POSIX.Process_Identification is
 
    procedure Create_Session (Session_Leader : out Process_Group_ID) is
    begin
-      Session_Leader := Default_GID;
+      Session_Leader := Process_Group_ID (Default_GID);
    end Create_Session;
 
    ----------------------------
@@ -82,7 +87,7 @@ package body POSIX.Process_Identification is
 
    function Get_Groups return Group_List is
    begin
-      return Group_List'(1 .. 0 => 0);
+      return Group_List'(1 .. 0 => Default_GID);
    end Get_Groups;
 
    --------------------
@@ -134,7 +139,7 @@ package body POSIX.Process_Identification is
 
    function Get_Process_Group_ID return Process_Group_ID is
    begin
-      return Process_Group_ID (Default_GID);
+      return Process_Group_ID (Get_Real_Group_ID);
    end Get_Process_Group_ID;
 
    --------------------
@@ -153,8 +158,44 @@ package body POSIX.Process_Identification is
    -----------------------
 
    function Get_Real_Group_ID return Group_ID is
+      Proc  : Win32.Winnt.HANDLE;
+      Token : aliased Win32.Winnt.HANDLE;
+      Res   : Win32.BOOL;
+      pragma Warnings (Off, Res);
    begin
-      return Default_GID;
+      --  The current process
+
+      Proc := Win32.Winbase.GetCurrentProcess;
+
+      --  Process's information token
+
+      Res := Win32.Winbase.OpenProcessToken
+        (Proc, Win32.Winnt.TOKEN_QUERY, Token'Unchecked_Access);
+
+      POSIX_Win32.Check_Result (Res, "Get_Real_Group_ID.OpenProcessToken");
+
+      --  The process information
+
+      declare
+         Buffer_Len : constant := 256;
+         Buffer     : Stream_Element_Array (1 .. 256);
+         Group      : Win32.Winnt.TOKEN_PRIMARY_GROUP;
+         for Group'Address use Buffer'Address;
+         Len        : aliased Win32.DWORD;
+      begin
+         Res := Win32.Winbase.GetTokenInformation
+           (TokenHandle            => Token,
+            TokenInformationClass  => Win32.Winnt.TokenPrimaryGroup,
+            TokenInformation       => Group'Address,
+            TokenInformationLength => Buffer_Len,
+            ReturnLength           => Len'Access);
+
+         POSIX_Win32.Check_Result
+           (Res, "Get_Real_Group_ID.GetTokenInformation");
+
+         Res := Win32.Winbase.CloseHandle (Token);
+         return Value (POSIX_Win32.To_String (Group.PrimaryGroup));
+      end;
    end Get_Real_Group_ID;
 
    ----------------------
@@ -162,8 +203,44 @@ package body POSIX.Process_Identification is
    ----------------------
 
    function Get_Real_User_ID return User_ID is
+      Proc  : Win32.Winnt.HANDLE;
+      Token : aliased Win32.Winnt.HANDLE;
+      Res   : Win32.BOOL;
+      pragma Warnings (Off, Res);
    begin
-      return User_ID (Default_UID);
+      --  The current process
+
+      Proc := Win32.Winbase.GetCurrentProcess;
+
+      --  Process's information token
+
+      Res := Win32.Winbase.OpenProcessToken
+        (Proc, Win32.Winnt.TOKEN_QUERY, Token'Unchecked_Access);
+      POSIX_Win32.Check_Result (Res, "Get_Real_User_ID.OpenProcessToken");
+
+      --  The process information
+
+      declare
+         Buffer_Len : constant := 256;
+         Buffer     : Stream_Element_Array (1 .. 256);
+         User       : Win32.Winnt.TOKEN_USER;
+         for User'Address use Buffer'Address;
+         Len        : aliased Win32.DWORD;
+      begin
+         Res := Win32.Winbase.GetTokenInformation
+           (TokenHandle            => Token,
+            TokenInformationClass  => Win32.Winnt.TokenUser,
+            TokenInformation       => User'Address,
+            TokenInformationLength => Buffer_Len,
+            ReturnLength           => Len'Access);
+
+         POSIX_Win32.Check_Result
+           (Res, "Get_Real_User_ID.GetTokenInformation");
+
+         Res := Win32.Winbase.CloseHandle (Token);
+
+         return Value (POSIX_Win32.To_String (User.User.Sid));
+      end;
    end Get_Real_User_ID;
 
    -----------
@@ -180,19 +257,18 @@ package body POSIX.Process_Identification is
    function Image (ID : Process_Group_ID) return String is
       use Ada;
    begin
-      return Strings.Fixed.Trim (Process_Group_ID'Image (ID), Strings.Left);
+      return To_String (ID);
    end Image;
 
    function Image (ID : Group_ID) return String is
-      use Ada;
    begin
-      return Strings.Fixed.Trim (Group_ID'Image (ID), Strings.Left);
+      return To_String (ID);
    end Image;
 
    function Image (ID : User_ID) return String is
       use Ada;
    begin
-      return Strings.Fixed.Trim (User_ID'Image (ID), Strings.Left);
+      return To_String (ID);
    end Image;
 
    ------------------
@@ -235,12 +311,12 @@ package body POSIX.Process_Identification is
 
    function Value (Str : String) return Group_ID is
    begin
-      return Group_ID'Value (Str);
+      return To_Bounded_String (Str);
    end Value;
 
    function Value (Str : String) return Process_Group_ID is
    begin
-      return Process_Group_ID'Value (Str);
+      return To_Bounded_String (Str);
    end Value;
 
    function Value (Str : String) return Process_ID is
@@ -251,7 +327,7 @@ package body POSIX.Process_Identification is
 
    function Value (Str : String) return User_ID is
    begin
-      return User_ID'Value (Str);
+      return To_Bounded_String (Str);
    end Value;
 
 end POSIX.Process_Identification;

@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                       Copyright (C) 2010, AdaCore                        --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -25,24 +25,69 @@
 --  covered by the  GNU Public License.                                     --
 ------------------------------------------------------------------------------
 
-with "win32ada";
+with Ada.Text_IO;
+with Ada.Strings.Fixed;
 
-with "shared";
+with POSIX.File_Status;
+with POSIX.Process_Identification;
 
-project wPOSIX is
+procedure Owner is
 
-   for Source_Dirs use ("src");
+   use Ada;
+   use POSIX;
 
-   for Object_Dir use Shared'Object_Dir;
+   procedure Validate (SID, Name : String);
+   --  Validate string structure
 
-   for Library_Name use "wposix";
-   for Library_Dir use Shared'Library_Dir;
-   for Library_Kind use Shared.Library_Type;
-   for Library_Options use ("-lntdll");
+   --------------
+   -- Validate --
+   --------------
 
-   package Ide renames Shared.Ide;
-   package Compiler renames Shared.Compiler;
-   package Binder renames Shared.Binder;
-   package Builder renames Shared.Builder;
+   procedure Validate (SID, Name : String) is
+   begin
+      if SID (SID'First .. SID'First + 7) = "S-1-5-21"
+        and then Strings.Fixed.Count (SID, "-") = 7
+      then
+         Text_IO.Put_Line ("OK " & Name & " seems correct.");
+      else
+         Text_IO.Put_Line ("NOK " & Name & " seems wrong: " & SID);
+      end if;
+   end Validate;
 
-end wPOSIX;
+   Status : File_Status.Status;
+   UID    : Process_Identification.User_ID;
+   GID    : Process_Identification.Group_ID;
+
+begin
+   Status := File_Status.Get_File_Status ("test.py");
+   UID := File_Status.Owner_Of (Status);
+   GID := File_Status.Group_Of (Status);
+
+   declare
+      F_UID : constant String := Process_Identification.Image (UID);
+      F_GID : constant String := Process_Identification.Image (GID);
+      P_UID : constant String :=
+                Process_Identification.Image
+                  (Process_Identification.Get_Real_User_ID);
+      P_GID : constant String :=
+                Process_Identification.Image
+                  (Process_Identification.Get_Real_Group_ID);
+   begin
+      if F_UID = P_UID then
+         Text_IO.Put_Line ("OK, F/P UID");
+      else
+         Text_IO.Put_Line ("NOK, F/P UID, " & F_UID & "," & P_UID);
+      end if;
+
+      if F_GID = P_GID then
+         Text_IO.Put_Line ("OK, F/P GID");
+      else
+         Text_IO.Put_Line ("NOK, F/P GID, " & F_GID & "," & P_GID);
+      end if;
+
+      Validate (F_UID, "F_UID");
+      Validate (F_GID, "F_GID");
+      Validate (P_UID, "P_UID");
+      Validate (P_GID, "P_GID");
+   end;
+end Owner;

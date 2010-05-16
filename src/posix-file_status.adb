@@ -26,8 +26,11 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
+with System;
 
-with Win32.Winnt;
+with Win32.Aclapi;
+with Win32.AccCtrl;
 
 with POSIX_Win32;
 with POSIX_Win32.File_Handle;
@@ -51,6 +54,18 @@ package body POSIX.File_Status is
                           wDay       => 01,
                           others     => 0); -- Time
 
+   procedure Get_Shared_Data (File_Status : Status);
+   --  Retreive the owner/group for the give file
+
+   ------------
+   -- Adjust --
+   ------------
+
+   overriding procedure Adjust (File_Status : in out Status) is
+   begin
+      File_Status.Data.Ref_Count := File_Status.Data.Ref_Count + 1;
+   end Adjust;
+
    ------------------
    -- Device_ID_Of --
    ------------------
@@ -72,6 +87,34 @@ package body POSIX.File_Status is
       POSIX_Win32.Raise_Not_Yet_Implemented ("File_ID_Of");
       return (0, 0); -- to please compiler
    end File_ID_Of;
+
+   --------------
+   -- Finalize --
+   --------------
+
+   overriding procedure Finalize (File_Status : in out Status) is
+      use type Win32.Winnt.PSID;
+
+      procedure Unchecked_Free is
+        new Unchecked_Deallocation (Shared_Data, Shared_Data_Access);
+
+      V : Win32.PVOID;
+      pragma Unreferenced (V);
+   begin
+      File_Status.Data.Ref_Count := File_Status.Data.Ref_Count - 1;
+
+      if File_Status.Data.Ref_Count = 0 then
+         if File_Status.Data.Owner /= System.Null_Address then
+            V := Win32.Winbase.FreeSid (File_Status.Data.Owner);
+         end if;
+
+         if File_Status.Data.Group /= System.Null_Address then
+            V := Win32.Winbase.FreeSid (File_Status.Data.Group);
+         end if;
+
+         Unchecked_Free (File_Status.Data);
+      end if;
+   end Finalize;
 
    ---------------------
    -- Get_File_Status --
@@ -132,20 +175,29 @@ package body POSIX.File_Status is
             --  Make up some fake information for this file.  It has the
             --  correct file attributes but times are unknown.
 
-            File_Status := (Is_Executable    => False,
-                            File_Attributes  => File_Attributes,
-                            Creation_Time    => Epoch,
-                            Last_Access_Time => Epoch,
-                            Last_Write_Time  => Epoch,
-                            File_Size_Low    => 0,
-                            File_Size_High   => 0,
-                            File_Links       => 1,
-                            File_Type        => Win32.Winbase.FILE_TYPE_DISK);
+            File_Status :=
+              (Finalization.Controlled with
+               File             => 0,
+               File_Name        => To_Unbounded_String (To_String (Pathname)),
+               Is_Executable    => False,
+               File_Attributes  => File_Attributes,
+               Creation_Time    => Epoch,
+               Last_Access_Time => Epoch,
+               Last_Write_Time  => Epoch,
+               File_Size_Low    => 0,
+               File_Size_High   => 0,
+               File_Links       => 1,
+               File_Type        => Win32.Winbase.FILE_TYPE_DISK,
+               Data             => new
+                 Shared_Data'(System.Null_Address, System.Null_Address, 1));
          end if;
 
       else
          File_Status :=
-           (Is_Executable    => POSIX_Win32.Is_Executable (Pathname),
+           (Finalization.Controlled with
+            File             => 0,
+            File_Name        => To_Unbounded_String (To_String (Pathname)),
+            Is_Executable    => POSIX_Win32.Is_Executable (Pathname),
             File_Attributes  => Find_Data.dwFileAttributes,
             Creation_Time    => Find_Data.ftCreationTime,
             Last_Access_Time => Find_Data.ftLastAccessTime,
@@ -153,7 +205,9 @@ package body POSIX.File_Status is
             File_Size_Low    => Find_Data.nFileSizeLow,
             File_Size_High   => Find_Data.nFileSizeHigh,
             File_Links       => 1,
-            File_Type        => Win32.Winbase.FILE_TYPE_DISK);
+            File_Type        => Win32.Winbase.FILE_TYPE_DISK,
+            Data             => new
+              Shared_Data'(System.Null_Address, System.Null_Address, 1));
 
          Result := Win32.Winbase.FindClose (Handle);
       end if;
@@ -177,28 +231,110 @@ package body POSIX.File_Status is
         (Handle, File_Information'Unchecked_Access);
       POSIX_Win32.Check_Result (Result, "Get_File_Status (File_Descriptor)");
 
-      return (File_Attributes  => File_Information.dwFileAttributes,
-              Is_Executable    => False,   -- No way to know at that point...
-              Creation_Time    => File_Information.ftCreationTime,
-              Last_Access_Time => File_Information.ftLastAccessTime,
-              Last_Write_Time  => File_Information.ftLastWriteTime,
-              File_Size_Low    => File_Information.nFileSizeLow,
-              File_Size_High   => File_Information.nFileSizeHigh,
-              File_Links       => File_Information.nNumberOfLinks,
-              File_Type        => Win32.Winbase.GetFileType (Handle));
+      return
+        (Finalization.Controlled with
+         File             => File,
+         File_Name        => Null_Unbounded_String,
+         File_Attributes  => File_Information.dwFileAttributes,
+         Is_Executable    => False,   -- No way to know at that point...
+         Creation_Time    => File_Information.ftCreationTime,
+         Last_Access_Time => File_Information.ftLastAccessTime,
+         Last_Write_Time  => File_Information.ftLastWriteTime,
+         File_Size_Low    => File_Information.nFileSizeLow,
+         File_Size_High   => File_Information.nFileSizeHigh,
+         File_Links       => File_Information.nNumberOfLinks,
+         File_Type        => Win32.Winbase.GetFileType (Handle),
+         Data             => new
+           Shared_Data'(System.Null_Address, System.Null_Address, 1));
    end Get_File_Status;
+
+   ---------------------
+   -- Get_Shared_Data --
+   ---------------------
+
+   procedure Get_Shared_Data (File_Status : Status) is
+      pragma Warnings (Off);
+      use type Win32.Winnt.HANDLE;
+      use type Win32.DWORD;
+      use type Win32.Winnt.SECURITY_INFORMATION;
+      Handle   : Win32.Winnt.HANDLE;
+      Close    : Boolean := False;
+      Res      : Win32.BOOL;
+      Ret      : Win32.DWORD;
+      SD       : aliased Win32.Winnt.SECURITY_DESCRIPTOR;
+   begin
+      if File_Status.Data = null then
+         POSIX_Win32.Raise_Error
+           ("Get_Shared_Data, status invalid", POSIX.Invalid_Argument);
+
+      elsif File_Status.Data.Owner = System.Null_Address
+        or else File_Status.Data.Group = System.Null_Address
+      then
+         if File_Status.File_Name = Null_Unbounded_String then
+            Handle := POSIX_Win32.File_Handle.Get (File_Status.File);
+
+         else
+            declare
+               L_Name : constant String :=
+                          To_String (File_Status.File_Name) & ASCII.NUL;
+            begin
+               Handle := Win32.Winbase.CreateFile
+                 (lpFileName            => Win32.Addr (L_Name),
+                  dwDesiredAccess       => Win32.Winnt.GENERIC_READ,
+                  dwShareMode           => Win32.Winnt.FILE_SHARE_READ,
+                  lpSecurityAttributes  => null,
+                  dwCreationDisposition => Win32.Winbase.OPEN_EXISTING,
+                  dwFlagsAndAttributes  => Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
+                  hTemplateFile         => POSIX_Win32.Null_Handle);
+               Close := True;
+            end;
+         end if;
+
+         if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
+            POSIX_Win32.Raise_Last_Error ("Get_Owner_Group_Of.CreateFile");
+         end if;
+
+         Ret := Win32.Aclapi.GetSecurityInfo
+           (Handle,
+            Win32.AccCtrl.SE_FILE_OBJECT,
+            Win32.Winnt.OWNER_SECURITY_INFORMATION +
+              Win32.Winnt.GROUP_SECURITY_INFORMATION,
+            File_Status.Data.Owner'Access,
+            File_Status.Data.Group'Access,
+            null,
+            null,
+            SD'Address);
+
+         POSIX_Win32.Check_Retcode (Ret, "Get_Owner_Group_Of.GetSecurityInfo");
+
+         if Close then
+            Res := Win32.Winbase.CloseHandle (Handle);
+         end if;
+      end if;
+   end Get_Shared_Data;
 
    --------------
    -- Group_Of --
    --------------
 
    function Group_Of
-     (File_Status : Status) return POSIX.Process_Identification.Group_ID
-   is
-      pragma Warnings (Off, File_Status);
+     (File_Status : Status) return POSIX.Process_Identification.Group_ID is
    begin
-      return POSIX.Process_Identification.Get_Real_Group_ID;
+      Get_Shared_Data (File_Status);
+
+      return Process_Identification.Value
+        (POSIX_Win32.To_String (File_Status.Data.Group));
    end Group_Of;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   overriding procedure Initialize (File_Status : in out Status) is
+   begin
+      File_Status.Data :=
+        new Shared_Data'(System.Null_Address, System.Null_Address, 1);
+   end Initialize;
 
    ---------------------------
    -- Is_Block_Special_File --
@@ -329,11 +465,12 @@ package body POSIX.File_Status is
    --------------
 
    function Owner_Of
-     (File_Status : Status) return POSIX.Process_Identification.User_ID
-   is
-      pragma Warnings (Off, File_Status);
+     (File_Status : Status) return POSIX.Process_Identification.User_ID is
    begin
-      return POSIX.Process_Identification.Get_Real_User_ID;
+      Get_Shared_Data (File_Status);
+
+      return Process_Identification.Value
+        (POSIX_Win32.To_String (File_Status.Data.Owner));
    end Owner_Of;
 
    -----------------------

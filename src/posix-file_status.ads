@@ -30,7 +30,10 @@ with POSIX.Process_Identification;
 with POSIX.IO;
 with POSIX.Calendar;
 
+private with Ada.Finalization;
+private with Ada.Strings.Unbounded;
 private with Win32.Winbase;
+private with Win32.Winnt;
 
 package POSIX.File_Status is
 
@@ -94,7 +97,19 @@ package POSIX.File_Status is
 
 private
 
-   type Status is record
+   use Ada;
+   use Ada.Strings.Unbounded;
+
+   type Shared_Data is record
+      Owner, Group : aliased Win32.Winnt.PSID;
+      Ref_Count    : Natural;
+   end record;
+
+   type Shared_Data_Access is access all Shared_Data;
+
+   type Status is new Finalization.Controlled with record
+      File             : POSIX.IO.File_Descriptor := 0;
+      File_Name        : Unbounded_String;
       Is_Executable    : Boolean     := False;
       File_Attributes  : Win32.DWORD := 0;
       Creation_Time    : Win32.Winbase.FILETIME;
@@ -104,7 +119,12 @@ private
       File_Size_High   : Win32.DWORD := 0;
       File_Links       : Win32.DWORD := 0;
       File_Type        : Win32.DWORD := Win32.Winbase.FILE_TYPE_UNKNOWN;
+      Data             : Shared_Data_Access;
    end record;
+
+   overriding procedure Initialize (File_Status : in out Status);
+   overriding procedure Finalize (File_Status : in out Status);
+   overriding procedure Adjust (File_Status : in out Status);
 
    type File_ID is record
       Low, High : Win32.DWORD;

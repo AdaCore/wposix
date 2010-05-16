@@ -27,6 +27,7 @@
 
 with System;
 
+private with Ada.Strings.Bounded;
 private with Win32.Winbase;
 
 package POSIX.Process_Identification is
@@ -111,8 +112,11 @@ private
 
    System_Process_ID : constant Process_ID := Null_Process_ID;
 
-   type Process_Group_ID is new Integer;
-   type User_ID is new Integer;
-   type Group_ID is new Integer;
+   package Sid_Object is
+     new Ada.Strings.Bounded.Generic_Bounded_Length (Max => 60);
+
+   type Process_Group_ID is new Sid_Object.Bounded_String;
+   type User_ID is new Sid_Object.Bounded_String;
+   type Group_ID is new Sid_Object.Bounded_String;
 
 end POSIX.Process_Identification;
