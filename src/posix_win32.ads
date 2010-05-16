@@ -95,4 +95,7 @@ private package POSIX_Win32 is
      (Process : PPI.Process_ID) return Win32.Winnt.HANDLE;
    --  Returns Win32 Handle for the given process
 
+   function To_String (SID : Win32.Winnt.PSID) return String;
+   --  Convert a SID to a
+
 end POSIX_Win32;

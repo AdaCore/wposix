@@ -28,9 +28,11 @@
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Interfaces.C;
+with Interfaces.C.Strings;
 
+with Win32.Sddl;
 with Win32.Winbase;
+with Win32.Windef;
 with Win32.Winerror;
 
 package body POSIX_Win32 is
@@ -394,6 +396,29 @@ package body POSIX_Win32 is
    begin
       Process_List.Remove (Child);
    end Remove_Child;
+
+   ---------------
+   -- To_String --
+   ---------------
+
+   function To_String (SID : Win32.Winnt.PSID) return String is
+      CSID : aliased Win32.Winnt.LPTSTR := null;
+      Res  : Win32.BOOL;
+   begin
+      Res := Win32.Sddl.ConvertSidToStringSid (SID, CSID'Access);
+
+      POSIX_Win32.Check_Result (Res, "ConvertSidToStringSid");
+
+      declare
+         SID_Str : constant String :=
+                     Interfaces.C.Strings.Value (Win32.To_Chars_Ptr (CSID));
+         H       : Win32.Windef.HLOCAL;
+         pragma Unreferenced (H);
+      begin
+         H := Win32.Winbase.LocalFree (CSID);
+         return SID_Str;
+      end;
+   end To_String;
 
    ----------
    -- Wait --
