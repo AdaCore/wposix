@@ -31,6 +31,7 @@ with Ada.Unchecked_Deallocation;
 with Interfaces.C;
 
 with Win32.Winbase;
+with Win32.Winerror;
 
 package body POSIX_Win32 is
 
@@ -109,18 +110,14 @@ package body POSIX_Win32 is
    -------------------
 
    procedure Check_Retcode
-     (RETCODE : Win32.INT;
+     (RETCODE : Win32.DWORD;
       Fct     : String) is
    begin
-      if RETCODE = Retcode_Error then
-         declare
-            Code : constant Win32.DWORD := Win32.Winbase.GetLastError;
-         begin
-            POSIX.Set_Error_Code (POSIX.Error_Code (Code));
-            Ada.Exceptions.Raise_Exception
-              (POSIX.POSIX_Error'Identity,
-               Message => Fct & " : errno = " & Win32.DWORD'Image (Code));
-         end;
+      if RETCODE /= Win32.Winerror.ERROR_SUCCESS then
+         POSIX.Set_Error_Code (POSIX.Error_Code (RETCODE));
+         Ada.Exceptions.Raise_Exception
+           (POSIX.POSIX_Error'Identity,
+            Message => Fct & " : errno = " & Win32.DWORD'Image (RETCODE));
       end if;
    end Check_Retcode;
 
@@ -284,9 +281,6 @@ package body POSIX_Win32 is
         (Status :    out PPP.Termination_Status;
          Block  :        Boolean)
       is
-
-         use type Interfaces.C.unsigned_long;
-
          type Exit_Stat is mod 2 ** Integer'Size;
 
          type Termination_Status is record
@@ -371,6 +365,15 @@ package body POSIX_Win32 is
          Message => Message &
          " : Error_Code = " & POSIX.Error_Code'Image (Error_Code));
    end Raise_Error;
+
+   ----------------------
+   -- Raise_Last_Error --
+   ----------------------
+
+   procedure Raise_Last_Error (Fct : String) is
+   begin
+      Raise_Error (Fct, POSIX.Error_Code (Win32.Winbase.GetLastError));
+   end Raise_Last_Error;
 
    -------------------------------
    -- Raise_Not_Yet_Implemented --

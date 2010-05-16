@@ -228,8 +228,7 @@ package body POSIX.Process_Primitives is
             System.Null_Address);
 
          if H = Win32.Winbase.INVALID_HANDLE_VALUE then
-            POSIX_Win32.Check_Retcode
-              (POSIX_Win32.Retcode_Error, "Template : Create_File " & Name);
+            POSIX_Win32.Raise_Last_Error ("Template : Create_File " & Name);
          end if;
          return H;
       end Create_File;
@@ -272,8 +271,7 @@ package body POSIX.Process_Primitives is
             System.Null_Address);
 
          if H = Win32.Winbase.INVALID_HANDLE_VALUE then
-            POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error,
-                                       "Template : Open_File " & Name);
+            POSIX_Win32.Raise_Last_Error ("Template : Open_File " & Name);
          end if;
          return H;
       end Open_File;

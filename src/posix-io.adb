@@ -117,8 +117,7 @@ package body POSIX.IO is
             Win32.Winbase.FILE_END);
 
          if Low_Position = 16#FFFF_FFFF# then
-            POSIX_Win32.Check_Retcode
-              (POSIX_Win32.Retcode_Error, "Check_Append");
+            POSIX_Win32.Raise_Last_Error ("Check_Append");
          end if;
       end if;
    end Check_Append;
@@ -262,7 +261,7 @@ package body POSIX.IO is
          File_Size_High'Unchecked_Access);
 
       if File_Size_Low = 16#FFFF_FFFF# then
-         POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error, "File_Size");
+         POSIX_Win32.Raise_Last_Error ("File_Size");
       end if;
 
       return POSIX.IO_Count (File_Size_Low);
@@ -452,7 +451,7 @@ package body POSIX.IO is
          POSIX_Win32.Null_Handle);
 
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
-         POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error, "Open");
+         POSIX_Win32.Raise_Last_Error ("Open");
       end if;
 
       Check_Append (Handle, Options);
@@ -531,8 +530,7 @@ package body POSIX.IO is
          POSIX_Win32.Null_Handle);
 
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
-         POSIX_Win32.Check_Retcode
-           (POSIX_Win32.Retcode_Error, "Open_Or_Create");
+         POSIX_Win32.Raise_Last_Error ("Open_Or_Create");
       end if;
 
       Check_Append (Handle, Options);
@@ -594,7 +592,7 @@ package body POSIX.IO is
          To_Origin (Starting_Point));
 
       if Low_Position = 16#FFFF_FFFF# then
-         POSIX_Win32.Check_Retcode (POSIX_Win32.Retcode_Error, "Seek");
+         POSIX_Win32.Raise_Last_Error ("Seek");
       else
          Result := IO_Offset (Low_Position);
       end if;

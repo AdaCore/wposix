@@ -103,8 +103,7 @@ package body POSIX.Files is
    begin
       Attributes := Win32.Winbase.GetFileAttributes (Win32.Addr (L_Pathname));
       if Attributes = 16#FFFF_FFFF# then
-         POSIX_Win32.Check_Retcode
-           (POSIX_Win32.Retcode_Error, "Change_Permissions");
+         POSIX_Win32.Raise_Last_Error ("Change_Permissions");
       end if;
 
       if Permission (Owner_Read) and then Permission (Owner_Write) then

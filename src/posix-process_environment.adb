@@ -530,8 +530,7 @@ package body POSIX.Process_Environment is
         (Win32.DWORD (Max_Len), Win32.Addr (Buffer));
 
       if Number_Bytes = 0 then
-         POSIX_Win32.Check_Retcode
-           (POSIX_Win32.Retcode_Error, "Get_Working_Directory");
+         POSIX_Win32.Raise_Last_Error ("Get_Working_Directory");
       end if;
 
       declare

@@ -38,20 +38,24 @@ private package POSIX_Win32 is
    package PPP renames POSIX.Process_Primitives;
    package PPI renames POSIX.Process_Identification;
 
-   use type Win32.INT;
+   use type Win32.DWORD;
 
    POSIX_Not_Yet_Implemented : exception;
 
-   Retcode_Error : Win32.INT := -1;
+   Retcode_Error : Win32.DWORD := -1;
 
    procedure Raise_Not_Yet_Implemented (Message : String);
    pragma No_Return (Raise_Not_Yet_Implemented);
    --  Raise POSIX_Not_Yet_Implemented exception with Message
 
-   procedure Check_Retcode (RETCODE : Win32.INT; Fct : String);
+   procedure Check_Retcode (RETCODE : Win32.DWORD; Fct : String);
    pragma Inline (Check_Retcode);
    --  Call Raise_Error with current error code if RETCODE is set to
    --  Retcode_Error.
+
+   procedure Raise_Last_Error (Fct : String);
+   pragma Inline (Raise_Last_Error);
+   --  Raise an exception with the last error code
 
    procedure Check_Result (RETCODE : Win32.BOOL; Fct : String);
    pragma Inline (Check_Result);
