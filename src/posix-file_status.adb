@@ -35,63 +35,9 @@ with Win32.AccCtrl;
 
 with POSIX_Win32;
 with POSIX_Win32.File_Handle;
+with POSIX_Win32.Permissions;
 
 package body POSIX.File_Status is
-
-   --  Notes about POSIX permissions mapping on Win32.
-   --
-   --  POSIX defines Read/Write/Executer permissions for user the group and
-   --  others. Win32 ACL is capable to defined far more subtle permissions.
-   --  Yet, for the implementation it is needed to map the POSIX permissions to
-   --  the Win32 ACL by using some convention. It must be noted that the work
-   --  here has been largely inspired by the Cygwin model.
-   --
-   --  USER:
-   --     Permissions for the user are directly mapped to the Win32
-   --     permissions granted to the owner of the file.
-   --
-   --  GROUP:
-   --     Permissions for the group are directly mapped to the Win32
-   --     permissions granted to the primary group of the file.
-   --
-   --  OTHERS:
-   --     Permissions for the others are directly mapped to the Win32
-   --     permissions granted to the Everyone group of the file.
-   --
-   --  The permissions are used from the Win32 access mask. The ACL can be
-   --  inherited, this implementation does not handle the inheritance at all.
-   --  The permissions are read only from the explicit access set on a file.
-   --
-   --  READ:
-   --     Uses the FILE_READ_DATA bit on the access mask.
-   --
-   --  WRITE:
-   --     Uses the FILE_WRITE_DATA bit on the access mask.
-   --
-   --  EXECUTE:
-   --     Uses the FILE_EXECUTE bit on the access mask.
-   --
-
-   type UGO is (U, G, O); -- User, Group, Others
-   type RWX is (R, W, X); -- Read, Write, Execute
-
-   type M is record
-      Perm : Permissions.Permission;
-      Mask : Win32.DWORD;
-   end record;
-
-   package Winnt renames Win32.Winnt;
-
-   Masks : constant array (UGO, RWX) of M :=
-             (U => (R => (Permissions.Owner_Read, Winnt.FILE_READ_DATA),
-                    W => (Permissions.Owner_Write, Winnt.FILE_WRITE_DATA),
-                    X => (Permissions.Owner_Execute, Winnt.FILE_EXECUTE)),
-              G => (R => (Permissions.Group_Read, Winnt.FILE_READ_DATA),
-                    W => (Permissions.Group_Write, Winnt.FILE_WRITE_DATA),
-                    X => (Permissions.Group_Execute, Winnt.FILE_EXECUTE)),
-              O => (R => (Permissions.Others_Read, Winnt.FILE_READ_DATA),
-                    W => (Permissions.Others_Write, Winnt.FILE_WRITE_DATA),
-                    X => (Permissions.Others_Execute, Winnt.FILE_EXECUTE)));
 
    Epoch : aliased Win32.Winbase.FILETIME;
    --  Oldest date for DOS, used for times of /
@@ -641,32 +587,34 @@ package body POSIX.File_Status is
                   declare
                      SID : constant Win32.Winnt.PSID :=
                               Win32.AccCtrl.To_PSID (P.vTrustee.ptstrName);
-                     OI  : UGO;
+                     OI  : POSIX_Win32.Permissions.UGO;
                   begin
                      if Win32.Winbase.IsValidSid (SID) = Win32.TRUE then
                         if Win32.Winbase.EqualSid (SID, File_Status.Data.Owner)
                           = Win32.TRUE
                         then
                            --  This is the owner
-                           OI := U;
+                           OI := POSIX_Win32.Permissions.U;
 
                         elsif Win32.Winbase.EqualSid
                           (SID, File_Status.Data.Group) = Win32.TRUE
                         then
                            --  This is the group
-                           OI := G;
+                           OI := POSIX_Win32.Permissions.G;
 
                         elsif POSIX_Win32.To_String (SID)
                           = POSIX_Win32.Everyone_SID
                         then
                            --  This is everyone
-                           OI := O;
+                           OI := POSIX_Win32.Permissions.O;
                         end if;
 
-                        for Mode in RWX'Range loop
-                           Set (Masks (OI, Mode).Perm,
+                        for Mode in POSIX_Win32.Permissions.RWX'Range loop
+                           Set (POSIX_Win32.Permissions.Masks_W2P
+                                (OI, Mode).Perm,
                                 P.grfAccessPermissions,
-                                Masks (OI, Mode).Mask,
+                                POSIX_Win32.Permissions.Masks_W2P
+                                  (OI, Mode).Mask,
                                 P.grfAccessMode);
                         end loop;
                      end if;
