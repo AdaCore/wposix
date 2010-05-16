@@ -102,6 +102,7 @@ private
 
    type Shared_Data is record
       Owner, Group : aliased Win32.Winnt.PSID;
+      DACL         : aliased Win32.Winnt.PACL;
       Ref_Count    : Natural;
    end record;
 

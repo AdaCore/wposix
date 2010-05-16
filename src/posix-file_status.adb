@@ -27,6 +27,7 @@
 
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with Interfaces.C.Pointers;
 with System;
 
 with Win32.Aclapi;
@@ -37,7 +38,60 @@ with POSIX_Win32.File_Handle;
 
 package body POSIX.File_Status is
 
-   --  Operations to Obtain File Status
+   --  Notes about POSIX permissions mapping on Win32.
+   --
+   --  POSIX defines Read/Write/Executer permissions for user the group and
+   --  others. Win32 ACL is capable to defined far more subtle permissions.
+   --  Yet, for the implementation it is needed to map the POSIX permissions to
+   --  the Win32 ACL by using some convention. It must be noted that the work
+   --  here has been largely inspired by the Cygwin model.
+   --
+   --  USER:
+   --     Permissions for the user are directly mapped to the Win32
+   --     permissions granted to the owner of the file.
+   --
+   --  GROUP:
+   --     Permissions for the group are directly mapped to the Win32
+   --     permissions granted to the primary group of the file.
+   --
+   --  OTHERS:
+   --     Permissions for the others are directly mapped to the Win32
+   --     permissions granted to the Everyone group of the file.
+   --
+   --  The permissions are used from the Win32 access mask. The ACL can be
+   --  inherited, this implementation does not handle the inheritance at all.
+   --  The permissions are read only from the explicit access set on a file.
+   --
+   --  READ:
+   --     Uses the FILE_READ_DATA bit on the access mask.
+   --
+   --  WRITE:
+   --     Uses the FILE_WRITE_DATA bit on the access mask.
+   --
+   --  EXECUTE:
+   --     Uses the FILE_EXECUTE bit on the access mask.
+   --
+
+   type UGO is (U, G, O); -- User, Group, Others
+   type RWX is (R, W, X); -- Read, Write, Execute
+
+   type M is record
+      Perm : Permissions.Permission;
+      Mask : Win32.DWORD;
+   end record;
+
+   package Winnt renames Win32.Winnt;
+
+   Masks : constant array (UGO, RWX) of M :=
+             (U => (R => (Permissions.Owner_Read, Winnt.FILE_READ_DATA),
+                    W => (Permissions.Owner_Write, Winnt.FILE_WRITE_DATA),
+                    X => (Permissions.Owner_Execute, Winnt.FILE_EXECUTE)),
+              G => (R => (Permissions.Group_Read, Winnt.FILE_READ_DATA),
+                    W => (Permissions.Group_Write, Winnt.FILE_WRITE_DATA),
+                    X => (Permissions.Group_Execute, Winnt.FILE_EXECUTE)),
+              O => (R => (Permissions.Others_Read, Winnt.FILE_READ_DATA),
+                    W => (Permissions.Others_Write, Winnt.FILE_WRITE_DATA),
+                    X => (Permissions.Others_Execute, Winnt.FILE_EXECUTE)));
 
    Epoch : aliased Win32.Winbase.FILETIME;
    --  Oldest date for DOS, used for times of /
@@ -188,8 +242,8 @@ package body POSIX.File_Status is
                File_Size_High   => 0,
                File_Links       => 1,
                File_Type        => Win32.Winbase.FILE_TYPE_DISK,
-               Data             => new
-                 Shared_Data'(System.Null_Address, System.Null_Address, 1));
+               Data             => new Shared_Data'
+                 (System.Null_Address, System.Null_Address, null, 1));
          end if;
 
       else
@@ -206,8 +260,8 @@ package body POSIX.File_Status is
             File_Size_High   => Find_Data.nFileSizeHigh,
             File_Links       => 1,
             File_Type        => Win32.Winbase.FILE_TYPE_DISK,
-            Data             => new
-              Shared_Data'(System.Null_Address, System.Null_Address, 1));
+            Data             => new Shared_Data'
+              (System.Null_Address, System.Null_Address, null, 1));
 
          Result := Win32.Winbase.FindClose (Handle);
       end if;
@@ -245,7 +299,7 @@ package body POSIX.File_Status is
          File_Links       => File_Information.nNumberOfLinks,
          File_Type        => Win32.Winbase.GetFileType (Handle),
          Data             => new
-           Shared_Data'(System.Null_Address, System.Null_Address, 1));
+           Shared_Data'(System.Null_Address, System.Null_Address, null, 1));
    end Get_File_Status;
 
    ---------------------
@@ -257,11 +311,13 @@ package body POSIX.File_Status is
       use type Win32.Winnt.HANDLE;
       use type Win32.DWORD;
       use type Win32.Winnt.SECURITY_INFORMATION;
-      Handle   : Win32.Winnt.HANDLE;
-      Close    : Boolean := False;
-      Res      : Win32.BOOL;
-      Ret      : Win32.DWORD;
-      SD       : aliased Win32.Winnt.SECURITY_DESCRIPTOR;
+      use type Win32.Winnt.PACL;
+
+      Handle : Win32.Winnt.HANDLE;
+      Close  : Boolean := False;
+      Res    : Win32.BOOL;
+      Ret    : Win32.DWORD;
+      SD     : aliased Win32.Winnt.SECURITY_DESCRIPTOR;
    begin
       if File_Status.Data = null then
          POSIX_Win32.Raise_Error
@@ -280,7 +336,7 @@ package body POSIX.File_Status is
             begin
                Handle := Win32.Winbase.CreateFile
                  (lpFileName            => Win32.Addr (L_Name),
-                  dwDesiredAccess       => Win32.Winnt.GENERIC_READ,
+                  dwDesiredAccess       => Win32.Winnt.READ_CONTROL,
                   dwShareMode           => Win32.Winnt.FILE_SHARE_READ,
                   lpSecurityAttributes  => null,
                   dwCreationDisposition => Win32.Winbase.OPEN_EXISTING,
@@ -291,17 +347,19 @@ package body POSIX.File_Status is
          end if;
 
          if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
-            POSIX_Win32.Raise_Last_Error ("Get_Owner_Group_Of.CreateFile");
+            --  No enough rights to open the file
+            return;
          end if;
 
          Ret := Win32.Aclapi.GetSecurityInfo
            (Handle,
             Win32.AccCtrl.SE_FILE_OBJECT,
             Win32.Winnt.OWNER_SECURITY_INFORMATION +
-              Win32.Winnt.GROUP_SECURITY_INFORMATION,
+              Win32.Winnt.GROUP_SECURITY_INFORMATION +
+                Win32.Winnt.DACL_SECURITY_INFORMATION,
             File_Status.Data.Owner'Access,
             File_Status.Data.Group'Access,
-            null,
+            File_Status.Data.DACL'Access,
             null,
             SD'Address);
 
@@ -333,7 +391,7 @@ package body POSIX.File_Status is
    overriding procedure Initialize (File_Status : in out Status) is
    begin
       File_Status.Data :=
-        new Shared_Data'(System.Null_Address, System.Null_Address, 1);
+        new Shared_Data'(System.Null_Address, System.Null_Address, null, 1);
    end Initialize;
 
    ---------------------------
@@ -482,24 +540,141 @@ package body POSIX.File_Status is
    is
       use POSIX.Permissions;
       use type Win32.DWORD;
-      PS : POSIX.Permissions.Permission_Set := (others => False);
+      use type Win32.AccCtrl.TRUSTEE_FORM;
+      use type Win32.Winnt.PSID;
+      use type Win32.Winnt.PACL;
+
+      PS  : POSIX.Permissions.Permission_Set := (others => False);
+      PEA : aliased Win32.AccCtrl.PEXPLICIT_ACCESS;
+      Len : aliased Win32.ULONG;
+      Ret : Win32.DWORD;
    begin
-      PS (Owner_Read)  := True;
-      PS (Group_Read)  := True;
-      PS (Others_Read) := True;
+      Get_Shared_Data (File_Status);
 
-      if (File_Status.File_Attributes
-          and Win32.Winnt.FILE_ATTRIBUTE_READONLY) = 0
-      then
-         PS (Owner_Write)  := True;
-         PS (Group_Write)  := True;
-         PS (Others_Write) := True;
-      end if;
+      --  Note that PEA is a pointer to the first element of an array of
+      --  EXPLICIT_ACCESS.
 
-      if File_Status.Is_Executable then
-         PS (Owner_Execute)  := True;
-         PS (Group_Execute)  := True;
-         PS (Others_Execute) := True;
+      Ret := Win32.Aclapi.GetExplicitEntriesFromAcl
+        (File_Status.Data.DACL, Len'Unchecked_Access, PEA'Access);
+
+      POSIX_Win32.Check_Retcode
+        (Ret, "Permission_Set_Of.GetExplicitEntriesFromAcl");
+
+      if Len = 0 then
+         --  No explicit DACL, just use the standard attributes in this case
+
+         PS (Owner_Read)  := True;
+         PS (Group_Read)  := True;
+         PS (Others_Read) := True;
+
+         if (File_Status.File_Attributes
+             and Win32.Winnt.FILE_ATTRIBUTE_READONLY) = 0
+         then
+            PS (Owner_Write)  := True;
+            PS (Group_Write)  := True;
+            PS (Others_Write) := True;
+         end if;
+
+         if File_Status.Is_Executable then
+            PS (Owner_Execute)  := True;
+            PS (Group_Execute)  := True;
+            PS (Others_Execute) := True;
+         end if;
+
+      else
+         declare
+            use type Win32.BOOL;
+
+            procedure Set
+              (Permission        : Permissions.Permission;
+               AccessPermissions : Win32.DWORD;
+               Mask              : Win32.DWORD;
+               Access_Mode       : Win32.AccCtrl.ACCESS_MODE);
+            pragma Inline (Set);
+            --  Set the given permission if Mask is set in AccessPermissions
+
+            ---------
+            -- Set --
+            ---------
+
+            procedure Set
+              (Permission        : Permissions.Permission;
+               AccessPermissions : Win32.DWORD;
+               Mask              : Win32.DWORD;
+               Access_Mode       : Win32.AccCtrl.ACCESS_MODE)
+            is
+               use type Win32.AccCtrl.ACCESS_MODE;
+            begin
+               if (AccessPermissions and Mask) /= 0 then
+                  if Access_Mode = Win32.AccCtrl.GRANT_ACCESS then
+                     PS (Permission) := True;
+                  elsif Access_Mode = Win32.AccCtrl.DENY_ACCESS then
+                     PS (Permission) := False;
+                  end if;
+               end if;
+            end Set;
+
+            Empty : constant Win32.AccCtrl.EXPLICIT_ACCESS :=
+                      (0, Win32.AccCtrl.NOT_USED_ACCESS, 0, vTrustee => <>);
+
+            type EXPLICIT_ACCESS_Array is array (Positive range <>)
+              of aliased Win32.AccCtrl.EXPLICIT_ACCESS;
+
+            package EAA is new Interfaces.C.Pointers
+              (Positive, Win32.AccCtrl.EXPLICIT_ACCESS,
+               EXPLICIT_ACCESS_Array, Empty);
+
+            P     : EAA.Pointer := EAA.Pointer (PEA);
+            --  P is a pointer to the first EXPLICIT_ACCESS in the array
+            --  containing Len of them. This pointer will be used to go through
+            --  the underlying C array.
+
+         begin
+            --  Loop on all EXPLICIT_ACCESS structure and set the corresponding
+            --  permissions in the given order.
+
+            for K in 1 .. Integer (Len) loop
+               --  Only handle SID style trustee, other forms are not
+               --  interresting for this implementation.
+
+               if P.vTrustee.TrusteeForm = Win32.AccCtrl.TRUSTEE_IS_SID then
+                  declare
+                     SID : constant Win32.Winnt.PSID :=
+                              Win32.AccCtrl.To_PSID (P.vTrustee.ptstrName);
+                     OI  : UGO;
+                  begin
+                     if Win32.Winbase.IsValidSid (SID) = Win32.TRUE then
+                        if Win32.Winbase.EqualSid (SID, File_Status.Data.Owner)
+                          = Win32.TRUE
+                        then
+                           --  This is the owner
+                           OI := U;
+
+                        elsif Win32.Winbase.EqualSid
+                          (SID, File_Status.Data.Group) = Win32.TRUE
+                        then
+                           --  This is the group
+                           OI := G;
+
+                        elsif POSIX_Win32.To_String (SID)
+                          = POSIX_Win32.Everyone_SID
+                        then
+                           --  This is everyone
+                           OI := O;
+                        end if;
+
+                        for Mode in RWX'Range loop
+                           Set (Masks (OI, Mode).Perm,
+                                P.grfAccessPermissions,
+                                Masks (OI, Mode).Mask,
+                                P.grfAccessMode);
+                        end loop;
+                     end if;
+                  end;
+               end if;
+               EAA.Increment (P);
+            end loop;
+         end;
       end if;
 
       return PS;
