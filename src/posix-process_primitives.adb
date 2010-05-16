@@ -225,7 +225,7 @@ package body POSIX.Process_Primitives is
             Security_Handles_Inherited'Access,
             Win32.Winbase.CREATE_ALWAYS,
             Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
-            System.Null_Address);
+            POSIX_Win32.Null_Handle);
 
          if H = Win32.Winbase.INVALID_HANDLE_VALUE then
             POSIX_Win32.Raise_Last_Error ("Template : Create_File " & Name);
@@ -268,7 +268,7 @@ package body POSIX.Process_Primitives is
             Security_Handles_Inherited'Access,
             Win32.Winbase.OPEN_EXISTING,
             Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
-            System.Null_Address);
+            POSIX_Win32.Null_Handle);
 
          if H = Win32.Winbase.INVALID_HANDLE_VALUE then
             POSIX_Win32.Raise_Last_Error ("Template : Open_File " & Name);

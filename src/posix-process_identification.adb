@@ -128,7 +128,7 @@ package body POSIX.Process_Identification is
         (Ret, "Get_Parent_Process_ID.NtQueryInformationProcess");
 
       return Process_ID'
-        (System.Null_Address, System.Null_Address,
+        (POSIX_Win32.Null_Handle, POSIX_Win32.Null_Handle,
          Pib.InheritedFromUniqueProcessId, 0);
    end Get_Parent_Process_ID;
 
@@ -148,7 +148,7 @@ package body POSIX.Process_Identification is
    function Get_Process_ID return Process_ID is
    begin
       return Process_ID'
-        (System.Null_Address, System.Null_Address,
+        (POSIX_Win32.Null_Handle, POSIX_Win32.Null_Handle,
          Win32.Winbase.GetCurrentProcessId, 0);
    end Get_Process_ID;
 
@@ -321,7 +321,8 @@ package body POSIX.Process_Identification is
    function Value (Str : String) return Process_ID is
    begin
       return Process_ID'
-        (System.Null_Address, System.Null_Address, Win32.DWORD'Value (Str), 0);
+        (POSIX_Win32.Null_Handle, POSIX_Win32.Null_Handle,
+         Win32.DWORD'Value (Str), 0);
    end Value;
 
    function Value (Str : String) return User_ID is

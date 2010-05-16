@@ -26,7 +26,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Conversion;
-with System;
 with Interfaces.C;
 
 with Win32.AccCtrl;
@@ -476,7 +475,7 @@ package body POSIX.Files is
          null, --  Security Attributes
          Win32.Winbase.OPEN_EXISTING,
          Win32.Winnt.FILE_ATTRIBUTE_NORMAL,
-         System.Null_Address);
+         POSIX_Win32.Null_Handle);
 
       Result := Win32.Winbase.GetFileTime
         (Handle,
