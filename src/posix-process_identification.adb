@@ -108,8 +108,24 @@ package body POSIX.Process_Identification is
    ---------------------------
 
    function Get_Parent_Process_ID return Process_ID is
+      use type Win32.DWORD;
+      pragma Warnings (Off);
+      Pib  : aliased Win32.Winternl.PROCESS_BASIC_INFORMATION;
+      Proc : Win32.Winnt.HANDLE;
+      Len  : aliased Win32.DWORD;
+      Ret  : Win32.DWORD;
    begin
-      return Null_Process_ID;
+      Proc := Win32.Winbase.GetCurrentProcess;
+      Ret := Win32.Winternl.NtQueryInformationProcess
+        (Proc, Win32.Winternl.ProcessBasicInformation,
+         Pib'Access, Pib'Size / 8, Len'Access);
+
+      POSIX_Win32.Check_Retcode
+        (Ret, "Get_Parent_Process_ID.NtQueryInformationProcess");
+
+      return Process_ID'
+        (System.Null_Address, System.Null_Address,
+         Pib.InheritedFromUniqueProcessId, 0);
    end Get_Parent_Process_ID;
 
    --------------------------
