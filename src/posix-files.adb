@@ -133,8 +133,7 @@ package body POSIX.Files is
    begin
       Result := Win32.Winbase.CreateDirectory
         (Win32.Addr (L_Pathname),
-         null --  Security Attributes
-         );
+         null); --  Security Attributes
       POSIX_Win32.Check_Result (Result, "Create_Directory");
    end Create_Directory;
 

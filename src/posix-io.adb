@@ -76,7 +76,7 @@ package body POSIX.IO is
 
    protected body IO_Info is
 
-      function  Get (FD : File_Descriptor) return IO_Data is
+      function Get (FD : File_Descriptor) return IO_Data is
       begin
          return Files_Data (FD);
       end Get;

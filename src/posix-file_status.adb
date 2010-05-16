@@ -351,8 +351,9 @@ package body POSIX.File_Status is
       PS (Group_Read)  := True;
       PS (Others_Read) := True;
 
-      if (File_Status.File_Attributes and
-          Win32.Winnt.FILE_ATTRIBUTE_READONLY) = 0 then
+      if (File_Status.File_Attributes
+          and Win32.Winnt.FILE_ATTRIBUTE_READONLY) = 0
+      then
          PS (Owner_Write)  := True;
          PS (Group_Write)  := True;
          PS (Others_Write) := True;

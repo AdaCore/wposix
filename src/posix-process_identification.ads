@@ -64,7 +64,7 @@ package POSIX.Process_Identification is
 
    function Image (ID : Process_Group_ID) return Standard.String;
 
-   function Value (Str : Standard.String) return Process_Group_ID;
+   function Value (Str : String) return Process_Group_ID;
 
    --  User Identification
 

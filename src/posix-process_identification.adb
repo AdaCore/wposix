@@ -154,7 +154,7 @@ package body POSIX.Process_Identification is
    -- Image --
    -----------
 
-   function Image (ID : Process_ID) return Standard.String is
+   function Image (ID : Process_ID) return String is
       use Ada;
    begin
       return Strings.Fixed.Trim
@@ -227,7 +227,7 @@ package body POSIX.Process_Identification is
       return Process_Group_ID'Value (Str);
    end Value;
 
-   function Value (Str : Standard.String) return Process_ID is
+   function Value (Str : String) return Process_ID is
    begin
       return Process_ID'
         (System.Null_Address, System.Null_Address, Win32.DWORD'Value (Str), 0);
