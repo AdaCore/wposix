@@ -403,7 +403,7 @@ package body POSIX.IO is
          when Write_Only =>
             return Win32.Winnt.GENERIC_WRITE;
          when Read_Write =>
-            return Win32.Winnt.GENERIC_WRITE;
+            return Win32.Winnt.GENERIC_READ + Win32.Winnt.GENERIC_WRITE;
       end case;
    end Mode_To_Access;
 
