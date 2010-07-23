@@ -396,6 +396,7 @@ package body POSIX.IO is
    --------------------
 
    function Mode_To_Access (Mode : File_Mode) return Win32.DWORD is
+      use type Win32.DWORD;
    begin
       case Mode is
          when Read_Only =>
