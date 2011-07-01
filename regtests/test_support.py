@@ -2,6 +2,7 @@
 This module contains support functions for all test.py
 """
 
+import logging
 import os
 import sys
 
