@@ -14,12 +14,14 @@ os.chdir(TESTDIR)
 
 from gnatpython.ex import Run
 
+
 def gnatmake(prj):
     """Compile a project with gnatmake"""
     cmd = ["gnatmake", "-p", "-gnat05", "-P" + prj, "-bargs", "-E"]
     process = Run(cmd)
     if process.status:
         print process.out
+
 
 def run(bin, options=None, output_file=None):
     """Run a test"""
@@ -30,6 +32,7 @@ def run(bin, options=None, output_file=None):
     else:
         timeout = 300
     Run(["./" + bin] + options, output=output_file, timeout=timeout)
+
 
 def exec_cmd(bin, options=None, output_file=None, ignore_error=False):
     """Execute a binary"""
