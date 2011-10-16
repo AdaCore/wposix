@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2010, AdaCore                     --
+--                     Copyright (C) 2008-2011, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -25,7 +25,7 @@
 --  covered by the  GNU Public License.                                     --
 ------------------------------------------------------------------------------
 
-private with Win32;
+private with Ada.Containers.Indefinite_Hashed_Maps;
 
 package POSIX.Process_Environment is
 
@@ -106,6 +106,17 @@ package POSIX.Process_Environment is
 
 private
 
-   type Environment is new Win32.LPSTR;
+   use Ada;
+
+   function POSIX_String_Hash
+     (Str : POSIX.POSIX_String) return Containers.Hash_Type;
+
+   package Strings_Map is new Containers.Indefinite_Hashed_Maps
+     (Key_Type        => POSIX.POSIX_String,
+      Element_Type    => POSIX.POSIX_String,
+      Hash            => POSIX_String_Hash,
+      Equivalent_Keys => "=");
+
+   type Environment is new Strings_Map.Map with null record;
 
 end POSIX.Process_Environment;

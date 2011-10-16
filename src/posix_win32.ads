@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2010, AdaCore                     --
+--                     Copyright (C) 2008-2011, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -33,11 +33,13 @@ with Win32.Winnt;
 with POSIX;
 with POSIX.Process_Identification;
 with POSIX.Process_Primitives;
+with POSIX.Process_Environment;
 
 private package POSIX_Win32 is
 
    package PPP renames POSIX.Process_Primitives;
    package PPI renames POSIX.Process_Identification;
+   package PPE renames POSIX.Process_Environment;
 
    use type Win32.DWORD;
 
@@ -102,6 +104,12 @@ private package POSIX_Win32 is
    --  Returns Win32 Handle for the given process
 
    function To_String (SID : Win32.Winnt.PSID) return String;
-   --  Convert a SID to a
+   --  Convert a SID to a String
+
+   function Length (Env : PPE.Environment) return Positive;
+   --  Returns the size needed to create a Win32 environment block for Env
+
+   procedure Set_Environment_Block (Block : out String; Env : PPE.Environment);
+   --  Fill Block with a Win32 environment block representing Env
 
 end POSIX_Win32;

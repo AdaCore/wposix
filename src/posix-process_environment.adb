@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2010, AdaCore                     --
+--                     Copyright (C) 2008-2011, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -26,43 +26,25 @@
 ------------------------------------------------------------------------------
 
 with Ada.Command_Line;
+with Ada.Environment_Variables;
+with Ada.Strings.Hash;
 with Ada.Strings.Fixed;
-with Ada.Strings.Unbounded;
 with Ada.Exceptions;
-with Interfaces.C.Pointers;
 
 with Win32.Winbase;
-with Win32.Winerror;
 
 with POSIX_Win32;
 
 package body POSIX.Process_Environment is
 
-   use Ada;
-
-   type Char_Array_Access is access Win32.CHAR_Array;
+   Current_Environment : Environment;
 
    procedure Check_Name (Name : POSIX.POSIX_String; Message : String);
    --  Check that the environment variable is well formed (not empty and does
    --  not contains an equal or NULL character).
 
-   function New_Environment (Size : Natural := 2) return Environment;
-   --  Create a new Win32 environment
-
-   procedure Free_Environment (Env : Environment);
-   --  Free a Win32 environment
-
-   ---------------
-   -- Chars_Ptr --
-   ---------------
-
-   package Chars_Ptr is new Interfaces.C.Pointers
-     (Index              => Natural,
-      Element            => Win32.CHAR,
-      Element_Array      => Win32.CHAR_Array,
-      Default_Terminator => Win32.Nul);
-
-   use type Win32.CHAR;
+   procedure Fill_Current_Environment (Name, Value : String);
+   --  Fill current environment with the give name/value pair
 
    --  Process Parameters
 
@@ -126,10 +108,7 @@ package body POSIX.Process_Environment is
 
    procedure Clear_Environment (Env : in out Environment) is
    begin
-      if Env /= null then
-         Free_Environment (Env);
-      end if;
-      Env := New_Environment;
+      Env.Clear;
    end Clear_Environment;
 
    -----------------------
@@ -137,35 +116,8 @@ package body POSIX.Process_Environment is
    -----------------------
 
    procedure Clear_Environment is
-
-      procedure Delete
-        (Name, Value :        POSIX.POSIX_String;
-         Quit        : in out Boolean);
-      --  Delete environment variable named Name from the current environment
-
-      ------------
-      -- Delete --
-      ------------
-
-      procedure Delete
-        (Name, Value :        POSIX.POSIX_String;
-         Quit        : in out Boolean)
-      is
-         pragma Warnings (Off, Value);
-      begin
-         Delete_Environment_Variable (Name);
-         Quit := False;
-      end Delete;
-
-      --------------------------------
-      -- Delete_Current_Environment --
-      --------------------------------
-
-      procedure Delete_Current_Environment is new
-        For_Every_Current_Environment_Variable (Delete);
-
    begin
-      Delete_Current_Environment;
+      Current_Environment.Clear;
    end Clear_Environment;
 
    ----------------------
@@ -176,59 +128,23 @@ package body POSIX.Process_Environment is
      (Source :        Environment;
       Target : in out Environment)
    is
-      function Size (Env : Environment) return Natural;
-      --  Size (in bytes) used by the environment string
+      procedure Copy (Position : Strings_Map.Cursor);
+      --  Copy item at Position into Target
 
       ----------
-      -- Size --
+      -- Copy --
       ----------
 
-      function Size (Env : Environment) return Natural is
-         Pointer : Chars_Ptr.Pointer := Chars_Ptr.Pointer (Env);
-         I       : Natural := 0;
-         Prev    : Win32.CHAR := ' ';
+      procedure Copy (Position : Strings_Map.Cursor) is
       begin
-         if Env /= null then
-            loop
-               I := I + 1;
-               Prev := Pointer.all;
-               Chars_Ptr.Increment (Pointer);
-
-               --  On Windows the environment variable terminate with two null
-               --  characters.
-               exit when Prev = Win32.Nul and then Pointer.all = Win32.Nul;
-            end loop;
-
-            return I;
-
-         else
-            return 0;
-         end if;
-      end Size;
-
-      Size_Source    : constant Natural := Size (Source);
-      Pointer_Source : Chars_Ptr.Pointer := Chars_Ptr.Pointer (Source);
-      Pointer_Target : Chars_Ptr.Pointer;
+         Target.Insert
+           (Strings_Map.Key (Position),
+            Strings_Map.Element (Position));
+      end Copy;
 
    begin
-      if Target /= null then
-         Free_Environment (Target);
-      end if;
-
-      Target := New_Environment (Size_Source + 1);
-
-      if Size_Source = 0 then
-         --  This is an empty environment, nothing to copy
-         return;
-      end if;
-
-      Pointer_Target := Chars_Ptr.Pointer (Target);
-
-      for I in 1 .. Size_Source + 1 loop
-         Pointer_Target.all := Pointer_Source.all;
-         Chars_Ptr.Increment (Pointer_Source);
-         Chars_Ptr.Increment (Pointer_Target);
-      end loop;
+      Target.Clear;
+      Source.Iterate (Copy'Access);
    end Copy_Environment;
 
    -----------------------------------
@@ -236,11 +152,8 @@ package body POSIX.Process_Environment is
    -----------------------------------
 
    procedure Copy_From_Current_Environment (Env : in out Environment) is
-      Local_Env : Environment;
    begin
-      Local_Env := Environment (Win32.Winbase.GetEnvironmentStrings);
-      Copy_Environment (Local_Env, Env);
-      Free_Environment (Local_Env);
+      Copy_Environment (Current_Environment, Env);
    end Copy_From_Current_Environment;
 
    ---------------------------------
@@ -248,35 +161,8 @@ package body POSIX.Process_Environment is
    ---------------------------------
 
    procedure Copy_To_Current_Environment (Env : Environment) is
-
-      procedure Set
-        (Name, Value :        POSIX.POSIX_String;
-         Quit        : in out Boolean);
-      --  Add environment variable named Name with the given value into the
-      --  current environment.
-
-      ---------
-      -- Set --
-      ---------
-
-      procedure Set
-        (Name, Value :        POSIX.POSIX_String;
-         Quit        : in out Boolean) is
-      begin
-         Set_Environment_Variable (Name, Value);
-         Quit := False;
-      end Set;
-
-      -----------------------------
-      -- Set_Current_Environment --
-      -----------------------------
-
-      procedure Set_Current_Environment is new
-        For_Every_Environment_Variable (Set);
-
    begin
-      Clear_Environment;
-      Set_Current_Environment (Env);
+      Copy_Environment (Env, Current_Environment);
    end Copy_To_Current_Environment;
 
    ---------------------------------
@@ -285,17 +171,10 @@ package body POSIX.Process_Environment is
 
    procedure Delete_Environment_Variable
      (Name :        POSIX.POSIX_String;
-      Env  : in out Environment)
-   is
-      Current_Environment : Environment;
+      Env  : in out Environment) is
    begin
       Check_Name (Name, "Delete_Environment_Variable");
-
-      Copy_From_Current_Environment (Current_Environment);
-      Copy_To_Current_Environment (Env);
-      Delete_Environment_Variable (Name);
-      Copy_From_Current_Environment (Env);
-      Copy_To_Current_Environment (Current_Environment);
+      Env.Exclude (Name);
    end Delete_Environment_Variable;
 
    ---------------------------------
@@ -303,21 +182,9 @@ package body POSIX.Process_Environment is
    ---------------------------------
 
    procedure Delete_Environment_Variable (Name : POSIX.POSIX_String) is
-      use type Win32.BOOL;
-      use type Win32.DWORD;
-      L_Name : constant String := POSIX.To_String (Name) & ASCII.NUL;
-      Result : Win32.BOOL;
    begin
       Check_Name (Name, "Delete_Environment_Variable");
-      Result := Win32.Winbase.SetEnvironmentVariable
-        (Win32.Addr (L_Name), null);
-
-      if Result = Win32.FALSE
-        and then
-          Win32.Winbase.GetLastError /= Win32.Winerror.ERROR_ENVVAR_NOT_FOUND
-      then
-         POSIX_Win32.Check_Result (Result, "Delete_Environment_Variable");
-      end if;
+      Delete_Environment_Variable (Name, Current_Environment);
    end Delete_Environment_Variable;
 
    --------------------------
@@ -329,49 +196,16 @@ package body POSIX.Process_Environment is
       Env       : Environment;
       Undefined : POSIX.POSIX_String := "") return POSIX.POSIX_String
    is
-      use Ada.Strings.Unbounded;
+      use type Strings_Map.Cursor;
 
-      Value : Unbounded_String;
-      Found : Boolean := False;
-
-      procedure Equal
-        (N, V :        POSIX.POSIX_String;
-         Quit : in out Boolean);
-      --  Check if N is equal to Name, in that case set Value to the
-      --  corresponding value.
-
-      -----------
-      -- Equal --
-      -----------
-
-      procedure Equal
-        (N, V :        POSIX.POSIX_String;
-         Quit : in out Boolean) is
-      begin
-         if N = Name then
-            Found := True;
-            Quit  := True;
-            Value := To_Unbounded_String (POSIX.To_String (V));
-         else
-            Quit  := False;
-         end if;
-      end Equal;
-
-      ------------------
-      -- For_Every_EV --
-      ------------------
-
-      procedure For_Every_EV is new For_Every_Environment_Variable (Equal);
-
+      Position : constant Strings_Map.Cursor := Env.Find (Name);
    begin
       Check_Name (Name, "Environment_Value_Of");
 
-      For_Every_EV (Env);
-
-      if Found then
-         return POSIX.To_POSIX_String (To_String (Value));
-      else
+      if Position = Strings_Map.No_Element then
          return Undefined;
+      else
+         return Strings_Map.Element (Position);
       end if;
    end Environment_Value_Of;
 
@@ -381,35 +215,30 @@ package body POSIX.Process_Environment is
 
    function Environment_Value_Of
      (Name      : POSIX.POSIX_String;
-      Undefined : POSIX.POSIX_String := "") return POSIX.POSIX_String
-   is
-      Current_Environment : Environment;
+      Undefined : POSIX.POSIX_String := "") return POSIX.POSIX_String is
    begin
-      Copy_From_Current_Environment (Current_Environment);
-      declare
-         Result : constant POSIX.POSIX_String :=
-                    Environment_Value_Of
-                      (Name, Current_Environment, Undefined);
-      begin
-         Free_Environment (Current_Environment);
-         return Result;
-      end;
+      return Environment_Value_Of (Name, Current_Environment, Undefined);
    end Environment_Value_Of;
+
+   ------------------------------
+   -- Fill_Current_Environment --
+   ------------------------------
+
+   procedure Fill_Current_Environment (Name, Value : String) is
+   begin
+      Current_Environment.Insert
+        (POSIX.To_POSIX_String (Name),
+         POSIX.To_POSIX_String (Value));
+   end Fill_Current_Environment;
 
    --------------------------------------------
    -- For_Every_Current_Environment_Variable --
    --------------------------------------------
 
    procedure For_Every_Current_Environment_Variable is
-
-      Current_Environment : Environment;
-
       procedure For_Every_CEV is new For_Every_Environment_Variable (Action);
-
    begin
-      Copy_From_Current_Environment (Current_Environment);
       For_Every_CEV (Current_Environment);
-      Free_Environment (Current_Environment);
    end For_Every_Current_Environment_Variable;
 
    ------------------------------------
@@ -418,101 +247,32 @@ package body POSIX.Process_Environment is
 
    procedure For_Every_Environment_Variable (Env : Environment) is
 
-      use type Chars_Ptr.Pointer;
-      use type Win32.CHAR_Array;
-      use type Interfaces.C.ptrdiff_t;
+      use type Strings_Map.Cursor;
 
-      Pointer : Chars_Ptr.Pointer := Chars_Ptr.Pointer (Env);
-      Start   : Chars_Ptr.Pointer;
+      Quit : Boolean := False;
 
-      function To_POSIX_String (CA : Win32.CHAR_Array) return POSIX_String;
-      --  Convert from a CHAR_Array to a POSIX_String
+      procedure Action (Position : Strings_Map.Cursor);
+      --  Call action with the name/value for the pointed environment variable
 
-      ---------------------
-      -- To_POSIX_String --
-      ---------------------
+      ------------
+      -- Action --
+      ------------
 
-      function To_POSIX_String
-        (CA : Win32.CHAR_Array) return POSIX_String is
+      procedure Action (Position : Strings_Map.Cursor) is
       begin
-         return POSIX.To_POSIX_String
-           (Interfaces.C.To_Ada (Win32.To_C (CA & Win32.Nul)));
-      end To_POSIX_String;
+         Action
+           (Strings_Map.Key (Position), Strings_Map.Element (Position), Quit);
+      end Action;
+
+      Position : Strings_Map.Cursor := Env.First;
 
    begin
-      --  if first character is 'nul' then the environment is empty
-
-      if Env = null or else Pointer.all = Win32.Nul then
-         return;
-      end if;
-
-      For_All_Variable : loop
-         Start := Pointer;
-         Chars_Ptr.Increment (Pointer);
-
-         --  exit if there is no more environment variables
-
-         exit For_All_Variable when
-           Start.all = Win32.Nul and then Pointer.all = Win32.Nul;
-
-         Search_Name_End : loop
-            exit Search_Name_End when
-              Pointer.all = Win32.Nul or else Pointer.all = '=';
-            Chars_Ptr.Increment (Pointer);
-         end loop Search_Name_End;
-
-         declare
-            Name : constant POSIX.POSIX_String :=
-                     To_POSIX_String
-                       (Chars_Ptr.Value (Start, Pointer - Start));
-            Quit : Boolean := False;
-         begin
-            if Pointer.all = Win32.Nul then
-               --  No value (empty value)
-               if Name (Name'First) /= '=' then
-                  Action (Name, "", Quit);
-               end if;
-               exit For_All_Variable when Quit;
-
-            else
-               Chars_Ptr.Increment (Pointer);
-               Start := Pointer;
-
-               Search_Value_End : loop
-                  exit Search_Value_End when Pointer.all = Win32.Nul;
-                  Chars_Ptr.Increment (Pointer);
-               end loop Search_Value_End;
-
-               declare
-                  Value : constant POSIX.POSIX_String :=
-                            To_POSIX_String
-                              (Chars_Ptr.Value (Start, Pointer - Start));
-               begin
-                  if Name (Name'First) /= '=' then
-                     Action (Name, Value, Quit);
-                  end if;
-                  exit For_All_Variable when Quit;
-               end;
-            end if;
-         end;
-
-         Chars_Ptr.Increment (Pointer);
-         exit For_All_Variable when Pointer.all = Win32.Nul;
-      end loop For_All_Variable;
+      while Position /= Strings_Map.No_Element loop
+         Action (Position);
+         exit when Quit;
+         Strings_Map.Next (Position);
+      end loop;
    end For_Every_Environment_Variable;
-
-   ----------------------
-   -- Free_Environment --
-   ----------------------
-
-   procedure Free_Environment (Env : Environment) is
-      Result : Win32.BOOL;
-      pragma Unreferenced (Result);
-   begin
-      if Env /= null then
-         Result := Win32.Winbase.FreeEnvironmentStrings (Win32.PCHAR (Env));
-      end if;
-   end Free_Environment;
 
    ---------------------------
    -- Get_Working_Directory --
@@ -549,45 +309,10 @@ package body POSIX.Process_Environment is
 
    function Is_Environment_Variable
      (Name : POSIX.POSIX_String;
-      Env  : Environment) return Boolean
-   is
-
-      Found : Boolean := False;
-
-      procedure Equal
-        (N, V :        POSIX.POSIX_String;
-         Quit : in out Boolean);
-      --  Check if N is equal to Name, in that case set Value to the
-      --  corresponding value.
-
-      -----------
-      -- Equal --
-      -----------
-
-      procedure Equal
-        (N, V :        POSIX.POSIX_String;
-         Quit : in out Boolean)
-      is
-         pragma Warnings (Off, V);
-      begin
-         if N = Name then
-            Found := True;
-            Quit  := True;
-         else
-            Quit  := False;
-         end if;
-      end Equal;
-
-      ------------------
-      -- For_Every_EV --
-      ------------------
-
-      procedure For_Every_EV is new For_Every_Environment_Variable (Equal);
-
+      Env  : Environment) return Boolean is
    begin
       Check_Name (Name, "Is_Environment_Variable");
-      For_Every_EV (Env);
-      return Found;
+      return Env.Contains (Name);
    end Is_Environment_Variable;
 
    -----------------------------
@@ -595,15 +320,9 @@ package body POSIX.Process_Environment is
    -----------------------------
 
    function Is_Environment_Variable
-     (Name : POSIX.POSIX_String) return Boolean
-   is
-      Current_Environment : Environment;
-      Result              : Boolean;
+     (Name : POSIX.POSIX_String) return Boolean is
    begin
-      Copy_From_Current_Environment (Current_Environment);
-      Result := Is_Environment_Variable (Name, Current_Environment);
-      Free_Environment (Current_Environment);
-      return Result;
+      return Is_Environment_Variable (Name, Current_Environment);
    end Is_Environment_Variable;
 
    ------------
@@ -611,29 +330,8 @@ package body POSIX.Process_Environment is
    ------------
 
    function Length (Env : Environment) return Natural is
-      Pointer : Chars_Ptr.Pointer := Chars_Ptr.Pointer (Env);
-      I       : Natural := 0;
-      Prev    : Win32.CHAR := ' ';
    begin
-      if Env /= null then
-         loop
-            Prev := Pointer.all;
-            if Prev = '=' then
-               I := I + 1;
-            end if;
-
-            Chars_Ptr.Increment (Pointer);
-
-            --  On Windows the environment variable terminate with two null
-            --  characters.
-            exit when Prev = Win32.Nul and then Pointer.all = Win32.Nul;
-         end loop;
-
-         return I;
-
-      else
-         return 0;
-      end if;
+      return Natural (Strings_Map.Map (Env).Length);
    end Length;
 
    ------------
@@ -641,26 +339,19 @@ package body POSIX.Process_Environment is
    ------------
 
    function Length return Natural is
-      Current_Environment : Environment;
-      Size                : Natural;
    begin
-      Copy_From_Current_Environment (Current_Environment);
-      Size := Length (Current_Environment);
-      Free_Environment (Current_Environment);
-      return Size;
+      return Current_Environment.Length;
    end Length;
 
-   ---------------------
-   -- New_Environment --
-   ---------------------
+   -----------------------
+   -- POSIX_String_Hash --
+   -----------------------
 
-   function New_Environment (Size : Natural := 2) return Environment is
-      Char_Array : Char_Array_Access :=
-                     new Win32.CHAR_Array (1 .. Natural'Max (Size, 2));
+   function POSIX_String_Hash
+     (Str : POSIX.POSIX_String) return Containers.Hash_Type is
    begin
-      Char_Array.all := (others => Win32.Nul);
-      return Char_Array (1)'Access;
-   end New_Environment;
+      return Strings.Hash (POSIX.To_String (Str));
+   end POSIX_String_Hash;
 
    ------------------------------
    -- Set_Environment_Variable --
@@ -669,17 +360,10 @@ package body POSIX.Process_Environment is
    procedure Set_Environment_Variable
      (Name  :        POSIX.POSIX_String;
       Value :        POSIX.POSIX_String;
-      Env   : in out Environment)
-   is
-      Current_Environment : Environment;
+      Env   : in out Environment) is
    begin
       Check_Name (Name, "Set_Environment_Variable");
-
-      Copy_From_Current_Environment (Current_Environment);
-      Copy_To_Current_Environment (Env);
-      Set_Environment_Variable (Name, Value);
-      Copy_From_Current_Environment (Env);
-      Copy_To_Current_Environment (Current_Environment);
+      Env.Include (Name, Value);
    end Set_Environment_Variable;
 
    ------------------------------
@@ -688,16 +372,12 @@ package body POSIX.Process_Environment is
 
    procedure Set_Environment_Variable
      (Name  : POSIX.POSIX_String;
-      Value : POSIX.POSIX_String)
-   is
-      L_Name  : constant String := POSIX.To_String (Name) & ASCII.NUL;
-      L_Value : constant String := POSIX.To_String (Value) & ASCII.NUL;
-      Result  : Win32.BOOL;
+      Value : POSIX.POSIX_String) is
    begin
       Check_Name (Name, "Set_Environment_Variable");
-      Result := Win32.Winbase.SetEnvironmentVariable
-        (Win32.Addr (L_Name), Win32.Addr (L_Value));
-      POSIX_Win32.Check_Result (Result, "Set_Environment_Variable");
+      Current_Environment.Include (Name, Value);
    end Set_Environment_Variable;
 
+begin
+   Environment_Variables.Iterate (Fill_Current_Environment'Access);
 end POSIX.Process_Environment;
