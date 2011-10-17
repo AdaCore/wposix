@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2010, AdaCore                     --
+--                     Copyright (C) 2008-2011, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -539,6 +539,9 @@ package body POSIX.Process_Primitives is
    is
       use type Win32.BOOL;
 
+      Env                  : String (1 .. POSIX_Win32.Length (Env_List));
+      --  The Win32 environment block
+
       Startup_Informations : aliased Win32.Winbase.STARTUPINFO;
       Process_Informations : aliased Win32.Winbase.PROCESS_INFORMATION;
 
@@ -578,13 +581,6 @@ package body POSIX.Process_Primitives is
 
       procedure Concat_All_Arguments is new POSIX.For_Every_Item (Concat);
 
-      ---------------
-      -- To_LPVOID --
-      ---------------
-
-      function To_LPVOID is new Ada.Unchecked_Conversion
-        (POSIX.Process_Environment.Environment, Win32.LPVOID);
-
       Env_Pointer : Win32.LPVOID;
 
    begin
@@ -614,7 +610,8 @@ package body POSIX.Process_Primitives is
       Concat_All_Arguments (Arg_List);
 
       if Environment then
-         Env_Pointer := To_LPVOID (Env_List);
+         POSIX_Win32.Set_Environment_Block (Env, Env_List);
+         Env_Pointer := Env (Env'First)'Address;
       else
          Env_Pointer := System.Null_Address;
       end if;

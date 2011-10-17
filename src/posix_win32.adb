@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2010, AdaCore                     --
+--                     Copyright (C) 2008-2011, AdaCore                     --
 --                                                                          --
 --  This library is free software; you can redistribute it and/or modify    --
 --  it under the terms of the GNU General Public License as published by    --
@@ -183,6 +183,36 @@ package body POSIX_Win32 is
          return False;
       end if;
    end Is_Executable;
+
+   ------------
+   -- Length --
+   ------------
+
+   function Length (Env : PPE.Environment) return Positive is
+      L : Positive := 4;
+      --  For the four ending \0 required by unicode environment
+
+      procedure Compute
+        (Name, Value : POSIX.POSIX_String; Quit : in out Boolean);
+
+      -------------
+      -- Compute --
+      -------------
+
+      procedure Compute
+        (Name, Value : POSIX.POSIX_String; Quit : in out Boolean) is
+      begin
+         Quit := False;
+         L := L + Name'Length + Value'Length + 2;
+         --  One for the '=' and one for the ending \0
+      end Compute;
+
+      procedure For_Env is new PPE.For_Every_Environment_Variable (Compute);
+
+   begin
+      For_Env (Env);
+      return L;
+   end Length;
 
    ------------------
    -- Process_List --
@@ -396,6 +426,41 @@ package body POSIX_Win32 is
    begin
       Process_List.Remove (Child);
    end Remove_Child;
+
+   ---------------------------
+   -- Set_Environment_Block --
+   ---------------------------
+
+   procedure Set_Environment_Block
+     (Block : out String; Env : PPE.Environment)
+   is
+      Pos : Positive := Block'First;
+
+      procedure Cat (Name, Value : POSIX.POSIX_String; Quit : in out Boolean);
+
+      ---------
+      -- Cat --
+      ---------
+
+      procedure Cat
+        (Name, Value : POSIX.POSIX_String; Quit : in out Boolean)
+      is
+         L : constant Positive := Name'Length + Value'Length + 2;
+      begin
+         Quit := False;
+         Block (Pos .. Pos + L - 1) :=
+           POSIX.To_String (Name) & '=' & POSIX.To_String (Value) & ASCII.NUL;
+         Pos := Pos + L;
+      end Cat;
+
+      procedure For_Env is new PPE.For_Every_Environment_Variable (Cat);
+
+   begin
+      --  Make sure we at least terminate with 4 NUL characters, this is
+      --  mandatory for unicode environment.
+      Block (Block'Last - 3 .. Block'Last) := (others => ASCII.NUL);
+      For_Env (Env);
+   end Set_Environment_Block;
 
    ---------------
    -- To_String --
