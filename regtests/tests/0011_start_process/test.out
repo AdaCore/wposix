@@ -1,0 +1,20 @@
+Start_Proc...
+Count :  2
+ > arg1
+ > arg2
+Count :  2
+ > arg1
+ > arg2
+Display environment:
+OS exists TRUE
+Count :  2
+ > arg1
+ > arg2
+Count :  2
+ > arg1
+ > arg2
+Display environment:
+START_PROC_1=one
+START_PROC_2=two
+OS exists FALSE
+End Start_Proc
