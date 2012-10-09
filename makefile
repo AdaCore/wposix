@@ -102,17 +102,3 @@ endif
 
 run_regtests:
 	(cd regtests; $(PYTHON) ./testsuite.py)
-
-distrib:
-	-$(RM) wposix.tar.gz
-	$(RM) -fr wposix
-	$(MKDIR) -p wposix
-	$(LN) ../src wposix/src
-	$(LN) ../config wposix/config
-	$(LN) ../regtests wposix/regtests
-	$(LN) ../makefile wposix/makefile
-	$(LN) ../wposix.gpr wposix/wposix.gpr
-	$(LN) ../shared.gpr wposix/shared.gpr
-	tar --create --dereference --file=wposix.tar wposix
-	$(RM) -fr wposix
-	gzip -9 wposix.tar
