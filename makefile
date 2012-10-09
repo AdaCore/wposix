@@ -25,7 +25,7 @@ VERSION		= 1.0
 prefix	 	= $(dir $(shell which gnatls))..
 ENABLE_SHARED 	= true
 DEFAULT_LIBRARY_TYPE 	= static
-PROCESSORS	= 2
+PROCESSORS	= 0
 DEBUG		= false
 
 -include makefile.setup
