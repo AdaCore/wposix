@@ -25,28 +25,40 @@ VERSION		= 1.0
 prefix	 	= $(dir $(shell which gnatls))..
 ENABLE_SHARED 	= true
 DEFAULT_LIBRARY_TYPE 	= static
-PROCESSORS	= 2
+PROCESSORS	= 0
 DEBUG		= false
+TARGET		= $(shell gcc -dumpmachine)
 
 -include makefile.setup
 
-BUILD   	= .build
+HOST		= $(shell gcc -dumpmachine)
+
+GCLOPTS		= -XTARGET=$(TARGET)
+GPROPTS		= -j$(PROCESSORS) $(GCLOPTS)
+
+BUILD   	= .build/$(TARGET)
 CONFGPR 	= $(BUILD)/projects/wposix_config.gpr
+
+ifeq ($(HOST), $(TARGET))
+TPREFIX=$(prefix)
+else
+GPROPTS		+= --target=$(TARGET)
+TPREFIX=$(prefix)/$(TARGET)
+endif
 
 MKDIR		= mkdir
 CP		= cp -p
-GNAT		= gnat
+GPRBUILD	= gprbuild
+GPRCLEAN	= gprclean
 RM		= rm -f
 LN		= ln -s
 
-GMOPTS		= -XPROCESSORS=$(PROCESSORS)
-
 ifeq ($(DEBUG), true)
 BDIR		= $(BUILD)/debug
-GMOPTS		:= $(GMOPTS) -XPRJ_BUILD=Debug
+GPROPTS		+= -XPRJ_BUILD=Debug
 else
 BDIR		= $(BUILD)/release
-GMOPTS		:= $(GMOPTS) -XPRJ_BUILD=Release
+GPROPTS		+= -XPRJ_BUILD=Release
 endif
 
 PYTHON		= python
@@ -66,6 +78,7 @@ gen_setup:
 	echo "ENABLE_SHARED=$(ENABLE_SHARED)" >> makefile.setup
 	echo "DEBUG=$(DEBUG)" >> makefile.setup
 	echo "PROCESSORS=$(PROCESSORS)" >> makefile.setup
+	echo "TARGET=$(TARGET)" >> makefile.setup
 #  Generate config for install
 	echo 'project wPOSIX_Config is' > $(CONFGPR)
 	echo '   for Source_Dirs use ();' >> $(CONFGPR)
@@ -74,45 +87,31 @@ gen_setup:
 	echo 'end wPOSIX_Config;' >> $(CONFGPR)
 
 install:
-	$(MKDIR) -p $(prefix)/lib/gnat/wposix
-	$(MKDIR) -p $(prefix)/lib/wposix/static
-	$(CP) -pr $(BDIR)/static/lib/* $(prefix)/lib/wposix/static/
+	$(MKDIR) -p $(TPREFIX)/lib/gnat/wposix
+	$(MKDIR) -p $(TPREFIX)/lib/wposix/static
+	$(CP) -pr $(BDIR)/static/lib/* $(TPREFIX)/lib/wposix/static/
 ifeq (${ENABLE_SHARED}, true)
-	$(MKDIR) -p $(prefix)/lib/wposix/relocatable
-	$(CP) -pr $(BDIR)/relocatable/lib/* $(prefix)/lib/wposix/relocatable/
+	$(MKDIR) -p $(TPREFIX)/lib/wposix/relocatable
+	$(CP) -pr $(BDIR)/relocatable/lib/* $(TPREFIX)/lib/wposix/relocatable/
 endif
-	$(MKDIR) -p $(prefix)/include/wposix
-	$(CP) -p src/*.ad* $(prefix)/include/wposix/
-	$(CP) $(CONFGPR) $(prefix)/lib/gnat/wposix/
-	$(CP) config/projects/wposix.gpr $(prefix)/lib/gnat/
-	$(CP) config/projects/wposix_shared.gpr $(prefix)/lib/gnat/wposix/
+	$(MKDIR) -p $(TPREFIX)/include/wposix
+	$(CP) -p src/*.ad* $(TPREFIX)/include/wposix/
+	$(CP) $(CONFGPR) $(TPREFIX)/lib/gnat/wposix/
+	$(CP) config/projects/wposix.gpr $(TPREFIX)/lib/gnat/
+	$(CP) config/projects/wposix_shared.gpr $(TPREFIX)/lib/gnat/wposix/
 
 build:
-	$(GNAT) make -p $(GMOPTS) -XLIBRARY_TYPE=static -P wposix
+	$(GPRBUILD) -p $(GPROPTS) -XLIBRARY_TYPE=static -P wposix
 ifeq (${ENABLE_SHARED}, true)
-	$(GNAT) make -p $(GMOPTS) -XLIBRARY_TYPE=relocatable -P wposix
+	$(GPRBUILD) -p $(GPROPTS) -XLIBRARY_TYPE=relocatable -P wposix
 endif
 
 clean:
-	$(GNAT) clean $(GMOPTS) -XLIBRARY_TYPE=static -P wposix
+	-$(GPRCLEAN) $(GCLOPTS) -XLIBRARY_TYPE=static -P wposix
 ifeq (${ENABLE_SHARED}, true)
-	$(GNAT) clean $(GMOPTS) -XLIBRARY_TYPE=relocatable -P wposix
+	-$(GPRCLEAN) $(GCLOPTS) -XLIBRARY_TYPE=relocatable -P wposix
 endif
-	$(RM) -r $(BUILD)
+	$(RM) -fr $(BUILD) makefile.setup
 
 run_regtests:
 	(cd regtests; $(PYTHON) ./testsuite.py)
-
-distrib:
-	-$(RM) wposix.tar.gz
-	$(RM) -fr wposix
-	$(MKDIR) -p wposix
-	$(LN) ../src wposix/src
-	$(LN) ../config wposix/config
-	$(LN) ../regtests wposix/regtests
-	$(LN) ../makefile wposix/makefile
-	$(LN) ../wposix.gpr wposix/wposix.gpr
-	$(LN) ../shared.gpr wposix/shared.gpr
-	tar --create --dereference --file=wposix.tar wposix
-	$(RM) -fr wposix
-	gzip -9 wposix.tar

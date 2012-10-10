@@ -25,6 +25,8 @@ project Shared is
 
    Processors := External ("PROCESSORS", "2");
 
+   Target := external ("TARGET");
+
    --------------------------
    -- Static / Relocatable --
    --------------------------
@@ -36,7 +38,7 @@ project Shared is
    -- Build directories --
    -----------------------
 
-   for Exec_Dir use ".build";
+   for Exec_Dir use ".build/" & Target;
 
    case Build is
       when "Debug" =>
