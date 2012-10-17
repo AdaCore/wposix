@@ -33,8 +33,7 @@ TARGET		= $(shell gcc -dumpmachine)
 
 HOST		= $(shell gcc -dumpmachine)
 
-GCLOPTS		= -XTARGET=$(TARGET)
-GPROPTS		= -j$(PROCESSORS) $(GCLOPTS)
+GPROPTS		= -XTARGET=$(TARGET)
 
 BUILD   	= .build/$(TARGET)
 CONFGPR 	= $(BUILD)/projects/wposix_config.gpr
@@ -101,15 +100,17 @@ endif
 	$(CP) config/projects/wposix_shared.gpr $(TPREFIX)/lib/gnat/wposix/
 
 build:
-	$(GPRBUILD) -p $(GPROPTS) -XLIBRARY_TYPE=static -P wposix
+	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
+		-XLIBRARY_TYPE=static -P wposix
 ifeq (${ENABLE_SHARED}, true)
-	$(GPRBUILD) -p $(GPROPTS) -XLIBRARY_TYPE=relocatable -P wposix
+	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
+		-XLIBRARY_TYPE=relocatable -P wposix
 endif
 
 clean:
-	-$(GPRCLEAN) $(GCLOPTS) -XLIBRARY_TYPE=static -P wposix
+	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=static -P wposix
 ifeq (${ENABLE_SHARED}, true)
-	-$(GPRCLEAN) $(GCLOPTS) -XLIBRARY_TYPE=relocatable -P wposix
+	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=relocatable -P wposix
 endif
 	$(RM) -fr $(BUILD) makefile.setup
 
