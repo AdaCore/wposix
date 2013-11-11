@@ -28,7 +28,7 @@ file = open('file.txt', 'w')
 file.close()
 os.utime("file.txt", (calendar.timegm(ts_access), calendar.timegm(ts_mod)))
 
-gnatmake('demo7')
+gprbuild('demo7')
 
 now = datetime.datetime.now()
 

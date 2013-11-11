@@ -1,4 +1,4 @@
 from test_support import *
 
-gnatmake('owner');
+gprbuild('owner')
 run('owner')

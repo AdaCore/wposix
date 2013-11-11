@@ -23,7 +23,7 @@ def create(file):
     f.close()
     remove_acl(file)
 
-gnatmake('fperms')
+gprbuild('fperms')
 
 create('check1')
 create('check2')

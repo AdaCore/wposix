@@ -1,4 +1,4 @@
 from test_support import *
 
-gnatmake('processid');
+gprbuild('processid')
 run('processid')

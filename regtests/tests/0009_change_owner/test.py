@@ -2,7 +2,7 @@
 from test_support import *
 import os
 
-gnatmake('changeo')
+gprbuild('changeo')
 
 f=open('check1', 'w')
 f.close()

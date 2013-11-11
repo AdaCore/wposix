@@ -1,4 +1,4 @@
 from test_support import *
 
-gnatmake('rw_test');
+gprbuild('rw_test')
 run('rw_test')
