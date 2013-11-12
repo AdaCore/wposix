@@ -33,10 +33,15 @@ TARGET		= $(shell gcc -dumpmachine)
 
 HOST		= $(shell gcc -dumpmachine)
 
-GPROPTS		= -XTARGET=$(TARGET)
+MODE            = $(if $(filter-out true,$(DEBUG)),release,debug)
+SDIR            = $(TARGET)/$(MODE)
+CONFGPR 	= $(SDIR)/projects/wposix_config.gpr
 
-BUILD   	= .build/$(TARGET)
-CONFGPR 	= $(BUILD)/projects/wposix_config.gpr
+ifeq ($(DEBUG), true)
+GPROPTS		= -XPRJ_BUILD=Debug
+else
+GPROPTS		= -XPRJ_BUILD=Release
+endif
 
 ifeq ($(HOST), $(TARGET))
 TPREFIX		= $(prefix)
@@ -53,14 +58,6 @@ GPRCLEAN	= gprclean
 RM		= rm -f
 PYTHON		= python
 
-ifeq ($(DEBUG), true)
-BDIR		= $(BUILD)/debug
-GPROPTS		+= -XPRJ_BUILD=Debug
-else
-BDIR		= $(BUILD)/release
-GPROPTS		+= -XPRJ_BUILD=Release
-endif
-
 ############################################################################
 
 all: build
@@ -71,7 +68,7 @@ all: build
 setup: setup_dirs gen_setup
 
 setup_dirs:
-	$(MKDIR) -p $(BUILD)/projects/
+	$(MKDIR) -p $(SDIR)/projects/
 
 gen_setup:
 	echo "prefix=$(prefix)" > makefile.setup
@@ -95,10 +92,11 @@ install-clean:
 
 install: install-clean
 	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
-		-XLIBRARY_TYPE=static -Pwposix
+		--subdirs=$(SDIR)/static -XLIBRARY_TYPE=static -Pwposix
 ifeq (${ENABLE_SHARED}, true)
 	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
-		-XLIBRARY_TYPE=relocatable --build-name=relocatable -Pwposix
+		--subdirs=$(SDIR)/relocatable -XLIBRARY_TYPE=relocatable \
+		--build-name=relocatable -Pwposix
 endif
 
 #######################################################################
@@ -106,21 +104,24 @@ endif
 
 build:
 	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
-		-XLIBRARY_TYPE=static -P wposix
+		--subdirs=$(SDIR)/static -XLIBRARY_TYPE=static -Pwposix
 ifeq (${ENABLE_SHARED}, true)
 	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
-		-XLIBRARY_TYPE=relocatable -P wposix
+		--subdirs=$(SDIR)/relocatable -XLIBRARY_TYPE=relocatable \
+		-Pwposix
 endif
 
 #######################################################################
 #  clean
 
 clean:
-	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=static -P wposix
+	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=static \
+		--subdirs=$(SDIR)/static -Pwposix
 ifeq (${ENABLE_SHARED}, true)
-	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=relocatable -P wposix
+	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=relocatable \
+		--subdirs=$(SDIR)/relocatable -Pwposix
 endif
-	$(RM) -fr $(BUILD) makefile.setup
+	$(RM) -fr .build makefile.setup
 
 run_regtests:
 	(cd regtests; $(PYTHON) ./testsuite.py)
