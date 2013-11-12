@@ -48,9 +48,10 @@ endif
 MKDIR		= mkdir
 CP		= cp -p
 GPRBUILD	= gprbuild
+GPRINSTALL	= gprinstall
 GPRCLEAN	= gprclean
 RM		= rm -f
-LN		= ln -s
+PYTHON		= python
 
 ifeq ($(DEBUG), true)
 BDIR		= $(BUILD)/debug
@@ -59,8 +60,6 @@ else
 BDIR		= $(BUILD)/release
 GPROPTS		+= -XPRJ_BUILD=Release
 endif
-
-PYTHON		= python
 
 ############################################################################
 
@@ -91,19 +90,16 @@ gen_setup:
 #######################################################################
 #  install
 
-install:
-	$(MKDIR) -p $(TPREFIX)/lib/gnat/wposix
-	$(MKDIR) -p $(TPREFIX)/lib/wposix/static
-	$(CP) -pr $(BDIR)/static/lib/* $(TPREFIX)/lib/wposix/static/
+install-clean:
+	-$(GPRINSTALL) $(GPROPTS) -q --uninstall --prefix=$(TPREFIX) -Pwposix
+
+install: install-clean
+	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
+		-XLIBRARY_TYPE=static -Pwposix
 ifeq (${ENABLE_SHARED}, true)
-	$(MKDIR) -p $(TPREFIX)/lib/wposix/relocatable
-	$(CP) -pr $(BDIR)/relocatable/lib/* $(TPREFIX)/lib/wposix/relocatable/
+	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
+		-XLIBRARY_TYPE=relocatable --build-name=relocatable -Pwposix
 endif
-	$(MKDIR) -p $(TPREFIX)/include/wposix
-	$(CP) -p src/*.ad* $(TPREFIX)/include/wposix/
-	$(CP) $(CONFGPR) $(TPREFIX)/lib/gnat/wposix/
-	$(CP) config/projects/wposix.gpr $(TPREFIX)/lib/gnat/
-	$(CP) config/projects/wposix_shared.gpr $(TPREFIX)/lib/gnat/wposix/
 
 #######################################################################
 #  build
