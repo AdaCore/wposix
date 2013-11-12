@@ -31,6 +31,9 @@ TARGET		= $(shell gcc -dumpmachine)
 
 -include makefile.setup
 
+OTHER_LIBRARY_TYPE	= \
+	$(if $(filter-out static,$(DEFAULT_LIBRARY_TYPE)),static,relocatable)
+
 HOST		= $(shell gcc -dumpmachine)
 
 MODE            = $(if $(filter-out true,$(DEBUG)),release,debug)
@@ -80,13 +83,17 @@ gen_setup:
 install-clean:
 	-$(GPRINSTALL) $(GPROPTS) -q --uninstall --prefix=$(TPREFIX) -Pwposix
 
+#  Make sure we install first the default library type as it will be made
+#  the default by gprinstall, then the other version.
 install: install-clean
 	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
-		--subdirs=$(SDIR)/static -XLIBRARY_TYPE=static -Pwposix
+		--subdirs=$(SDIR)/$(DEFAULT_LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(DEFAULT_LIBRARY_TYPE) -Pwposix
 ifeq (${ENABLE_SHARED}, true)
 	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
-		--subdirs=$(SDIR)/relocatable -XLIBRARY_TYPE=relocatable \
-		--build-name=relocatable -Pwposix
+		--subdirs=$(SDIR)/$(OTHER_LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(OTHER_LIBRARY_TYPE) \
+		--build-name=$(OTHER_LIBRARY_TYPE) -Pwposix
 endif
 
 #######################################################################
