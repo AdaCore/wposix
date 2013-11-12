@@ -35,7 +35,6 @@ HOST		= $(shell gcc -dumpmachine)
 
 MODE            = $(if $(filter-out true,$(DEBUG)),release,debug)
 SDIR            = $(TARGET)/$(MODE)
-CONFGPR 	= $(SDIR)/projects/wposix_config.gpr
 
 ifeq ($(DEBUG), true)
 GPROPTS		= -XPRJ_BUILD=Debug
@@ -65,10 +64,7 @@ all: build
 #######################################################################
 #  setup
 
-setup: setup_dirs gen_setup
-
-setup_dirs:
-	$(MKDIR) -p $(SDIR)/projects/
+setup: gen_setup
 
 gen_setup:
 	echo "prefix=$(prefix)" > makefile.setup
@@ -77,12 +73,6 @@ gen_setup:
 	echo "DEBUG=$(DEBUG)" >> makefile.setup
 	echo "PROCESSORS=$(PROCESSORS)" >> makefile.setup
 	echo "TARGET=$(TARGET)" >> makefile.setup
-#  Generate config for install
-	echo 'abstract project wPOSIX_Config is' > $(CONFGPR)
-	echo '   for Source_Dirs use ();' >> $(CONFGPR)
-	echo '   Default_Library_Type := "'$(DEFAULT_LIBRARY_TYPE)'";' \
-		>> $(CONFGPR)
-	echo 'end wPOSIX_Config;' >> $(CONFGPR)
 
 #######################################################################
 #  install
