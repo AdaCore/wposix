@@ -48,9 +48,10 @@ endif
 MKDIR		= mkdir
 CP		= cp -p
 GPRBUILD	= gprbuild
+GPRINSTALL	= gprinstall
 GPRCLEAN	= gprclean
 RM		= rm -f
-LN		= ln -s
+PYTHON		= python
 
 ifeq ($(DEBUG), true)
 BDIR		= $(BUILD)/debug
@@ -60,11 +61,12 @@ BDIR		= $(BUILD)/release
 GPROPTS		+= -XPRJ_BUILD=Release
 endif
 
-PYTHON		= python
-
 ############################################################################
 
 all: build
+
+#######################################################################
+#  setup
 
 setup: setup_dirs gen_setup
 
@@ -79,25 +81,28 @@ gen_setup:
 	echo "PROCESSORS=$(PROCESSORS)" >> makefile.setup
 	echo "TARGET=$(TARGET)" >> makefile.setup
 #  Generate config for install
-	echo 'project wPOSIX_Config is' > $(CONFGPR)
+	echo 'abstract project wPOSIX_Config is' > $(CONFGPR)
 	echo '   for Source_Dirs use ();' >> $(CONFGPR)
 	echo '   Default_Library_Type := "'$(DEFAULT_LIBRARY_TYPE)'";' \
 		>> $(CONFGPR)
 	echo 'end wPOSIX_Config;' >> $(CONFGPR)
 
-install:
-	$(MKDIR) -p $(TPREFIX)/lib/gnat/wposix
-	$(MKDIR) -p $(TPREFIX)/lib/wposix/static
-	$(CP) -pr $(BDIR)/static/lib/* $(TPREFIX)/lib/wposix/static/
+#######################################################################
+#  install
+
+install-clean:
+	-$(GPRINSTALL) $(GPROPTS) -q --uninstall --prefix=$(TPREFIX) -Pwposix
+
+install: install-clean
+	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
+		-XLIBRARY_TYPE=static -Pwposix
 ifeq (${ENABLE_SHARED}, true)
-	$(MKDIR) -p $(TPREFIX)/lib/wposix/relocatable
-	$(CP) -pr $(BDIR)/relocatable/lib/* $(TPREFIX)/lib/wposix/relocatable/
+	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
+		-XLIBRARY_TYPE=relocatable --build-name=relocatable -Pwposix
 endif
-	$(MKDIR) -p $(TPREFIX)/include/wposix
-	$(CP) -p src/*.ad* $(TPREFIX)/include/wposix/
-	$(CP) $(CONFGPR) $(TPREFIX)/lib/gnat/wposix/
-	$(CP) config/projects/wposix.gpr $(TPREFIX)/lib/gnat/
-	$(CP) config/projects/wposix_shared.gpr $(TPREFIX)/lib/gnat/wposix/
+
+#######################################################################
+#  build
 
 build:
 	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
@@ -106,6 +111,9 @@ ifeq (${ENABLE_SHARED}, true)
 	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
 		-XLIBRARY_TYPE=relocatable -P wposix
 endif
+
+#######################################################################
+#  clean
 
 clean:
 	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=static -P wposix
