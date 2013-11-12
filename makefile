@@ -39,10 +39,10 @@ BUILD   	= .build/$(TARGET)
 CONFGPR 	= $(BUILD)/projects/wposix_config.gpr
 
 ifeq ($(HOST), $(TARGET))
-TPREFIX=$(prefix)
+TPREFIX		= $(prefix)
 else
 GPROPTS		+= --target=$(TARGET)
-TPREFIX=$(prefix)/$(TARGET)
+TPREFIX		= $(prefix)/$(TARGET)
 endif
 
 MKDIR		= mkdir
