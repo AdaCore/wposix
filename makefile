@@ -31,18 +31,25 @@ TARGET		= $(shell gcc -dumpmachine)
 
 -include makefile.setup
 
+OTHER_LIBRARY_TYPE	= \
+	$(if $(filter-out static,$(DEFAULT_LIBRARY_TYPE)),static,relocatable)
+
 HOST		= $(shell gcc -dumpmachine)
 
-GPROPTS		= -XTARGET=$(TARGET)
+MODE            = $(if $(filter-out true,$(DEBUG)),release,debug)
+SDIR            = $(TARGET)/$(MODE)
 
-BUILD   	= .build/$(TARGET)
-CONFGPR 	= $(BUILD)/projects/wposix_config.gpr
+ifeq ($(DEBUG), true)
+GPROPTS		= -XPRJ_BUILD=Debug
+else
+GPROPTS		= -XPRJ_BUILD=Release
+endif
 
 ifeq ($(HOST), $(TARGET))
-TPREFIX=$(prefix)
+TPREFIX		= $(prefix)
 else
 GPROPTS		+= --target=$(TARGET)
-TPREFIX=$(prefix)/$(TARGET)
+TPREFIX		= $(prefix)/$(TARGET)
 endif
 
 MKDIR		= mkdir
@@ -53,14 +60,6 @@ GPRCLEAN	= gprclean
 RM		= rm -f
 PYTHON		= python
 
-ifeq ($(DEBUG), true)
-BDIR		= $(BUILD)/debug
-GPROPTS		+= -XPRJ_BUILD=Debug
-else
-BDIR		= $(BUILD)/release
-GPROPTS		+= -XPRJ_BUILD=Release
-endif
-
 ############################################################################
 
 all: build
@@ -68,10 +67,7 @@ all: build
 #######################################################################
 #  setup
 
-setup: setup_dirs gen_setup
-
-setup_dirs:
-	$(MKDIR) -p $(BUILD)/projects/
+setup: gen_setup
 
 gen_setup:
 	echo "prefix=$(prefix)" > makefile.setup
@@ -80,12 +76,6 @@ gen_setup:
 	echo "DEBUG=$(DEBUG)" >> makefile.setup
 	echo "PROCESSORS=$(PROCESSORS)" >> makefile.setup
 	echo "TARGET=$(TARGET)" >> makefile.setup
-#  Generate config for install
-	echo 'abstract project wPOSIX_Config is' > $(CONFGPR)
-	echo '   for Source_Dirs use ();' >> $(CONFGPR)
-	echo '   Default_Library_Type := "'$(DEFAULT_LIBRARY_TYPE)'";' \
-		>> $(CONFGPR)
-	echo 'end wPOSIX_Config;' >> $(CONFGPR)
 
 #######################################################################
 #  install
@@ -93,12 +83,17 @@ gen_setup:
 install-clean:
 	-$(GPRINSTALL) $(GPROPTS) -q --uninstall --prefix=$(TPREFIX) -Pwposix
 
+#  Make sure we install first the default library type as it will be made
+#  the default by gprinstall, then the other version.
 install: install-clean
 	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
-		-XLIBRARY_TYPE=static -Pwposix
+		--subdirs=$(SDIR)/$(DEFAULT_LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(DEFAULT_LIBRARY_TYPE) -Pwposix
 ifeq (${ENABLE_SHARED}, true)
 	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
-		-XLIBRARY_TYPE=relocatable --build-name=relocatable -Pwposix
+		--subdirs=$(SDIR)/$(OTHER_LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(OTHER_LIBRARY_TYPE) \
+		--build-name=$(OTHER_LIBRARY_TYPE) -Pwposix
 endif
 
 #######################################################################
@@ -106,21 +101,24 @@ endif
 
 build:
 	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
-		-XLIBRARY_TYPE=static -P wposix
+		--subdirs=$(SDIR)/static -XLIBRARY_TYPE=static -Pwposix
 ifeq (${ENABLE_SHARED}, true)
 	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
-		-XLIBRARY_TYPE=relocatable -P wposix
+		--subdirs=$(SDIR)/relocatable -XLIBRARY_TYPE=relocatable \
+		-Pwposix
 endif
 
 #######################################################################
 #  clean
 
 clean:
-	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=static -P wposix
+	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=static \
+		--subdirs=$(SDIR)/static -Pwposix
 ifeq (${ENABLE_SHARED}, true)
-	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=relocatable -P wposix
+	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=relocatable \
+		--subdirs=$(SDIR)/relocatable -Pwposix
 endif
-	$(RM) -fr $(BUILD) makefile.setup
+	$(RM) -fr .build makefile.setup
 
 run_regtests:
 	(cd regtests; $(PYTHON) ./testsuite.py)

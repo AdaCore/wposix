@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                 wPOSIX                                   --
 --                                                                          --
---                    Copyright (C) 2008-2012, AdaCore                      --
+--                    Copyright (C) 2008-2013, AdaCore                      --
 --                                                                          --
 --  This is free software;  you can redistribute it  and/or modify it       --
 --  under terms of the  GNU General Public License as published  by the     --
@@ -23,9 +23,7 @@ project Shared is
    type Build_Type is ("Debug", "Release");
    Build : Build_Type := external ("PRJ_BUILD", "Debug");
 
-   Processors := External ("PROCESSORS", "2");
-
-   Target := external ("TARGET");
+   Processors := External ("PROCESSORS", "0");
 
    --------------------------
    -- Static / Relocatable --
@@ -38,24 +36,10 @@ project Shared is
    -- Build directories --
    -----------------------
 
-   for Exec_Dir use ".build/" & Target;
+   Build_Dir := ".build";
 
-   case Build is
-      when "Debug" =>
-         for Exec_Dir use Project'Exec_Dir & "/debug";
-      when "Release" =>
-         for Exec_Dir use Project'Exec_Dir & "/release";
-   end case;
-
-   case Library_Type is
-      when "static" =>
-         for Exec_Dir use Project'Exec_Dir & "/static";
-      when "relocatable" =>
-         for Exec_Dir use Project'Exec_Dir & "/relocatable";
-   end case;
-
-   for Object_Dir use Project'Exec_Dir & "/obj";
-   for Library_Dir use Project'Exec_Dir & "/lib";
+   for Object_Dir use Build_Dir & "/obj";
+   for Library_Dir use Build_Dir & "/lib";
 
    ---------
    -- Ide --
