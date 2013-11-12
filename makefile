@@ -66,6 +66,9 @@ PYTHON		= python
 
 all: build
 
+#######################################################################
+#  setup
+
 setup: setup_dirs gen_setup
 
 setup_dirs:
@@ -85,6 +88,9 @@ gen_setup:
 		>> $(CONFGPR)
 	echo 'end wPOSIX_Config;' >> $(CONFGPR)
 
+#######################################################################
+#  install
+
 install:
 	$(MKDIR) -p $(TPREFIX)/lib/gnat/wposix
 	$(MKDIR) -p $(TPREFIX)/lib/wposix/static
@@ -99,6 +105,9 @@ endif
 	$(CP) config/projects/wposix.gpr $(TPREFIX)/lib/gnat/
 	$(CP) config/projects/wposix_shared.gpr $(TPREFIX)/lib/gnat/wposix/
 
+#######################################################################
+#  build
+
 build:
 	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
 		-XLIBRARY_TYPE=static -P wposix
@@ -106,6 +115,9 @@ ifeq (${ENABLE_SHARED}, true)
 	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
 		-XLIBRARY_TYPE=relocatable -P wposix
 endif
+
+#######################################################################
+#  clean
 
 clean:
 	-$(GPRCLEAN) $(GPROPTS) -XLIBRARY_TYPE=static -P wposix
