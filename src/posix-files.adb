@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2013, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -337,7 +337,8 @@ package body POSIX.Files is
 
       if Handle = Win32.Winbase.INVALID_HANDLE_VALUE then
          if Win32.Winbase.GetLastError =
-           Win32.Winerror.ERROR_FILE_NOT_FOUND then
+           Win32.Winerror.ERROR_FILE_NOT_FOUND
+         then
             --  No file to be scanned
             return;
          else
