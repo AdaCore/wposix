@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -104,7 +104,7 @@ package POSIX.Process_Primitives is
 
    --  Process Exit
 
-   type Exit_Status is range 0 .. 2**8-1;
+   type Exit_Status is range 0 .. 2**8 - 1;
 
    Normal_Exit              : constant Exit_Status := 0;
    Failed_Creation_Exit     : constant Exit_Status := 41;
