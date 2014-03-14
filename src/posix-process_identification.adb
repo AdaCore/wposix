@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -29,6 +29,7 @@
 
 with Ada.Streams;
 with Ada.Strings.Fixed;
+with Interfaces.C;
 
 with POSIX_Win32;
 with Win32.Winnt;
@@ -131,7 +132,7 @@ package body POSIX.Process_Identification is
 
       return Process_ID'
         (POSIX_Win32.Null_Handle, POSIX_Win32.Null_Handle,
-         Pib.InheritedFromUniqueProcessId, 0);
+         Interfaces.C.unsigned_long (Pib.InheritedFromUniqueProcessId), 0);
    end Get_Parent_Process_ID;
 
    --------------------------
