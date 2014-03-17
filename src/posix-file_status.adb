@@ -197,7 +197,7 @@ package body POSIX.File_Status is
                File_Links       => 1,
                File_Type        => Win32.Winbase.FILE_TYPE_DISK,
                Data             => new Shared_Data'
-                 (System.Null_Address, System.Null_Address, null, 1));
+                 (System.Null_Address, System.Null_Address, null, 2));
          end if;
 
       else
@@ -215,7 +215,7 @@ package body POSIX.File_Status is
             File_Links       => 1,
             File_Type        => Win32.Winbase.FILE_TYPE_DISK,
             Data             => new Shared_Data'
-              (System.Null_Address, System.Null_Address, null, 1));
+              (System.Null_Address, System.Null_Address, null, 2));
 
          Result := Win32.Winbase.FindClose (Handle);
       end if;
@@ -252,8 +252,8 @@ package body POSIX.File_Status is
          File_Size_High   => File_Information.nFileSizeHigh,
          File_Links       => File_Information.nNumberOfLinks,
          File_Type        => Win32.Winbase.GetFileType (Handle),
-         Data             => new
-           Shared_Data'(System.Null_Address, System.Null_Address, null, 1));
+         Data             => new Shared_Data'
+            (System.Null_Address, System.Null_Address, null, 2));
    end Get_File_Status;
 
    ---------------------
