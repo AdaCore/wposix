@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -102,19 +102,25 @@ package body POSIX.File_Status is
 
       V : Win32.PVOID;
       pragma Unreferenced (V);
+
+      D : Shared_Data_Access := File_Status.Data;
+
    begin
-      File_Status.Data.Ref_Count := File_Status.Data.Ref_Count - 1;
+      File_Status.Data := null;
+      if D /= null then
+         D.Ref_Count := D.Ref_Count - 1;
 
-      if File_Status.Data.Ref_Count = 0 then
-         if File_Status.Data.Owner /= System.Null_Address then
-            V := Win32.Winbase.FreeSid (File_Status.Data.Owner);
+         if D.Ref_Count = 0 then
+            if D.Owner /= System.Null_Address then
+               V := Win32.Winbase.FreeSid (D.Owner);
+            end if;
+
+            if D.Group /= System.Null_Address then
+               V := Win32.Winbase.FreeSid (D.Group);
+            end if;
+
+            Unchecked_Free (D);
          end if;
-
-         if File_Status.Data.Group /= System.Null_Address then
-            V := Win32.Winbase.FreeSid (File_Status.Data.Group);
-         end if;
-
-         Unchecked_Free (File_Status.Data);
       end if;
    end Finalize;
 
