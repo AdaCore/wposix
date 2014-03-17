@@ -147,6 +147,8 @@ package body POSIX.Files is
                      aliased Win32.AccCtrl.EXPLICIT_ACCESS;
       Ret        : Win32.DWORD;
       Res        : Win32.BOOL;
+      H          : Win32.Windef.HLOCAL;
+      pragma Unreferenced (H);
    begin
       --  Create well-known group for everyone
 
@@ -168,6 +170,8 @@ package body POSIX.Files is
          null,
          null,
          SD'Access);
+
+      H := Win32.Winbase.LocalFree (SD);
 
       POSIX_Win32.Check_Retcode
         (Ret, "Change_Permissions.GetNamedSecurityInfo");

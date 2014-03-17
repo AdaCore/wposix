@@ -268,6 +268,8 @@ package body POSIX.File_Status is
       use type Win32.Winnt.SECURITY_INFORMATION;
 
       Handle : Win32.Winnt.HANDLE;
+      H      : Win32.Windef.HLOCAL;
+      pragma Unreferenced (H);
       Close  : Boolean := False;
       Res    : Win32.BOOL;
       pragma Unreferenced (Res);
@@ -317,6 +319,8 @@ package body POSIX.File_Status is
             File_Status.Data.DACL'Access,
             null,
             SD'Access);
+
+         H := Win32.Winbase.LocalFree (SD);
 
          POSIX_Win32.Check_Retcode (Ret, "Get_Owner_Group_Of.GetSecurityInfo");
 
