@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -32,8 +32,9 @@ with Ada.Unchecked_Deallocation;
 with Interfaces.C.Pointers;
 with System;
 
-with Win32.Aclapi;
 with Win32.AccCtrl;
+with Win32.Aclapi;
+with Win32.Windef;
 
 with POSIX_Win32;
 with POSIX_Win32.File_Handle;
@@ -102,19 +103,25 @@ package body POSIX.File_Status is
 
       V : Win32.PVOID;
       pragma Unreferenced (V);
+
+      D : Shared_Data_Access := File_Status.Data;
+
    begin
-      File_Status.Data.Ref_Count := File_Status.Data.Ref_Count - 1;
+      File_Status.Data := null;
+      if D /= null then
+         D.Ref_Count := D.Ref_Count - 1;
 
-      if File_Status.Data.Ref_Count = 0 then
-         if File_Status.Data.Owner /= System.Null_Address then
-            V := Win32.Winbase.FreeSid (File_Status.Data.Owner);
+         if D.Ref_Count = 0 then
+            if D.Owner /= System.Null_Address then
+               V := Win32.Winbase.FreeSid (D.Owner);
+            end if;
+
+            if D.Group /= System.Null_Address then
+               V := Win32.Winbase.FreeSid (D.Group);
+            end if;
+
+            Unchecked_Free (D);
          end if;
-
-         if File_Status.Data.Group /= System.Null_Address then
-            V := Win32.Winbase.FreeSid (File_Status.Data.Group);
-         end if;
-
-         Unchecked_Free (File_Status.Data);
       end if;
    end Finalize;
 
@@ -191,7 +198,7 @@ package body POSIX.File_Status is
                File_Links       => 1,
                File_Type        => Win32.Winbase.FILE_TYPE_DISK,
                Data             => new Shared_Data'
-                 (System.Null_Address, System.Null_Address, null, 1));
+                 (System.Null_Address, System.Null_Address, null, 2));
          end if;
 
       else
@@ -209,7 +216,7 @@ package body POSIX.File_Status is
             File_Links       => 1,
             File_Type        => Win32.Winbase.FILE_TYPE_DISK,
             Data             => new Shared_Data'
-              (System.Null_Address, System.Null_Address, null, 1));
+              (System.Null_Address, System.Null_Address, null, 2));
 
          Result := Win32.Winbase.FindClose (Handle);
       end if;
@@ -246,8 +253,8 @@ package body POSIX.File_Status is
          File_Size_High   => File_Information.nFileSizeHigh,
          File_Links       => File_Information.nNumberOfLinks,
          File_Type        => Win32.Winbase.GetFileType (Handle),
-         Data             => new
-           Shared_Data'(System.Null_Address, System.Null_Address, null, 1));
+         Data             => new Shared_Data'
+            (System.Null_Address, System.Null_Address, null, 2));
    end Get_File_Status;
 
    ---------------------
@@ -255,17 +262,19 @@ package body POSIX.File_Status is
    ---------------------
 
    procedure Get_Shared_Data (File_Status : Status) is
-      pragma Warnings (Off);
-      use type Win32.Winnt.HANDLE;
       use type Win32.DWORD;
-      use type Win32.Winnt.SECURITY_INFORMATION;
+      use type Win32.Winnt.HANDLE;
       use type Win32.Winnt.PACL;
+      use type Win32.Winnt.SECURITY_INFORMATION;
 
       Handle : Win32.Winnt.HANDLE;
+      H      : Win32.Windef.HLOCAL;
+      pragma Unreferenced (H);
       Close  : Boolean := False;
       Res    : Win32.BOOL;
+      pragma Unreferenced (Res);
       Ret    : Win32.DWORD;
-      SD     : aliased Win32.Winnt.SECURITY_DESCRIPTOR;
+      SD     : aliased Win32.Winnt.PSECURITY_DESCRIPTOR;
    begin
       if File_Status.Data = null then
          POSIX_Win32.Raise_Error
@@ -302,14 +311,16 @@ package body POSIX.File_Status is
          Ret := Win32.Aclapi.GetSecurityInfo
            (Handle,
             Win32.AccCtrl.SE_FILE_OBJECT,
-            Win32.Winnt.OWNER_SECURITY_INFORMATION +
-              Win32.Winnt.GROUP_SECURITY_INFORMATION +
-                Win32.Winnt.DACL_SECURITY_INFORMATION,
+            Win32.Winnt.OWNER_SECURITY_INFORMATION
+              + Win32.Winnt.GROUP_SECURITY_INFORMATION
+              + Win32.Winnt.DACL_SECURITY_INFORMATION,
             File_Status.Data.Owner'Access,
             File_Status.Data.Group'Access,
             File_Status.Data.DACL'Access,
             null,
-            SD'Address);
+            SD'Access);
+
+         H := Win32.Winbase.LocalFree (SD);
 
          POSIX_Win32.Check_Retcode (Ret, "Get_Owner_Group_Of.GetSecurityInfo");
 
@@ -371,8 +382,8 @@ package body POSIX.File_Status is
    function Is_Directory (File_Status : Status) return Boolean is
       use type Win32.DWORD;
    begin
-      return (File_Status.File_Attributes and
-              Win32.Winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0;
+      return (File_Status.File_Attributes
+              and Win32.Winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0;
    end Is_Directory;
 
    -------------
@@ -486,11 +497,12 @@ package body POSIX.File_Status is
    function Permission_Set_Of
      (File_Status : Status) return POSIX.Permissions.Permission_Set
    is
-      use POSIX.Permissions;
-      use type Win32.DWORD;
       use type Win32.AccCtrl.TRUSTEE_FORM;
-      use type Win32.Winnt.PSID;
+      use type Win32.DWORD;
       use type Win32.Winnt.PACL;
+      use type Win32.Winnt.PSID;
+
+      use POSIX.Permissions;
 
       PS  : POSIX.Permissions.Permission_Set := (others => False);
       PEA : aliased Win32.AccCtrl.PEXPLICIT_ACCESS;
@@ -588,8 +600,9 @@ package body POSIX.File_Status is
                if P.vTrustee.TrusteeForm = Win32.AccCtrl.TRUSTEE_IS_SID then
                   declare
                      SID : constant Win32.Winnt.PSID :=
-                              Win32.AccCtrl.To_PSID (P.vTrustee.ptstrName);
-                     OI  : POSIX_Win32.Permissions.UGO;
+                             Win32.AccCtrl.To_PSID (P.vTrustee.ptstrName);
+                     OI  : POSIX_Win32.Permissions.UGO :=
+                             POSIX_Win32.Permissions.U;
                   begin
                      if Win32.Winbase.IsValidSid (SID) = Win32.TRUE then
                         if Win32.Winbase.EqualSid (SID, File_Status.Data.Owner)
