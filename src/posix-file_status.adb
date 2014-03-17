@@ -261,7 +261,6 @@ package body POSIX.File_Status is
    ---------------------
 
    procedure Get_Shared_Data (File_Status : Status) is
-      pragma Warnings (Off);
       use type Win32.DWORD;
       use type Win32.Winnt.HANDLE;
       use type Win32.Winnt.PACL;
@@ -270,6 +269,7 @@ package body POSIX.File_Status is
       Handle : Win32.Winnt.HANDLE;
       Close  : Boolean := False;
       Res    : Win32.BOOL;
+      pragma Unreferenced (Res);
       Ret    : Win32.DWORD;
       SD     : aliased Win32.Winnt.SECURITY_DESCRIPTOR;
    begin
@@ -596,7 +596,8 @@ package body POSIX.File_Status is
                   declare
                      SID : constant Win32.Winnt.PSID :=
                              Win32.AccCtrl.To_PSID (P.vTrustee.ptstrName);
-                     OI  : POSIX_Win32.Permissions.UGO;
+                     OI  : POSIX_Win32.Permissions.UGO :=
+                             POSIX_Win32.Permissions.U;
                   begin
                      if Win32.Winbase.IsValidSid (SID) = Win32.TRUE then
                         if Win32.Winbase.EqualSid (SID, File_Status.Data.Owner)
