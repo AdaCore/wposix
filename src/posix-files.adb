@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2013, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -34,6 +34,7 @@ with System;
 with Win32.AccCtrl;
 with Win32.Aclapi;
 with Win32.Sddl;
+with Win32.Windef;
 with Win32.Winnt;
 with Win32.Winerror;
 
@@ -141,7 +142,7 @@ package body POSIX.Files is
       ESID       : aliased Win32.Winnt.PSID;
       OSID, GSID : aliased Win32.Winnt.PSID;
       DACL       : aliased Win32.Winnt.PACL;
-      SD         : Win32.Winnt.SECURITY_DESCRIPTOR;
+      SD         : aliased Win32.Winnt.PSECURITY_DESCRIPTOR;
       EA         : array (POSIX_Win32.Permissions.UGO) of
                      aliased Win32.AccCtrl.EXPLICIT_ACCESS;
       Ret        : Win32.DWORD;
@@ -166,7 +167,7 @@ package body POSIX.Files is
          GSID'Access,
          null,
          null,
-         SD'Address);
+         SD'Access);
 
       POSIX_Win32.Check_Retcode
         (Ret, "Change_Permissions.GetNamedSecurityInfo");

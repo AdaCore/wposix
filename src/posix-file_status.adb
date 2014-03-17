@@ -34,6 +34,7 @@ with System;
 
 with Win32.AccCtrl;
 with Win32.Aclapi;
+with Win32.Windef;
 
 with POSIX_Win32;
 with POSIX_Win32.File_Handle;
@@ -271,7 +272,7 @@ package body POSIX.File_Status is
       Res    : Win32.BOOL;
       pragma Unreferenced (Res);
       Ret    : Win32.DWORD;
-      SD     : aliased Win32.Winnt.SECURITY_DESCRIPTOR;
+      SD     : aliased Win32.Winnt.PSECURITY_DESCRIPTOR;
    begin
       if File_Status.Data = null then
          POSIX_Win32.Raise_Error
@@ -315,7 +316,7 @@ package body POSIX.File_Status is
             File_Status.Data.Group'Access,
             File_Status.Data.DACL'Access,
             null,
-            SD'Address);
+            SD'Access);
 
          POSIX_Win32.Check_Retcode (Ret, "Get_Owner_Group_Of.GetSecurityInfo");
 
