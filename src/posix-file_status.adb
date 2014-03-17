@@ -32,8 +32,8 @@ with Ada.Unchecked_Deallocation;
 with Interfaces.C.Pointers;
 with System;
 
-with Win32.Aclapi;
 with Win32.AccCtrl;
+with Win32.Aclapi;
 
 with POSIX_Win32;
 with POSIX_Win32.File_Handle;
@@ -262,10 +262,10 @@ package body POSIX.File_Status is
 
    procedure Get_Shared_Data (File_Status : Status) is
       pragma Warnings (Off);
-      use type Win32.Winnt.HANDLE;
       use type Win32.DWORD;
-      use type Win32.Winnt.SECURITY_INFORMATION;
+      use type Win32.Winnt.HANDLE;
       use type Win32.Winnt.PACL;
+      use type Win32.Winnt.SECURITY_INFORMATION;
 
       Handle : Win32.Winnt.HANDLE;
       Close  : Boolean := False;
@@ -308,9 +308,9 @@ package body POSIX.File_Status is
          Ret := Win32.Aclapi.GetSecurityInfo
            (Handle,
             Win32.AccCtrl.SE_FILE_OBJECT,
-            Win32.Winnt.OWNER_SECURITY_INFORMATION +
-              Win32.Winnt.GROUP_SECURITY_INFORMATION +
-                Win32.Winnt.DACL_SECURITY_INFORMATION,
+            Win32.Winnt.OWNER_SECURITY_INFORMATION
+              + Win32.Winnt.GROUP_SECURITY_INFORMATION
+              + Win32.Winnt.DACL_SECURITY_INFORMATION,
             File_Status.Data.Owner'Access,
             File_Status.Data.Group'Access,
             File_Status.Data.DACL'Access,
@@ -377,8 +377,8 @@ package body POSIX.File_Status is
    function Is_Directory (File_Status : Status) return Boolean is
       use type Win32.DWORD;
    begin
-      return (File_Status.File_Attributes and
-              Win32.Winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0;
+      return (File_Status.File_Attributes
+              and Win32.Winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0;
    end Is_Directory;
 
    -------------
@@ -492,11 +492,12 @@ package body POSIX.File_Status is
    function Permission_Set_Of
      (File_Status : Status) return POSIX.Permissions.Permission_Set
    is
-      use POSIX.Permissions;
-      use type Win32.DWORD;
       use type Win32.AccCtrl.TRUSTEE_FORM;
-      use type Win32.Winnt.PSID;
+      use type Win32.DWORD;
       use type Win32.Winnt.PACL;
+      use type Win32.Winnt.PSID;
+
+      use POSIX.Permissions;
 
       PS  : POSIX.Permissions.Permission_Set := (others => False);
       PEA : aliased Win32.AccCtrl.PEXPLICIT_ACCESS;
@@ -594,7 +595,7 @@ package body POSIX.File_Status is
                if P.vTrustee.TrusteeForm = Win32.AccCtrl.TRUSTEE_IS_SID then
                   declare
                      SID : constant Win32.Winnt.PSID :=
-                              Win32.AccCtrl.To_PSID (P.vTrustee.ptstrName);
+                             Win32.AccCtrl.To_PSID (P.vTrustee.ptstrName);
                      OI  : POSIX_Win32.Permissions.UGO;
                   begin
                      if Win32.Winbase.IsValidSid (SID) = Win32.TRUE then
