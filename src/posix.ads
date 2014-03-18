@@ -163,7 +163,6 @@ package POSIX is
 
    function Empty_Set return Option_Set;
 
-   pragma Style_Checks (Off);
    function "+" (L, R : Option_Set) return Option_Set;
 
    function "-" (L, R : Option_Set) return Option_Set;

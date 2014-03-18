@@ -162,7 +162,6 @@ package body POSIX.Process_Identification is
       Proc  : Win32.Winnt.HANDLE;
       Token : aliased Win32.Winnt.HANDLE;
       Res   : Win32.BOOL;
-      pragma Warnings (Off, Res);
    begin
       --  The current process
 
@@ -207,7 +206,6 @@ package body POSIX.Process_Identification is
       Proc  : Win32.Winnt.HANDLE;
       Token : aliased Win32.Winnt.HANDLE;
       Res   : Win32.BOOL;
-      pragma Warnings (Off, Res);
    begin
       --  The current process
 
