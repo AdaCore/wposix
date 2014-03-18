@@ -54,7 +54,7 @@ package body POSIX is
    --  ???
 
    procedure Get_Version_Info
-     (Version_Information : out Win32.Winbase.OSVERSIONINFOA);
+     (Version_Information : out Win32.Winbase.OSVERSIONINFOEX);
    --  ???
 
    ---------
@@ -149,10 +149,10 @@ package body POSIX is
    ----------------------
 
    procedure Get_Version_Info
-     (Version_Information : out Win32.Winbase.OSVERSIONINFOA)
+     (Version_Information : out Win32.Winbase.OSVERSIONINFOEX)
    is
       use type Win32.BOOL;
-      VersionInformation : aliased Win32.Winbase.OSVERSIONINFOA;
+      VersionInformation : aliased Win32.Winbase.OSVERSIONINFOEX;
       Status             : Win32.BOOL;
    begin
       VersionInformation.dwOSVersionInfoSize :=
@@ -414,7 +414,7 @@ package body POSIX is
    -------------
 
    function Release return POSIX_String is
-      VersionInformation : Win32.Winbase.OSVERSIONINFOA;
+      VersionInformation : Win32.Winbase.OSVERSIONINFOEX;
    begin
       Get_Version_Info (VersionInformation);
 
@@ -449,23 +449,67 @@ package body POSIX is
    -----------------
 
    function System_Name return POSIX_String is
-      VersionInformation : Win32.Winbase.OSVERSIONINFOA;
+      use type Win32.DWORD;
+      use type Win32.BYTE;
+      use Win32.Winbase;
+
+      VersionInformation : Win32.Winbase.OSVERSIONINFOEX;
    begin
       Get_Version_Info (VersionInformation);
 
       case VersionInformation.dwPlatformId is
-
          when Win32.Winbase.VER_PLATFORM_WIN32S   =>
             return To_POSIX_String ("Win32s on Windows 3.1");
+
          when 1 =>
             return To_POSIX_String ("Win32 on Windows 95");
-         when Win32.Winbase.VER_PLATFORM_WIN32_NT =>
-            return To_POSIX_String ("Windows NT");
-         when others =>
-            return To_POSIX_String ("UNKNOWN !!!");
 
+         when Win32.Winbase.VER_PLATFORM_WIN32_NT =>
+            if VersionInformation.dwMajorVersion = 5 then
+               if VersionInformation.dwMinorVersion = 0 then
+                  return To_POSIX_String ("Windows 2000");
+               elsif VersionInformation.dwMinorVersion = 1 then
+                  return To_POSIX_String ("Windows XP");
+               elsif VersionInformation.dwMinorVersion = 2 then
+                  return To_POSIX_String ("Windows Server 2003");
+               end if;
+
+            elsif VersionInformation.dwMajorVersion = 6 then
+               if VersionInformation.dwMinorVersion = 0 then
+                  if VersionInformation.wProductType = VER_NT_WORKSTATION then
+                     return To_POSIX_String ("Windows Vista");
+                  else
+                     return To_POSIX_String ("Windows Server 2008");
+                  end if;
+
+               elsif VersionInformation.dwMinorVersion = 1 then
+                  if VersionInformation.wProductType = VER_NT_WORKSTATION then
+                     return To_POSIX_String ("Windows 7");
+                  else
+                     return To_POSIX_String ("Windows Server 2008 R2");
+                  end if;
+
+               elsif VersionInformation.dwMinorVersion = 2 then
+                  if VersionInformation.wProductType = VER_NT_WORKSTATION then
+                     return To_POSIX_String ("Windows 8");
+                  else
+                     return To_POSIX_String ("Windows Server 2012");
+                  end if;
+
+               elsif VersionInformation.dwMinorVersion = 3 then
+                  if VersionInformation.wProductType = VER_NT_WORKSTATION then
+                     return To_POSIX_String ("Windows 8.1");
+                  else
+                     return To_POSIX_String ("Windows Server 2012 R2");
+                  end if;
+               end if;
+            end if;
+
+         when others =>
+            null;
       end case;
 
+      return To_POSIX_String ("Windows UNKNOWN");
    exception
       when others =>
          return To_POSIX_String ("unknown");
@@ -536,7 +580,7 @@ package body POSIX is
    -------------
 
    function Version return POSIX_String is
-      VersionInformation : Win32.Winbase.OSVERSIONINFOA;
+      VersionInformation : Win32.Winbase.OSVERSIONINFOEX;
    begin
       Get_Version_Info (VersionInformation);
 
