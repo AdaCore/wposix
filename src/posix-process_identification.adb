@@ -116,7 +116,6 @@ package body POSIX.Process_Identification is
 
    function Get_Parent_Process_ID return Process_ID is
       use type Win32.DWORD;
-      pragma Warnings (Off);
       Pib  : aliased Win32.Winternl.PROCESS_BASIC_INFORMATION;
       Proc : Win32.Winnt.HANDLE;
       Len  : aliased Win32.DWORD;
@@ -180,7 +179,7 @@ package body POSIX.Process_Identification is
 
       declare
          Buffer_Len : constant := 256;
-         Buffer     : Stream_Element_Array (1 .. 256);
+         Buffer     : Stream_Element_Array (1 .. 256) with Alignment => 8;
          Group      : Win32.Winnt.TOKEN_PRIMARY_GROUP;
          for Group'Address use Buffer'Address;
          Len        : aliased Win32.DWORD;
@@ -224,7 +223,7 @@ package body POSIX.Process_Identification is
 
       declare
          Buffer_Len : constant := 256;
-         Buffer     : Stream_Element_Array (1 .. 256);
+         Buffer     : Stream_Element_Array (1 .. 256) with Alignment => 8;
          User       : Win32.Winnt.TOKEN_USER;
          for User'Address use Buffer'Address;
          Len        : aliased Win32.DWORD;
