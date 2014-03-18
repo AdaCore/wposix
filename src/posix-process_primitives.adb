@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -845,8 +845,7 @@ package body POSIX.Process_Primitives is
       Trace_Stopped  :        Boolean := True;
       Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
-      pragma Warnings (Off, Trace_Stopped);
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Trace_Stopped, Masked_Signals);
 
       Retcode  : Win32.DWORD;
       Result   : Win32.BOOL;
@@ -904,9 +903,7 @@ package body POSIX.Process_Primitives is
       Trace_Stopped  :        Boolean := True;
       Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
-      pragma Warnings (Off, Group);
-      pragma Warnings (Off, Trace_Stopped);
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Group, Trace_Stopped, Masked_Signals);
    begin
       POSIX_Win32.Wait (Status, Block);
    end Wait_For_Child_Process;
@@ -921,8 +918,7 @@ package body POSIX.Process_Primitives is
       Trace_Stopped  :        Boolean := True;
       Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
-      pragma Warnings (Off, Trace_Stopped);
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Trace_Stopped, Masked_Signals);
    begin
       POSIX_Win32.Wait (Status, Block);
    end Wait_For_Child_Process;

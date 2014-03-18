@@ -74,7 +74,7 @@ package body POSIX.File_Status is
    ------------------
 
    function Device_ID_Of (File_Status : Status) return Device_ID is
-      pragma Warnings (Off, File_Status);
+      pragma Unreferenced (File_Status);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("File_ID_Of");
       return 0; -- to please compiler
@@ -85,7 +85,7 @@ package body POSIX.File_Status is
    ----------------
 
    function File_ID_Of (File_Status : Status) return File_ID is
-      pragma Warnings (Off, File_Status);
+      pragma Unreferenced (File_Status);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("File_ID_Of");
       return (0, 0); -- to please compiler
@@ -358,7 +358,7 @@ package body POSIX.File_Status is
    ---------------------------
 
    function Is_Block_Special_File (File_Status : Status) return Boolean is
-      pragma Warnings (Off, File_Status);
+      pragma Unreferenced (File_Status);
    begin
       return False;
    end Is_Block_Special_File;
@@ -391,7 +391,7 @@ package body POSIX.File_Status is
    -------------
 
    function Is_FIFO (File_Status : Status) return Boolean is
-      pragma Warnings (Off, File_Status);
+      pragma Unreferenced (File_Status);
    begin
       return False;
    end Is_FIFO;

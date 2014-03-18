@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -39,7 +39,7 @@ package body POSIX.Signals is
    ---------------------
 
    procedure Add_All_Signals (Set : in out Signal_Set) is
-      pragma Warnings (Off, Set);
+      pragma Unreferenced (Set);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Add_All_Signals");
    end Add_All_Signals;
@@ -49,8 +49,7 @@ package body POSIX.Signals is
    ----------------
 
    procedure Add_Signal (Set : in out Signal_Set; Sig : Signal) is
-      pragma Warnings (Off, Set);
-      pragma Warnings (Off, Sig);
+      pragma Unreferenced (Set, Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Add_Signal");
    end Add_Signal;
@@ -63,7 +62,7 @@ package body POSIX.Signals is
      (Mask_To_Add :        Signal_Set;
       Old_Mask    :    out Signal_Set)
    is
-      pragma Warnings (Off, Mask_To_Add);
+      pragma Unreferenced (Mask_To_Add);
 
       Dummy_Signal_Set : Signal_Set;
    begin
@@ -87,7 +86,7 @@ package body POSIX.Signals is
    ------------------------
 
    procedure Delete_All_Signals (Set : in out Signal_Set) is
-      pragma Warnings (Off, Set);
+      pragma Unreferenced (Set);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Delete_All_Signals");
    end Delete_All_Signals;
@@ -97,8 +96,7 @@ package body POSIX.Signals is
    -------------------
 
    procedure Delete_Signal (Set : in out Signal_Set; Sig : Signal) is
-      pragma Warnings (Off, Set);
-      pragma Warnings (Off, Sig);
+      pragma Unreferenced (Set, Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Delete_Signal");
    end Delete_Signal;
@@ -108,7 +106,7 @@ package body POSIX.Signals is
    -------------------
 
    procedure Ignore_Signal (Sig : Signal) is
-      pragma Warnings (Off, Sig);
+      pragma Unreferenced (Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Ignore_Signal");
    end Ignore_Signal;
@@ -141,7 +139,7 @@ package body POSIX.Signals is
    ----------------
 
    function Is_Ignored (Sig : Signal) return Boolean is
-      pragma Warnings (Off, Sig);
+      pragma Unreferenced (Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Is_Ignored");
       return False;
@@ -152,8 +150,7 @@ package body POSIX.Signals is
    ---------------
 
    function Is_Member (Set : Signal_Set; Sig : Signal) return Boolean is
-      pragma Warnings (Off, Set);
-      pragma Warnings (Off, Sig);
+      pragma Unreferenced (Set, Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Is_Member");
       return False;
@@ -198,7 +195,7 @@ package body POSIX.Signals is
      (Process : POSIX.Process_Identification.Process_Group_ID;
       Sig     : Signal)
    is
-      pragma Warnings (Off, Process);
+      pragma Unreferenced (Process);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Send_Signal " & Image (Sig));
    end Send_Signal;
@@ -208,8 +205,7 @@ package body POSIX.Signals is
    -----------------
 
    procedure Send_Signal (Sig : Signal) is
-      Result : Win32.BOOL;
-      pragma Unreferenced (Result);
+      Result : Win32.BOOL with Unreferenced;
    begin
       if Sig = Signal_Terminate then
          Result := Win32.Winbase.TerminateProcess
@@ -231,7 +227,7 @@ package body POSIX.Signals is
      (New_Mask :        Signal_Set;
       Old_Mask :    out Signal_Set)
    is
-      pragma Warnings (Off, New_Mask);
+      pragma Unreferenced (New_Mask);
 
       Dummy_Signal_Set : Signal_Set;
    begin
@@ -244,7 +240,7 @@ package body POSIX.Signals is
    ------------------------------
 
    procedure Set_Stopped_Child_Signal (Enable : Boolean := True) is
-      pragma Warnings (Off, Enable);
+      pragma Unreferenced (Enable);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Set_Stopped_Child_Signal");
    end Set_Stopped_Child_Signal;
@@ -267,7 +263,7 @@ package body POSIX.Signals is
      (Mask_To_Substract :        Signal_Set;
       Old_Mask          :    out Signal_Set)
    is
-      pragma Warnings (Off, Mask_To_Substract);
+      pragma Unreferenced (Mask_To_Substract);
 
       Dummy_Signal_Set : Signal_Set;
    begin
@@ -280,7 +276,7 @@ package body POSIX.Signals is
    ---------------------
 
    procedure Unignore_Signal (Sig : Signal) is
-      pragma Warnings (Off, Sig);
+      pragma Unreferenced (Sig);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Unignore_Signal");
    end Unignore_Signal;

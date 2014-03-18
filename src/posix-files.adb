@@ -252,7 +252,7 @@ package body POSIX.Files is
      (Pathname   : POSIX.Pathname;
       Permission : POSIX.Permissions.Permission_Set)
    is
-      pragma Warnings (Off, Permission);
+      pragma Unreferenced (Permission);
 
       L_Pathname : constant String := POSIX.To_String (Pathname) & ASCII.NUL;
       Result     : Win32.BOOL;
@@ -271,8 +271,7 @@ package body POSIX.Files is
      (Pathname   : POSIX.Pathname;
       Permission : POSIX.Permissions.Permission_Set)
    is
-      pragma Warnings (Off, Pathname);
-      pragma Warnings (Off, Permission);
+      pragma Unreferenced (Pathname, Permission);
    begin
       POSIX_Win32.Raise_Not_Yet_Implemented ("Create_FIFO");
    end Create_FIFO;
@@ -471,7 +470,7 @@ package body POSIX.Files is
    ---------------
 
    function Is_Socket (Pathname : POSIX.Pathname) return Boolean is
-      pragma Warnings (Off, Pathname);
+      pragma Unreferenced (Pathname);
    begin
       --  No such thing on Windows
       return False;
@@ -482,7 +481,7 @@ package body POSIX.Files is
    ----------------------
 
    function Is_Symbolic_Link (Pathname : POSIX.Pathname) return Boolean is
-      pragma Warnings (Off, Pathname);
+      pragma Unreferenced (Pathname);
    begin
       --  No such thing on Windows
       return False;

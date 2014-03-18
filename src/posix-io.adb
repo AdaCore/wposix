@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -132,7 +132,7 @@ package body POSIX.IO is
      (File           : File_Descriptor;
       Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Masked_Signals);
 
       Result : Win32.BOOL;
    begin
@@ -172,7 +172,7 @@ package body POSIX.IO is
      (File   : File_Descriptor;
       Target : File_Descriptor := 0) return File_Descriptor
    is
-      pragma Warnings (Off, Target);
+      pragma Unreferenced (Target);
 
       use type Win32.DWORD;
       New_File : File_Descriptor;
@@ -203,8 +203,7 @@ package body POSIX.IO is
       Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor
    is
-      pragma Warnings (Off, Target);
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Target, Masked_Signals);
 
       use type Win32.DWORD;
       New_File : File_Descriptor;
@@ -353,7 +352,7 @@ package body POSIX.IO is
    function Get_Terminal_Name
      (File : File_Descriptor) return POSIX.Pathname
    is
-      pragma Warnings (Off, File);
+      pragma Unreferenced (File);
    begin
       return POSIX.To_POSIX_String ("command");
    end Get_Terminal_Name;
@@ -421,7 +420,7 @@ package body POSIX.IO is
       Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor
    is
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Masked_Signals);
 
       use type Win32.Winnt.HANDLE;
       Handle : Win32.Winnt.HANDLE;
@@ -480,7 +479,7 @@ package body POSIX.IO is
       Masked_Signals : POSIX.Signal_Masking := POSIX.RTS_Signals)
       return File_Descriptor
    is
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Masked_Signals);
 
       use type Win32.Winnt.HANDLE;
       Handle : Win32.Winnt.HANDLE;
@@ -557,7 +556,7 @@ package body POSIX.IO is
       Last           :    out POSIX.IO_Count;
       Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Masked_Signals);
 
       Result     : Win32.BOOL;
       Bytes_Read : aliased Win32.DWORD;
@@ -663,7 +662,7 @@ package body POSIX.IO is
       Last           :    out POSIX.IO_Count;
       Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Masked_Signals);
 
       Result        : Win32.BOOL;
       Bytes_Written : aliased Win32.DWORD;

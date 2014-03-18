@@ -51,7 +51,7 @@ package body POSIX.Process_Identification is
      (Process       :        Process_ID;
       Process_Group :    out Process_Group_ID)
    is
-      pragma Warnings (Off, Process);
+      pragma Unreferenced (Process);
    begin
       Process_Group := Process_Group_ID (Users_GID);
    end Create_Process_Group;
@@ -278,7 +278,7 @@ package body POSIX.Process_Identification is
    ------------------
 
    procedure Set_Group_ID (ID : Group_ID) is
-      pragma Warnings (Off, ID);
+      pragma Unreferenced (ID);
    begin
       null;
    end Set_Group_ID;
@@ -291,8 +291,7 @@ package body POSIX.Process_Identification is
      (Process       : Process_ID       := Get_Process_ID;
       Process_Group : Process_Group_ID := Get_Process_Group_ID)
    is
-      pragma Warnings (Off, Process);
-      pragma Warnings (Off, Process_Group);
+      pragma Unreferenced (Process, Process_Group);
    begin
       null;
    end Set_Process_Group_ID;
@@ -302,7 +301,7 @@ package body POSIX.Process_Identification is
    -----------------
 
    procedure Set_User_ID (ID : User_ID) is
-      pragma Warnings (Off, ID);
+      pragma Unreferenced (ID);
    begin
       null;
    end Set_User_ID;
