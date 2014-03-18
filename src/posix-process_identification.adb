@@ -51,7 +51,7 @@ package body POSIX.Process_Identification is
      (Process       :        Process_ID;
       Process_Group :    out Process_Group_ID)
    is
-      pragma Warnings (Off, Process);
+      pragma Unreferenced (Process);
    begin
       Process_Group := Process_Group_ID (Users_GID);
    end Create_Process_Group;
@@ -97,9 +97,7 @@ package body POSIX.Process_Identification is
    --------------------
 
    function Get_Login_Name return POSIX_String is
-      Buffer : String (1 .. 500);
-      pragma Warnings (Off, Buffer);
-
+      Buffer : String (1 .. 500) with Warnings => Off;
       Size   : aliased Win32.DWORD := 500;
       Result : Win32.BOOL;
    begin
@@ -116,7 +114,6 @@ package body POSIX.Process_Identification is
 
    function Get_Parent_Process_ID return Process_ID is
       use type Win32.DWORD;
-      pragma Warnings (Off);
       Pib  : aliased Win32.Winternl.PROCESS_BASIC_INFORMATION;
       Proc : Win32.Winnt.HANDLE;
       Len  : aliased Win32.DWORD;
@@ -163,7 +160,6 @@ package body POSIX.Process_Identification is
       Proc  : Win32.Winnt.HANDLE;
       Token : aliased Win32.Winnt.HANDLE;
       Res   : Win32.BOOL;
-      pragma Warnings (Off, Res);
    begin
       --  The current process
 
@@ -180,7 +176,7 @@ package body POSIX.Process_Identification is
 
       declare
          Buffer_Len : constant := 256;
-         Buffer     : Stream_Element_Array (1 .. 256);
+         Buffer     : Stream_Element_Array (1 .. 256) with Alignment => 8;
          Group      : Win32.Winnt.TOKEN_PRIMARY_GROUP;
          for Group'Address use Buffer'Address;
          Len        : aliased Win32.DWORD;
@@ -208,7 +204,6 @@ package body POSIX.Process_Identification is
       Proc  : Win32.Winnt.HANDLE;
       Token : aliased Win32.Winnt.HANDLE;
       Res   : Win32.BOOL;
-      pragma Warnings (Off, Res);
    begin
       --  The current process
 
@@ -224,7 +219,7 @@ package body POSIX.Process_Identification is
 
       declare
          Buffer_Len : constant := 256;
-         Buffer     : Stream_Element_Array (1 .. 256);
+         Buffer     : Stream_Element_Array (1 .. 256) with Alignment => 8;
          User       : Win32.Winnt.TOKEN_USER;
          for User'Address use Buffer'Address;
          Len        : aliased Win32.DWORD;
@@ -278,7 +273,7 @@ package body POSIX.Process_Identification is
    ------------------
 
    procedure Set_Group_ID (ID : Group_ID) is
-      pragma Warnings (Off, ID);
+      pragma Unreferenced (ID);
    begin
       null;
    end Set_Group_ID;
@@ -291,8 +286,7 @@ package body POSIX.Process_Identification is
      (Process       : Process_ID       := Get_Process_ID;
       Process_Group : Process_Group_ID := Get_Process_Group_ID)
    is
-      pragma Warnings (Off, Process);
-      pragma Warnings (Off, Process_Group);
+      pragma Unreferenced (Process, Process_Group);
    begin
       null;
    end Set_Process_Group_ID;
@@ -302,7 +296,7 @@ package body POSIX.Process_Identification is
    -----------------
 
    procedure Set_User_ID (ID : User_ID) is
-      pragma Warnings (Off, ID);
+      pragma Unreferenced (ID);
    begin
       null;
    end Set_User_ID;

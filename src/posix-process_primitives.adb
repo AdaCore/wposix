@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -121,8 +121,7 @@ package body POSIX.Process_Primitives is
    procedure Close_Template (Template : in out Process_Template) is
 
       P      : File_Request_Access;
-      Result : Win32.BOOL;
-      pragma Unreferenced (Result);
+      Result : Win32.BOOL with Unreferenced;
 
       procedure Free is new Ada.Unchecked_Deallocation
         (File_Request, File_Request_Access);
@@ -691,8 +690,8 @@ package body POSIX.Process_Primitives is
    is
       Null_Environment : POSIX.Process_Environment.Environment;
       Max_Len    : constant := 500;
-      Pathname   : String (1 .. Max_Len) := (others => '.');
-      pragma Warnings (Off, Pathname);
+      Pathname   : String (1 .. Max_Len) := (others => '.')
+        with Warnings => Off;
 
       L_Filename : constant String := POSIX.To_String (Filename) & ASCII.NUL;
       Ext_Var    : constant String := ".exe" & ASCII.NUL;
@@ -735,11 +734,9 @@ package body POSIX.Process_Primitives is
       Arg_List :        POSIX.POSIX_String_List := POSIX.Empty_String_List)
    is
       Max_Len    : constant := 500;
-      Pathname   : String (1 .. Max_Len);
-      pragma Warnings (Off, Pathname);
-
       L_Filename : constant String := POSIX.To_String (Filename) & ASCII.NUL;
       Ext_Var    : constant String := ".exe" & ASCII.NUL;
+      Pathname   : String (1 .. Max_Len) with Warnings => Off;
       lpFilePart : aliased Win32.LPSTR;
       Result     : Win32.DWORD;
    begin
@@ -845,15 +842,12 @@ package body POSIX.Process_Primitives is
       Trace_Stopped  :        Boolean := True;
       Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
-      pragma Warnings (Off, Trace_Stopped);
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Trace_Stopped, Masked_Signals);
 
-      Retcode  : Win32.DWORD;
-      Result   : Win32.BOOL;
-      pragma Unreferenced (Result);
+      Retcode              : Win32.DWORD;
+      Result               : Win32.BOOL with Unreferenced;
       Process_Informations : Win32.Winbase.PROCESS_INFORMATION;
-
-      Process_Status : aliased Win32.DWORD;
+      Process_Status       : aliased Win32.DWORD;
 
    begin
       if not POSIX_Win32.Exist (Child) then
@@ -904,9 +898,7 @@ package body POSIX.Process_Primitives is
       Trace_Stopped  :        Boolean := True;
       Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
-      pragma Warnings (Off, Group);
-      pragma Warnings (Off, Trace_Stopped);
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Group, Trace_Stopped, Masked_Signals);
    begin
       POSIX_Win32.Wait (Status, Block);
    end Wait_For_Child_Process;
@@ -921,8 +913,7 @@ package body POSIX.Process_Primitives is
       Trace_Stopped  :        Boolean := True;
       Masked_Signals :        POSIX.Signal_Masking := POSIX.RTS_Signals)
    is
-      pragma Warnings (Off, Trace_Stopped);
-      pragma Warnings (Off, Masked_Signals);
+      pragma Unreferenced (Trace_Stopped, Masked_Signals);
    begin
       POSIX_Win32.Wait (Status, Block);
    end Wait_For_Child_Process;

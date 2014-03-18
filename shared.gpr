@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                 wPOSIX                                   --
 --                                                                          --
---                    Copyright (C) 2008-2013, AdaCore                      --
+--                    Copyright (C) 2008-2014, AdaCore                      --
 --                                                                          --
 --  This is free software;  you can redistribute it  and/or modify it       --
 --  under terms of the  GNU General Public License as published  by the     --
@@ -54,7 +54,7 @@ project Shared is
         use "style_checker -l70 -H";
       for VCS_File_Check
         use "style_checker -ign out -ign tmplt -ign sed -ign txt"
-         & " -lang Ada -cp -cy -sp -gnat05"
+         & " -lang Ada -cp -cy -sp -gnat2012"
          & " -lang XML -l256";
    end Ide;
 
@@ -66,7 +66,7 @@ project Shared is
    --  Options used for all Ada units in both Debug and Release modes
 
    Common_Options :=
-     ("-gnat05", "-gnatwcfijkmruve", "-gnaty3abcefhiIklmnoprstx", "-Wall")
+     ("-gnat2012", "-gnatwcfijkmruve", "-gnaty3abcefhiIklmnoprstx", "-Wall")
      & Global_Options;
    --  Common options used for the Debug and Release modes
 

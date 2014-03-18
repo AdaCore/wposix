@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -156,9 +156,9 @@ package body POSIX_Win32 is
    begin
       if Pathname'Length > 4 then
          declare
-            Ext : constant String
-              := POSIX.To_String
-              (Pathname (Pathname'Last - 3 .. Pathname'Last));
+            Ext : constant String :=
+                    POSIX.To_String
+                      (Pathname (Pathname'Last - 3 .. Pathname'Last));
          begin
             if Ext = ".com" then
                return True;
@@ -166,8 +166,8 @@ package body POSIX_Win32 is
             elsif Ext = ".exe" then
                declare
                   use type Win32.BOOL;
-                  L_Pathname      : constant String
-                    := POSIX.To_String (Pathname) & ASCII.NUL;
+                  L_Pathname : constant String :=
+                                 POSIX.To_String (Pathname) & ASCII.NUL;
                begin
                   return Win32.Winbase.GetBinaryType
                     (Win32.Addr (L_Pathname),
@@ -277,10 +277,10 @@ package body POSIX_Win32 is
       -- Remove --
       ------------
 
-      procedure Remove (Child  : PPI.Process_ID) is
+      procedure Remove (Child : PPI.Process_ID) is
          use type PPI.Process_ID;
-         PLa, PLa_Prev : P_List_Access;
-         pragma Warnings (Off, PLa_Prev);
+         PLa      : P_List_Access;
+         PLa_Prev : P_List_Access with Warnings => Off;
       begin
          PLa := Process;
 
@@ -332,8 +332,7 @@ package body POSIX_Win32 is
          PLa     : P_List_Access := Process;
 
          Retcode   : Win32.DWORD;
-         Ok        : Win32.BOOL;
-         pragma Unreferenced (Ok);
+         Ok        : Win32.BOOL with Unreferenced;
          Exit_Code : aliased Win32.DWORD;
          H         : Win32.Winnt.HANDLE;
          Child     : PPI.Process_ID;
@@ -479,8 +478,7 @@ package body POSIX_Win32 is
       declare
          SID_Str : constant String :=
                      Interfaces.C.Strings.Value (Win32.To_Chars_Ptr (CSID));
-         H       : Win32.Windef.HLOCAL;
-         pragma Unreferenced (H);
+         H       : Win32.Windef.HLOCAL with Unreferenced;
       begin
          H := Win32.Winbase.LocalFree (CSID);
          return SID_Str;

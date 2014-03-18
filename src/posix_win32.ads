@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -26,6 +26,8 @@
 --  however invalidate any other reasons why the executable file  might be  --
 --  covered by the  GNU Public License.                                     --
 ------------------------------------------------------------------------------
+
+pragma Ada_2012;
 
 with System;
 
@@ -55,25 +57,21 @@ private package POSIX_Win32 is
    Everyone_SID : constant String := "S-1-1-0";
    --  This is the well-known "everyone" group which is available everywhere
 
-   procedure Raise_Not_Yet_Implemented (Message : String);
-   pragma No_Return (Raise_Not_Yet_Implemented);
+   procedure Raise_Not_Yet_Implemented (Message : String) with No_Return;
    --  Raise POSIX_Not_Yet_Implemented exception with Message
 
-   procedure Check_Retcode (RETCODE : Win32.DWORD; Fct : String);
-   pragma Inline (Check_Retcode);
+   procedure Check_Retcode (RETCODE : Win32.DWORD; Fct : String) with Inline;
    --  Call Raise_Error with current error code if RETCODE is set to
    --  Retcode_Error.
 
-   procedure Raise_Last_Error (Fct : String);
-   pragma Inline (Raise_Last_Error);
+   procedure Raise_Last_Error (Fct : String) with Inline;
    --  Raise an exception with the last error code
 
-   procedure Check_Result (RETCODE : Win32.BOOL; Fct : String);
-   pragma Inline (Check_Result);
+   procedure Check_Result (RETCODE : Win32.BOOL; Fct : String) with Inline;
    --  Call Raise_Error with current error code if RETCODE is False
 
-   procedure Raise_Error (Message : String; Error_Code : POSIX.Error_Code);
-   pragma No_Return (Raise_Error);
+   procedure Raise_Error
+     (Message : String; Error_Code : POSIX.Error_Code) with No_Return;
    --  Raises POSIX_Error with Message and Error_Code
 
    function Is_Executable (Pathname : POSIX.POSIX_String) return Boolean;

@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -43,16 +43,14 @@ package body POSIX is
    procedure Free is new Ada.Unchecked_Deallocation
      (String_Ptr_Array, String_Ptr_Array_Ptr);
 
-   function To_POSIX_Character (Char : Character) return POSIX_Character;
-   pragma Inline (To_POSIX_Character);
+   function To_POSIX_Character
+     (Char : Character) return POSIX_Character with Inline;
    --  ???
 
-   function To_Character (Char : POSIX_Character) return Character;
-   pragma Inline (To_Character);
+   function To_Character (Char : POSIX_Character) return Character with Inline;
    --  ???
 
-   function Remove_First (S : String) return POSIX_String;
-   pragma Inline (Remove_First);
+   function Remove_First (S : String) return POSIX_String with Inline;
    --  ???
 
    procedure Get_Version_Info
