@@ -132,8 +132,7 @@ package body POSIX.File_Status is
    function Get_File_Status (Pathname : POSIX.Pathname) return Status is
       use type Win32.DWORD, Win32.Winnt.HANDLE;
 
-      Result          : Win32.BOOL;
-      pragma Unreferenced (Result);
+      Result          : Win32.BOOL with Unreferenced;
       L_Pathname      : String := POSIX.To_String (Pathname) & ASCII.NUL;
       File_Attributes : Win32.DWORD;
       Handle          : Win32.Winnt.HANDLE;
@@ -268,11 +267,9 @@ package body POSIX.File_Status is
       use type Win32.Winnt.SECURITY_INFORMATION;
 
       Handle : Win32.Winnt.HANDLE;
-      H      : Win32.Windef.HLOCAL;
-      pragma Unreferenced (H);
+      H      : Win32.Windef.HLOCAL with Unreferenced;
       Close  : Boolean := False;
-      Res    : Win32.BOOL;
-      pragma Unreferenced (Res);
+      Res    : Win32.BOOL with Unreferenced;
       Ret    : Win32.DWORD;
       SD     : aliased Win32.Winnt.PSECURITY_DESCRIPTOR;
    begin
@@ -417,8 +414,7 @@ package body POSIX.File_Status is
    function Last_Access_Time_Of
      (File_Status : Status) return POSIX.Calendar.POSIX_Time
    is
-      Result           : Win32.BOOL;
-      pragma Unreferenced (Result);
+      Result           : Win32.BOOL with Unreferenced;
       System_Time      : aliased Win32.Winbase.SYSTEMTIME;
       Last_Access_Time : aliased Win32.Winbase.FILETIME;
       Local_Time       : aliased Win32.Winbase.FILETIME;
@@ -549,8 +545,7 @@ package body POSIX.File_Status is
               (Permission        : Permissions.Permission;
                AccessPermissions : Win32.DWORD;
                Mask              : Win32.DWORD;
-               Access_Mode       : Win32.AccCtrl.ACCESS_MODE);
-            pragma Inline (Set);
+               Access_Mode       : Win32.AccCtrl.ACCESS_MODE) with Inline;
             --  Set the given permission if Mask is set in AccessPermissions
 
             ---------
@@ -654,8 +649,7 @@ package body POSIX.File_Status is
 
 begin
    declare
-      Ignored : Win32.BOOL;
-      pragma Unreferenced (Ignored);
+      Ignored : Win32.BOOL with Unreferenced;
    begin
       Ignored := Win32.Winbase.SystemTimeToFileTime
         (Epoch_System_Time'Access, Epoch'Access);

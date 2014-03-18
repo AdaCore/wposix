@@ -97,9 +97,7 @@ package body POSIX.Process_Identification is
    --------------------
 
    function Get_Login_Name return POSIX_String is
-      Buffer : String (1 .. 500);
-      pragma Warnings (Off, Buffer);
-
+      Buffer : String (1 .. 500) with Warnings => Off;
       Size   : aliased Win32.DWORD := 500;
       Result : Win32.BOOL;
    begin

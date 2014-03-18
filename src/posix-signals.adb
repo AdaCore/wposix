@@ -175,8 +175,7 @@ package body POSIX.Signals is
      (Process : POSIX.Process_Identification.Process_ID;
       Sig     : Signal)
    is
-      Result : Win32.BOOL;
-      pragma Unreferenced (Result);
+      Result : Win32.BOOL with Unreferenced;
    begin
       if Sig = Signal_Terminate then
          Result := Win32.Winbase.TerminateProcess

@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -31,8 +31,7 @@ with Win32.Winnt;
 
 with POSIX.IO;
 
-package POSIX_Win32.File_Handle is
-   pragma Elaborate_Body;
+package POSIX_Win32.File_Handle with Elaborate_Body is
 
    function Open
      (H : Win32.Winnt.HANDLE;

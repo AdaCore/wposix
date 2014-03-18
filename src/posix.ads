@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -26,6 +26,8 @@
 --  however invalidate any other reasons why the executable file  might be  --
 --  covered by the  GNU Public License.                                     --
 ------------------------------------------------------------------------------
+
+pragma Ada_2012;
 
 with Win32;
 with Win32.Winerror;
@@ -119,11 +121,9 @@ package POSIX is
 
    type POSIX_String is array (Positive range <>) of POSIX_Character;
 
-   function To_POSIX_String (Str : String) return POSIX_String;
-   pragma Inline (To_POSIX_String);
+   function To_POSIX_String (Str : String) return POSIX_String with Inline;
 
-   function To_String (Str : POSIX_String) return String;
-   pragma Inline (To_String);
+   function To_String (Str : POSIX_String) return String with Inline;
 
    subtype Filename is POSIX_String;
    subtype Pathname is POSIX_String;

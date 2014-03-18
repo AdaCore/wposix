@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -284,8 +284,7 @@ package body POSIX.Process_Environment is
       use type Win32.DWORD;
       use type Win32.INT;
       Max_Len      : constant := 500;
-      Buffer       : String (1 .. Max_Len);
-      pragma Warnings (Off, Buffer);
+      Buffer       : String (1 .. Max_Len) with Warnings => Off;
       Number_Bytes : Win32.DWORD;
    begin
       Number_Bytes := Win32.Winbase.GetCurrentDirectory

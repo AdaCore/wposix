@@ -68,8 +68,7 @@ package body POSIX.IO is
    --  POSIX origin definition to Win32
 
    procedure Check_Append
-     (Handle : Win32.Winnt.HANDLE; Options : Open_Option_Set);
-   pragma Inline (Check_Append);
+     (Handle : Win32.Winnt.HANDLE; Options : Open_Option_Set) with Inline;
    --  Move to end of file if Append set in Options
 
    -------------

@@ -147,8 +147,7 @@ package body POSIX.Files is
                      aliased Win32.AccCtrl.EXPLICIT_ACCESS;
       Ret        : Win32.DWORD;
       Res        : Win32.BOOL;
-      H          : Win32.Windef.HLOCAL;
-      pragma Unreferenced (H);
+      H          : Win32.Windef.HLOCAL with Unreferenced;
    begin
       --  Create well-known group for everyone
 
