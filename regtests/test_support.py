@@ -17,14 +17,14 @@ from gnatpython.ex import Run
 
 def gnatmake(prj):
     """Compile a project with gnatmake"""
-    cmd = ["gnatmake", "-p", "-gnat05", "-P" + prj, "-bargs", "-E"]
+    cmd = ["gnatmake", "-p", "-gnat2012", "-P" + prj, "-bargs", "-E"]
     process = Run(cmd)
     if process.status:
         print process.out
 
 def gprbuild(prj):
     """Compile a project with gprbuild"""
-    cmd = ["gprbuild", "-p", "-gnat05", "-P" + prj, "-bargs", "-E"]
+    cmd = ["gprbuild", "-p", "-gnat2012", "-P" + prj, "-bargs", "-E"]
     process = Run(cmd)
     if process.status:
         logging.error(process.out)
