@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -27,10 +27,10 @@
 --  covered by the  GNU Public License.                                     --
 ------------------------------------------------------------------------------
 
+with POSIX.Calendar;
+with POSIX.IO;
 with POSIX.Permissions;
 with POSIX.Process_Identification;
-with POSIX.IO;
-with POSIX.Calendar;
 
 private with Ada.Finalization;
 private with Ada.Strings.Unbounded;
@@ -105,6 +105,7 @@ private
    type Shared_Data is record
       Owner, Group : aliased Win32.Winnt.PSID;
       DACL         : aliased Win32.Winnt.PACL;
+      SD           : aliased Win32.Winnt.PSECURITY_DESCRIPTOR;
       Ref_Count    : Natural;
    end record;
 

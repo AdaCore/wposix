@@ -101,13 +101,13 @@ package body POSIX.File_Status is
       procedure Unchecked_Free is
         new Unchecked_Deallocation (Shared_Data, Shared_Data_Access);
 
-      V : Win32.PVOID;
-      pragma Unreferenced (V);
-
+      V : Win32.PVOID with Unreferenced;
       D : Shared_Data_Access := File_Status.Data;
+      H : Win32.Windef.HLOCAL with Unreferenced;
 
    begin
       File_Status.Data := null;
+
       if D /= null then
          D.Ref_Count := D.Ref_Count - 1;
 
@@ -118,6 +118,10 @@ package body POSIX.File_Status is
 
             if D.Group /= System.Null_Address then
                V := Win32.Winbase.FreeSid (D.Group);
+            end if;
+
+            if D.SD /= System.Null_Address then
+               H := Win32.Winbase.LocalFree (D.SD);
             end if;
 
             Unchecked_Free (D);
@@ -197,7 +201,8 @@ package body POSIX.File_Status is
                File_Links       => 1,
                File_Type        => Win32.Winbase.FILE_TYPE_DISK,
                Data             => new Shared_Data'
-                 (System.Null_Address, System.Null_Address, null, 2));
+                 (System.Null_Address, System.Null_Address,
+                  null, System.Null_Address, 2));
          end if;
 
       else
@@ -215,7 +220,8 @@ package body POSIX.File_Status is
             File_Links       => 1,
             File_Type        => Win32.Winbase.FILE_TYPE_DISK,
             Data             => new Shared_Data'
-              (System.Null_Address, System.Null_Address, null, 2));
+              (System.Null_Address, System.Null_Address,
+               null, System.Null_Address, 2));
 
          Result := Win32.Winbase.FindClose (Handle);
       end if;
@@ -253,7 +259,8 @@ package body POSIX.File_Status is
          File_Links       => File_Information.nNumberOfLinks,
          File_Type        => Win32.Winbase.GetFileType (Handle),
          Data             => new Shared_Data'
-            (System.Null_Address, System.Null_Address, null, 2));
+           (System.Null_Address, System.Null_Address,
+            null, System.Null_Address,  2));
    end Get_File_Status;
 
    ---------------------
@@ -267,11 +274,10 @@ package body POSIX.File_Status is
       use type Win32.Winnt.SECURITY_INFORMATION;
 
       Handle : Win32.Winnt.HANDLE;
-      H      : Win32.Windef.HLOCAL with Unreferenced;
       Close  : Boolean := False;
       Res    : Win32.BOOL with Unreferenced;
       Ret    : Win32.DWORD;
-      SD     : aliased Win32.Winnt.PSECURITY_DESCRIPTOR;
+
    begin
       if File_Status.Data = null then
          POSIX_Win32.Raise_Error
@@ -315,9 +321,7 @@ package body POSIX.File_Status is
             File_Status.Data.Group'Access,
             File_Status.Data.DACL'Access,
             null,
-            SD'Access);
-
-         H := Win32.Winbase.LocalFree (SD);
+            File_Status.Data.SD'Access);
 
          POSIX_Win32.Check_Retcode (Ret, "Get_Owner_Group_Of.GetSecurityInfo");
 
@@ -346,8 +350,9 @@ package body POSIX.File_Status is
 
    overriding procedure Initialize (File_Status : in out Status) is
    begin
-      File_Status.Data :=
-        new Shared_Data'(System.Null_Address, System.Null_Address, null, 1);
+      File_Status.Data := new Shared_Data'
+        (System.Null_Address, System.Null_Address,
+         null, System.Null_Address, 1);
    end Initialize;
 
    ---------------------------
