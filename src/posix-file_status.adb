@@ -101,9 +101,7 @@ package body POSIX.File_Status is
       procedure Unchecked_Free is
         new Unchecked_Deallocation (Shared_Data, Shared_Data_Access);
 
-      V : Win32.PVOID;
-      pragma Unreferenced (V);
-
+      V : Win32.PVOID with Unreferenced;
       D : Shared_Data_Access := File_Status.Data;
 
    begin
