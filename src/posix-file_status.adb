@@ -106,6 +106,7 @@ package body POSIX.File_Status is
 
    begin
       File_Status.Data := null;
+
       if D /= null then
          D.Ref_Count := D.Ref_Count - 1;
 
