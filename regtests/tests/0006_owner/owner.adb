@@ -83,6 +83,13 @@ begin
       Validate (F_UID, "F_UID", Root_SID (P_UID));
       Validate (F_GID, "F_GID", Root_SID (P_GID));
       Validate (P_UID, "P_UID");
-      Validate (P_GID, "P_GID");
+
+      if P_GID (P_GID'First .. P_GID'First + 7)
+        in "S-1-5-21" | "S-1-5-32"
+      then
+         Text_IO.Put_Line ("OK P_GID seems correct.");
+      else
+         Text_IO.Put_Line ("NOK P_GID seems wrong.");
+      end if;
    end;
 end Owner;
