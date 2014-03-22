@@ -208,8 +208,6 @@ package body POSIX.Files is
                  Win32.AccCtrl.TRUSTEE_IS_WELL_KNOWN_GROUP,
                ptstrName                => Win32.AccCtrl.To_LPSTR (ESID))));
 
-      H := Win32.Winbase.LocalFree (SD);
-
       --  Add the permissons in corresponding grfAccessPermissions
 
       for P in Permission'Range  loop
@@ -228,6 +226,7 @@ package body POSIX.Files is
          OldAcl                  => null,
          NewAcl                  => DACL'Access);
 
+      H := Win32.Winbase.LocalFree (SD);
       POSIX_Win32.Check_Retcode (Ret, "Change_Permissions.SetEntriesInAcl");
 
       Ret := Win32.Aclapi.SetNamedSecurityInfo
