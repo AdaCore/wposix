@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2010-2012, AdaCore                     --
+--                     Copyright (C) 2010-2014, AdaCore                     --
 --                                                                          --
 --  This is free software;  you can redistribute it  and/or modify it       --
 --  under terms of the  GNU General Public License as published  by the     --
@@ -16,8 +16,8 @@
 --  to http://www.gnu.org/licenses for a complete copy of the license.      --
 ------------------------------------------------------------------------------
 
-with Ada.Text_IO;
 with Ada.Strings.Fixed;
+with Ada.Text_IO;
 
 with POSIX.File_Status;
 with POSIX.Process_Identification;
@@ -27,16 +27,20 @@ procedure Owner is
    use Ada;
    use POSIX;
 
-   procedure Validate (SID, Name : String);
+   procedure Validate (SID, Name : String; RSID : String := "");
    --  Validate string structure
+
+   function Root_SID (SID : String) return String
+     is (SID (SID'First .. SID'First + 7));
 
    --------------
    -- Validate --
    --------------
 
-   procedure Validate (SID, Name : String) is
+   procedure Validate (SID, Name : String; RSID : String := "") is
+      Check : constant String := (if RSID = "" then "S-1-5-21" else RSID);
    begin
-      if SID (SID'First .. SID'First + 7) = "S-1-5-21"
+      if SID (SID'First .. SID'First + 7) = Check
         and then Strings.Fixed.Count (SID, "-") = 7
       then
          Text_IO.Put_Line ("OK " & Name & " seems correct.");
@@ -76,8 +80,8 @@ begin
          Text_IO.Put_Line ("NOK, F/P GID, " & F_GID & "," & P_GID);
       end if;
 
-      Validate (F_UID, "F_UID");
-      Validate (F_GID, "F_GID");
+      Validate (F_UID, "F_UID", Root_SID (P_UID));
+      Validate (F_GID, "F_GID", Root_SID (P_GID));
       Validate (P_UID, "P_UID");
       Validate (P_GID, "P_GID");
    end;
