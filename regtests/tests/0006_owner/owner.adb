@@ -27,22 +27,16 @@ procedure Owner is
    use Ada;
    use POSIX;
 
-   procedure Validate (SID, Name : String; RSID : String := "");
+   procedure Validate (SID, Name : String);
    --  Validate string structure
-
-   function Root_SID (SID : String) return String
-     is (SID (SID'First .. SID'First + 7));
 
    --------------
    -- Validate --
    --------------
 
-   procedure Validate (SID, Name : String; RSID : String := "") is
-      Check : constant String := (if RSID = "" then "S-1-5-21" else RSID);
+   procedure Validate (SID, Name : String) is
    begin
-      if SID (SID'First .. SID'First + 7) = Check
-        and then Strings.Fixed.Count (SID, "-") = 7
-      then
+      if SID (SID'First .. SID'First + 7) in "S-1-5-21" | "S-1-5-32" then
          Text_IO.Put_Line ("OK " & Name & " seems correct.");
       else
          Text_IO.Put_Line ("NOK " & Name & " seems wrong: " & SID);
@@ -80,16 +74,9 @@ begin
          Text_IO.Put_Line ("NOK, F/P GID, " & F_GID & "," & P_GID);
       end if;
 
-      Validate (F_UID, "F_UID", Root_SID (P_UID));
-      Validate (F_GID, "F_GID", Root_SID (P_GID));
+      Validate (F_UID, "F_UID");
+      Validate (F_GID, "F_GID");
       Validate (P_UID, "P_UID");
-
-      if P_GID (P_GID'First .. P_GID'First + 7)
-        in "S-1-5-21" | "S-1-5-32"
-      then
-         Text_IO.Put_Line ("OK P_GID seems correct.");
-      else
-         Text_IO.Put_Line ("NOK P_GID seems wrong.");
-      end if;
+      Validate (P_GID, "P_GID");
    end;
 end Owner;
