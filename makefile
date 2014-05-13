@@ -1,7 +1,7 @@
 ############################################################################
 #                                 wPOSIX                                   #
 #                                                                          #
-#                    Copyright (C) 2008-2013, AdaCore                      #
+#                    Copyright (C) 2008-2014, AdaCore                      #
 #                                                                          #
 #  This is free software;  you can redistribute it  and/or modify it       #
 #  under terms of the  GNU General Public License as published  by the     #
@@ -93,6 +93,7 @@ ifeq (${ENABLE_SHARED}, true)
 	$(GPRINSTALL) $(GPROPTS) -p -f --prefix=$(TPREFIX) \
 		--subdirs=$(SDIR)/$(OTHER_LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(OTHER_LIBRARY_TYPE) \
+		-XWIN32ADA_BUILD=$(OTHER_LIBRARY_TYPE) \
 		--build-name=$(OTHER_LIBRARY_TYPE) -Pwposix
 endif
 
@@ -105,7 +106,7 @@ build:
 ifeq (${ENABLE_SHARED}, true)
 	$(GPRBUILD) -p $(GPROPTS) -j$(PROCESSORS) \
 		--subdirs=$(SDIR)/relocatable -XLIBRARY_TYPE=relocatable \
-		-Pwposix
+		-XWIN32ADA_BUILD=relocatable -Pwposix
 endif
 
 #######################################################################
