@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2010-2012, AdaCore                     --
+--                     Copyright (C) 2010-2014, AdaCore                     --
 --                                                                          --
 --  This is free software;  you can redistribute it  and/or modify it       --
 --  under terms of the  GNU General Public License as published  by the     --
@@ -26,33 +26,39 @@ procedure CPerms is
 
    use Ada;
    use POSIX;
+   use POSIX.Permissions;
 
    -------------------
    -- Display_Perms --
    -------------------
 
-   procedure Display_Perms (File : String) is
+   procedure Display_Perms
+      (File    : String;
+       Actives : Permission_Set)
+   is
       Status : File_Status.Status;
-      Perms  : Permissions.Permission_Set;
+      Perms  : Permission_Set;
    begin
       Text_IO.Put_Line ("File: " & File);
       Status := File_Status.Get_File_Status (POSIX.To_POSIX_String (File));
       Perms := File_Status.Permission_Set_Of (Status);
 
       for P in Perms'Range loop
-         Text_IO.Put_Line (P'Img & " = " & Perms (P)'Img);
+         if Actives (P) then
+            Text_IO.Put_Line (P'Img & " = " & Perms (P)'Img);
+         end if;
       end loop;
       Text_IO.New_Line;
    end Display_Perms;
 
    Status : File_Status.Status;
-   Perms  : Permissions.Permission_Set;
+   Perms  : Permission_Set;
 
 begin
    Status := File_Status.Get_File_Status ("check1");
    Perms := File_Status.Permission_Set_Of (Status);
 
-   Display_Perms ("check1");
+   Display_Perms ("check1", Access_Permission_Set);
 
    --  Add write to owner/group
 
@@ -61,29 +67,32 @@ begin
 
    Files.Change_Permissions ("check1", Perms);
 
-   Display_Perms ("check1");
+   Display_Perms ("check1", Group_Permission_Set or Owner_Permission_Set);
 
    --  Owner permissions
 
-   Files.Change_Permissions ("check1", Permissions.Owner_Permission_Set);
+   Files.Change_Permissions ("check1", Owner_Permission_Set);
 
-   Display_Perms ("check1");
+   Display_Perms
+     ("check1",
+      Permission_Set'(Owner_Read | Owner_Write => True,
+                      others                   => False));
 
    --  Group permissions
 
-   Files.Change_Permissions ("check1", Permissions.Group_Permission_Set);
+   --  Files.Change_Permissions ("check1", Permissions.Group_Permission_Set);
 
-   Display_Perms ("check1");
+   --  Display_Perms ("check1");
 
    --  Others permissions
 
-   Files.Change_Permissions ("check1", Permissions.Others_Permission_Set);
+   --  Files.Change_Permissions ("check1", Permissions.Others_Permission_Set);
 
-   Display_Perms ("check1");
+   --  Display_Perms ("check1");
 
    --  Access permissions
 
-   Files.Change_Permissions ("check1", Permissions.Access_Permission_Set);
+   --  Files.Change_Permissions ("check1", Permissions.Access_Permission_Set);
 
-   Display_Perms ("check1");
+   --  Display_Perms ("check1");
 end CPerms;
