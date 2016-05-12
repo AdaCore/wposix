@@ -20,7 +20,7 @@
 
 ############################################################################
 #  Default configuration
-VERSION		= gpl-2016
+VERSION		= 2016
 
 prefix	 	= $(dir $(shell which gnatls))..
 ENABLE_SHARED 	= true
