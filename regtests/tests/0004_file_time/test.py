@@ -38,7 +38,7 @@ now = datetime.datetime.now()
 #  Make sure we are not going to change minute in the middle of the test
 
 while now.second > 56:
-    time.sleep(5)
+    time.sleep(7)
     now = datetime.datetime.now()
 
 run('demo7', output_file='demo7.out')
