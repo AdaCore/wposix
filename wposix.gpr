@@ -29,7 +29,13 @@ project wPOSIX is
    for Library_Name use "wposix";
    for Library_Dir use Shared'Library_Dir;
    for Library_Kind use Shared.Library_Type;
-   for Library_Options use ("-lntdll");
+
+   case Shared.Library_Type is
+      when "relocatable" =>
+         for Library_Options use ("-lntdll");
+      when others =>
+         null;
+   end case;
 
    package Ide renames Shared.Ide;
    package Compiler renames Shared.Compiler;
