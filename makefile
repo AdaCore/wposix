@@ -1,7 +1,7 @@
 ############################################################################
 #                                 wPOSIX                                   #
 #                                                                          #
-#                    Copyright (C) 2008-2015, AdaCore                      #
+#                    Copyright (C) 2008-2016, AdaCore                      #
 #                                                                          #
 #  This is free software;  you can redistribute it  and/or modify it       #
 #  under terms of the  GNU General Public License as published  by the     #
@@ -20,7 +20,7 @@
 
 ############################################################################
 #  Default configuration
-VERSION		= 17.0w
+VERSION		= 17.0
 
 prefix	 	= $(dir $(shell which gnatls))..
 ENABLE_SHARED 	= true
