@@ -20,7 +20,7 @@
 
 ############################################################################
 #  Default configuration
-VERSION		= 17.0
+VERSION		= 17.1
 
 prefix	 	= $(dir $(shell which gnatls))..
 ENABLE_SHARED 	= true
