@@ -20,7 +20,7 @@
 
 ############################################################################
 #  Default configuration
-VERSION		= 18.0w
+VERSION		= 2017
 
 prefix	 	= $(dir $(shell which gnatls))..
 ENABLE_SHARED 	= true
