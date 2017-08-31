@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2014, AdaCore                     --
+--                     Copyright (C) 2008-2017, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -159,7 +159,6 @@ package POSIX.Process_Primitives is
 private
 
    use Ada.Strings.Unbounded;
-   use POSIX;
    use POSIX.Process_Identification;
 
    type File_Action is (Open, Close, Duplicate);

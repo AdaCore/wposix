@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2014, AdaCore                     --
+--                     Copyright (C) 2008-2017, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -268,9 +268,7 @@ package body POSIX.File_Status is
    ---------------------
 
    procedure Get_Shared_Data (File_Status : Status) is
-      use type Win32.DWORD;
       use type Win32.Winnt.HANDLE;
-      use type Win32.Winnt.PACL;
       use type Win32.Winnt.SECURITY_INFORMATION;
 
       Handle : Win32.Winnt.HANDLE;
@@ -500,8 +498,6 @@ package body POSIX.File_Status is
    is
       use type Win32.AccCtrl.TRUSTEE_FORM;
       use type Win32.DWORD;
-      use type Win32.Winnt.PACL;
-      use type Win32.Winnt.PSID;
 
       use POSIX.Permissions;
 

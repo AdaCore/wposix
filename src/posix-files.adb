@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2014, AdaCore                     --
+--                     Copyright (C) 2008-2017, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -306,7 +306,6 @@ package body POSIX.Files is
    procedure For_Every_Directory_Entry
      (Pathname : POSIX.Pathname)
    is
-      use type Win32.INT;
       use type Win32.DWORD;
       use type Win32.BOOL;
       use type Win32.Winnt.HANDLE;
@@ -368,9 +367,7 @@ package body POSIX.Files is
 
    function Is_Accessible
      (Pathname    : POSIX.Pathname;
-      Access_Mode : Access_Mode_Set) return Boolean
-   is
-      use type POSIX.Error_Code;
+      Access_Mode : Access_Mode_Set) return Boolean is
    begin
       return Accessibility (Pathname, Access_Mode) = POSIX.No_Error;
    end Is_Accessible;

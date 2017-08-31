@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2014, AdaCore                     --
+--                     Copyright (C) 2008-2017, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -62,7 +62,6 @@ package body POSIX is
    ---------
 
    overriding function "+" (L, R : Option_Set) return Option_Set is
-      use type Win32.UINT;
    begin
       return Option_Set (L or R);
    end "+";
@@ -72,7 +71,6 @@ package body POSIX is
    ---------
 
    overriding function "-" (L, R : Option_Set) return Option_Set is
-      use type Win32.UINT;
    begin
       return Option_Set (L xor (L and R));
    end "-";

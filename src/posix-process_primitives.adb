@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2014, AdaCore                     --
+--                     Copyright (C) 2008-2017, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -35,7 +35,6 @@ with POSIX_Win32.File_Handle;
 
 package body POSIX.Process_Primitives is
 
-   use POSIX;
    use type Win32.ULONG;
 
    ---------------------------------------
@@ -214,7 +213,6 @@ package body POSIX.Process_Primitives is
         (Name : String;
          Mode : POSIX.IO.File_Mode) return Win32.Winnt.HANDLE
       is
-         use type Win32.INT;
          use type System.Address;
          L_Name : constant String := Name & ASCII.NUL;
          H      : Win32.Winnt.HANDLE;
@@ -257,7 +255,6 @@ package body POSIX.Process_Primitives is
         (Name : String;
          Mode : POSIX.IO.File_Mode) return Win32.Winnt.HANDLE
       is
-         use type Win32.INT;
          use type System.Address;
          L_Name : constant String := Name & ASCII.NUL;
          H      : Win32.Winnt.HANDLE;

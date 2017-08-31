@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2014, AdaCore                     --
+--                     Copyright (C) 2008-2017, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -252,7 +252,6 @@ package body POSIX.Process_Identification is
    end Image;
 
    function Image (ID : Process_Group_ID) return String is
-      use Ada;
    begin
       return To_String (ID);
    end Image;
@@ -263,7 +262,6 @@ package body POSIX.Process_Identification is
    end Image;
 
    function Image (ID : User_ID) return String is
-      use Ada;
    begin
       return To_String (ID);
    end Image;

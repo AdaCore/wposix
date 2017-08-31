@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2014, AdaCore                     --
+--                     Copyright (C) 2008-2017, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -282,7 +282,6 @@ package body POSIX.Process_Environment is
 
    function Get_Working_Directory return POSIX.Pathname is
       use type Win32.DWORD;
-      use type Win32.INT;
       Max_Len      : constant := 500;
       Buffer       : String (1 .. Max_Len) with Warnings => Off;
       Number_Bytes : Win32.DWORD;
