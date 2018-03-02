@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                  wPOSIX                                  --
 --                                                                          --
---                     Copyright (C) 2008-2017, AdaCore                     --
+--                     Copyright (C) 2008-2018, AdaCore                     --
 --                                                                          --
 --  This library is free software;  you can redistribute it and/or modify   --
 --  it under terms of the  GNU General Public License  as published by the  --
@@ -133,7 +133,6 @@ package body POSIX.Files is
    is
       use type Win32.DWORD;
       use type Win32.Winnt.SECURITY_INFORMATION;
-      use POSIX.Permissions;
 
       package PWP renames POSIX_Win32.Permissions;
 
