@@ -1,5 +1,5 @@
 
-from test_support import *
+from test_support import gprbuild, run
 import os
 import time
 import calendar
@@ -9,9 +9,9 @@ import datetime
 def check_n(name, current, expected, error=0):
     v = int(current)
     if abs(v - expected) <= error:
-        print "OK " + name
+        print("OK " + name)
     else:
-        print "NOK " + name + ": '" + str(expected) + "' != '" + current + "'"
+        print("NOK " + name + ": '" + str(expected) + "' != '" + current + "'")
 
 
 def check_date(name, lines, index, day, month, year, hour, minute, second=0):
@@ -23,6 +23,7 @@ def check_date(name, lines, index, day, month, year, hour, minute, second=0):
     check_n(name+"-"+str(index+4), lines[index+4][:-1], minute)
     if second != 0:
         check_n(name+"-"+str(index+5), lines[index+5][:-1], second, error=5)
+
 
 ts_access = time.strptime('03 Feb 2001 14:05', '%d %b %Y %H:%M')
 ts_mod = time.strptime('9 Sep 1967 10:33:01', '%d %b %Y %H:%M:%S')

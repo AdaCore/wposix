@@ -5,6 +5,7 @@ This module contains support functions for all test.py
 import logging
 import os
 import sys
+from gnatpython.ex import Run
 
 #  Change directory
 
@@ -13,14 +14,14 @@ TESTDIR = os.path.dirname(TEST.__file__)
 TEST_NAME = os.path.basename(TESTDIR)
 os.chdir(TESTDIR)
 
-from gnatpython.ex import Run
 
 def gnatmake(prj):
     """Compile a project with gnatmake"""
     cmd = ["gnatmake", "-p", "-gnat2012", "-P" + prj, "-bargs", "-E"]
     process = Run(cmd)
     if process.status:
-        print process.out
+        print(process.out)
+
 
 def gprbuild(prj):
     """Compile a project with gprbuild"""
@@ -28,6 +29,7 @@ def gprbuild(prj):
     process = Run(cmd)
     if process.status:
         logging.error(process.out)
+
 
 def run(bin, options=None, output_file=None):
     """Run a test"""
@@ -38,6 +40,7 @@ def run(bin, options=None, output_file=None):
     else:
         timeout = 300
     Run(["./" + bin] + options, output=output_file, timeout=timeout)
+
 
 def exec_cmd(bin, options=None, output_file=None, ignore_error=False):
     """Execute a binary"""
