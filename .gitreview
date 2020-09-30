@@ -1,0 +1,5 @@
+[gerrit]
+host = git.adacore.com
+project = wposix
+defaultbranch = gnat-7.1
+defaultremote = origin
