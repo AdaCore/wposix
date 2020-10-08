@@ -1,0 +1,5 @@
+[gerrit]
+host = git.adacore.com
+project = wposix
+defaultbranch = 19-sustained
+defaultremote = origin
