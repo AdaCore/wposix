@@ -9,9 +9,9 @@ import datetime
 def check_n(name, current, expected, error=0):
     v = int(current)
     if abs(v - expected) <= error:
-        print "OK " + name
+        print(f"OK {name}")
     else:
-        print "NOK " + name + ": '" + str(expected) + "' != '" + current + "'"
+        print(f"NOK {name} : '{expected}' != '{current}'")
 
 
 def check_date(name, lines, index, day, month, year, hour, minute, second=0):
